@@ -1,7 +1,7 @@
 package org.starloco.locos.exchange;
 
 import org.starloco.locos.client.Account;
-import org.starloco.locos.command.CommandPlayer;
+import org.starloco.locos.command.ExecuteCommandPlayer;
 import org.starloco.locos.database.Database;
 import org.starloco.locos.exchange.transfer.DataQueue;
 import org.starloco.locos.exchange.transfer.DataQueue.Queue;
@@ -120,7 +120,7 @@ public class ExchangePacketHandler {
                             case 'M': // Message
                                 String[] split = packet.substring(2).split("\\|");
                                 if(split.length > 1) {
-                                    String prefix = "<font color='#C35617'>[" + (new SimpleDateFormat("HH:mm").format(new Date(System.currentTimeMillis()))) + "] (" + CommandPlayer.canal + ") (" + split[1] + ") <b>" + split[0] + "</b>";
+                                    String prefix = "<font color='#C35617'>[" + (new SimpleDateFormat("HH:mm").format(new Date(System.currentTimeMillis()))) + "] (" + ExecuteCommandPlayer.canal + ") (" + split[1] + ") <b>" + split[0] + "</b>";
                                     final String message = "Im116;" + prefix + "~" + split[2] + "</font>";
 
                                     World.world.getOnlinePlayers().stream().filter(p -> p != null && !p.noall).forEach(p -> p.send(message.replace("%20", " ")));

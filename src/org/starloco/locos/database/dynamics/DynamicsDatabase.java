@@ -2,6 +2,7 @@ package org.starloco.locos.database.dynamics;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.starloco.locos.database.Database;
@@ -61,6 +62,8 @@ public class DynamicsDatabase {
     private ZaapiData zaapiData;
     private HeroicMobsGroups heroicMobsGroups;
     public LangItemData langItemData;
+    
+    private PlayerCommandData playerCommandData;
 
     public void initializeData() {
         this.areaData = new AreaData(dataSource);
@@ -113,7 +116,9 @@ public class DynamicsDatabase {
         this.zaapData = new ZaapData(this.dataSource);
         this.zaapiData = new ZaapiData(this.dataSource);
         this.heroicMobsGroups = new HeroicMobsGroups(dataSource);
-        langItemData = new LangItemData(dataSource);
+        this.langItemData = new LangItemData(dataSource);
+
+        this.playerCommandData = new PlayerCommandData(this.dataSource);
     }
 
     public boolean initializeConnection() {
@@ -328,4 +333,8 @@ public class DynamicsDatabase {
     }
 
     public HeroicMobsGroups getHeroicMobsGroups() { return heroicMobsGroups; }
+    
+    public PlayerCommandData getPlayerCommandData() {
+		return playerCommandData;
+	}
 }

@@ -5,7 +5,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.starloco.locos.client.Account;
 import org.starloco.locos.database.statics.AbstractDAO;
 import org.starloco.locos.game.world.World;
-import org.starloco.locos.kernel.Config;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,7 +28,7 @@ public class AccountData extends AbstractDAO<Account> {
                 if (a != null && a.isOnline())
                     continue;
 
-                Account C = new Account(RS.getInt("guid"), RS.getString("account").toLowerCase(), RS.getString("pseudo"), RS.getString("reponse"), (RS.getInt("banned") == 1), RS.getString("lastIP"), RS.getString("lastConnectionDate"), RS.getString("friends"), RS.getString("enemy"), RS.getInt("points"), RS.getLong("subscribe"), RS.getLong("muteTime"), RS.getString("mutePseudo"), RS.getString("lastVoteIP"), RS.getString("heurevote"));
+                Account C = new Account(RS.getInt("guid"), RS.getString("account").toLowerCase(), RS.getString("pseudo"), RS.getString("reponse"), (RS.getInt("banned") == 1), RS.getString("lastIP"), RS.getString("lastConnectionDate"), RS.getString("friends"), RS.getString("enemy"), RS.getInt("points"), RS.getLong("subscribe"), RS.getLong("muteTime"), RS.getString("mutePseudo"), RS.getString("lastVoteIP"), RS.getString("heurevote"), RS.getBoolean("vip"));
                 World.world.addAccount(C);
                 World.world.ReassignAccountToChar(C);
             }
@@ -47,7 +46,7 @@ public class AccountData extends AbstractDAO<Account> {
             ResultSet RS = result.resultSet;
             while (RS.next()) {
                 if(RS.getString("pseudo").isEmpty()) continue;
-                Account a = new Account(RS.getInt("guid"), RS.getString("account").toLowerCase(), RS.getString("pseudo"), RS.getString("reponse"), (RS.getInt("banned") == 1), RS.getString("lastIP"), RS.getString("lastConnectionDate"), RS.getString("friends"), RS.getString("enemy"), RS.getInt("points"), RS.getLong("subscribe"), RS.getLong("muteTime"), RS.getString("mutePseudo"), RS.getString("lastVoteIP"), RS.getString("heurevote"));
+                Account a = new Account(RS.getInt("guid"), RS.getString("account").toLowerCase(), RS.getString("pseudo"), RS.getString("reponse"), (RS.getInt("banned") == 1), RS.getString("lastIP"), RS.getString("lastConnectionDate"), RS.getString("friends"), RS.getString("enemy"), RS.getInt("points"), RS.getLong("subscribe"), RS.getLong("muteTime"), RS.getString("mutePseudo"), RS.getString("lastVoteIP"), RS.getString("heurevote"), RS.getBoolean("vip"));
                 World.world.addAccount(a);
             }
         } catch (Exception e) {
@@ -145,11 +144,11 @@ public class AccountData extends AbstractDAO<Account> {
 
     /** Points **/
     public int loadPoints(String user) {
-        return Config.getInstance().points.load(user);
+        return this.loadPointsWithoutUsersDb(user);
     }
 
     public void updatePoints(int id, int points) {
-        Config.getInstance().points.update(id, points);
+        this.updatePointsWithoutUsersDb(id, points);
     }
 
     public int loadPointsWithoutUsersDb(String user) {

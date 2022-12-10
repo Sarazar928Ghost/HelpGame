@@ -92,14 +92,7 @@ public class Dopeul {
                     SocketManager.GAME_SEND_MESSAGE(player, "Tu ne peux pas te reconstituer plusieurs fois !");
                     return;
                 }
-                player.getStats().addOneStat(125, -player.getStats().getEffect(125));
-                player.getStats().addOneStat(124, -player.getStats().getEffect(124));
-                player.getStats().addOneStat(118, -player.getStats().getEffect(118));
-                player.getStats().addOneStat(123, -player.getStats().getEffect(123));
-                player.getStats().addOneStat(119, -player.getStats().getEffect(119));
-                player.getStats().addOneStat(126, -player.getStats().getEffect(126));
-                player.addCapital((player.getLevel() - 1) * 5
-                        - player.get_capital());
+                player.restatAll(0);
 
                 ObjectTemplate OT = World.world.getObjTemplate(10601); // On lui donne un certificat de restat
                 GameObject obj2 = OT.createNewItem(1, false);

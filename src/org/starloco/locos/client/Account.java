@@ -35,6 +35,7 @@ public class Account {
     private List<Integer> friends = new ArrayList<>();
     private List<Integer> enemys = new ArrayList<>();
     private Map<Integer, ArrayList<HdvEntry>> hdvsItems;
+    private boolean vip;
     
     private String clientVersion; // Coding Mestre
 
@@ -42,7 +43,7 @@ public class Account {
                    String answer, boolean banned,
                    String lastIp, String lastConnectionDate, String friends,
                    String enemy, int points, long subscriber, long muteTime, String mutePseudo,
-                   String lastVoteIP, String heureVote) {
+                   String lastVoteIP, String heureVote, boolean vip) {
         this.id = guid;
         this.name = name;
         this.pseudo = pseudo;
@@ -56,6 +57,7 @@ public class Account {
         this.muteTime = muteTime;
         this.mutePseudo = mutePseudo;
         this.lastVoteIP = lastVoteIP;
+        this.vip = vip;
 
         if (heureVote.equalsIgnoreCase("")) this.heureVote = 0;
         else this.heureVote = Long.parseLong(heureVote);
@@ -583,4 +585,7 @@ public class Account {
         return clientVersion.compareTo("1.35.0") >= 0; // After 1.35.0 update (also including it) the console packet format requires adaptation
     }
 
+    public boolean isVip() {
+		return vip;
+	}
 }

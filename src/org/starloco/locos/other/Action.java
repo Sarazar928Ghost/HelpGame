@@ -692,24 +692,8 @@ public class Action {
                 break;
 
             case 13: //Reset Carac incarnam
-                if (player.getLevel() <= 1000 || Main.serverId != 1) {   // getLevel() <= 30    (de base)
-                    try {
-                        player.getStats().addOneStat(125, -player.getStats().getEffect(125));
-                        player.getStats().addOneStat(124, -player.getStats().getEffect(124));
-                        player.getStats().addOneStat(118, -player.getStats().getEffect(118));
-                        player.getStats().addOneStat(123, -player.getStats().getEffect(123));
-                        player.getStats().addOneStat(119, -player.getStats().getEffect(119));
-                        player.getStats().addOneStat(126, -player.getStats().getEffect(126));
-                        player.addCapital((player.getLevel() - 1) * 5 - player.get_capital());
-                        player.getStatsParcho().getMap().clear();
-                        SocketManager.GAME_SEND_STATS_PACKET(player);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        GameServer.a();
-                    }
-                } else {
-                    SocketManager.GAME_SEND_MESSAGE(player, "Ton niveau est supérieur à 30. Tu ne peux donc pas te restaurer !");
-                }
+            	player.restatKeepParcho();
+                SocketManager.GAME_SEND_STATS_PACKET(player);
                 break;
 
             case 14://Ouvrir l'interface d'oublie de sort incarnam
@@ -1050,14 +1034,7 @@ public class Action {
                     player.removeByTemplateID(10563, 1);
                     SocketManager.GAME_SEND_Im_PACKET(player, "022;" + 10563
                             + "~" + 1);
-                    player.getStats().addOneStat(125, -player.getStats().getEffect(125));
-                    player.getStats().addOneStat(124, -player.getStats().getEffect(124));
-                    player.getStats().addOneStat(118, -player.getStats().getEffect(118));
-                    player.getStats().addOneStat(123, -player.getStats().getEffect(123));
-                    player.getStats().addOneStat(119, -player.getStats().getEffect(119));
-                    player.getStats().addOneStat(126, -player.getStats().getEffect(126));
-                    player.addCapital((player.getLevel() - 1) * 5
-                            - player.get_capital());
+                    player.restatAll(0);
                     SocketManager.GAME_SEND_STATS_PACKET(player);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1424,14 +1401,7 @@ public class Action {
                     case "2"://Restat without
                         if(player.hasItemTemplate(15006, 1)) {
                             player.removeByTemplateID(15006, 1);
-                            player.getStats().addOneStat(125, -player.getStats().getEffect(125));
-                            player.getStats().addOneStat(124, -player.getStats().getEffect(124));
-                            player.getStats().addOneStat(118, -player.getStats().getEffect(118));
-                            player.getStats().addOneStat(123, -player.getStats().getEffect(123));
-                            player.getStats().addOneStat(119, -player.getStats().getEffect(119));
-                            player.getStats().addOneStat(126, -player.getStats().getEffect(126));
-                            player.addCapital((player.getLevel() - 1) * 5 - player.get_capital());
-                            player.getStatsParcho().getMap().clear();
+                            player.restatAll(0);
                             SocketManager.GAME_SEND_STATS_PACKET(player);
                         }
                         break;

@@ -4,7 +4,7 @@ import org.starloco.locos.common.SocketManager;
 import org.starloco.locos.kernel.Config;
 import org.starloco.locos.util.lang.AbstractLang;
 import org.starloco.locos.client.*;
-import org.starloco.locos.command.CommandPlayer.*;
+import org.starloco.locos.command.ExecuteCommandPlayer.*;
 
 /**
  * Created by Locos on 09/12/2015.

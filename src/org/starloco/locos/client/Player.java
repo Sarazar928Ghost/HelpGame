@@ -43,7 +43,6 @@ import org.starloco.locos.other.Action;
 import org.starloco.locos.other.Dopeul;
 import org.starloco.locos.other.Guild;
 import org.starloco.locos.util.lang.Lang;
-import org.starloco.locos.utility.Pair;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -160,6 +159,12 @@ public class Player {
     //Metier
     private boolean _metierPublic = false;
     private boolean _livreArti = false;
+    
+    //prestige
+    private short prestige = 0;
+    private Map<Integer, Integer> artefact;
+    private int capitalByLevel = 5;
+    private int pdvMaxByLevel = 5;
 
     //Fight end
     private int hasEndFight = -1;
@@ -215,14 +220,12 @@ public class Player {
     private Map<Integer, Quest.QuestPlayer> questList = new HashMap<>();
     private boolean changeName;
     public boolean afterFight = false;
-	private Object player;
 	//Tactical mode memory
 	private boolean tacticalMode=false;
 	//private boolean worldMarket=false;
 	private boolean autoSkip=false;
 	// IPDrop System
 	public boolean ipDrop=false;
-	private Pair<InteractiveObject, GameCase> inInteractiveObject=null;
 	//private boolean canDrop=true;
 	
 
@@ -244,7 +247,7 @@ public class Player {
                   String savePos, String jobs, int mountXp, int mount, int honor,
                   int deshonor, int alvl, String z, byte title, int wifeGuid,
                   String morphMode, String allTitle, String emotes, long prison,
-                  boolean isNew, String parcho, long timeDeblo, boolean noall, String deadInformation, byte deathCount, long totalKills) {
+                  boolean isNew, String parcho, long timeDeblo, boolean noall, String deadInformation, byte deathCount, long totalKills, short prestige, String artefact) {
         this.id = id;
         this.noall = noall;
         this.name = name;
@@ -346,11 +349,6 @@ public class Player {
                 Main.stop("Player2");
                 return;
             }
-            if (!stuff.equals("")) {
-                if (stuff.charAt(stuff.length() - 1) == '|')
-                    stuff = stuff.substring(0, stuff.length() - 1);
-                Database.getStatics().getObjectData().load(stuff.replace("|", ","));
-            }
             for (String item : stuff.split("\\|")) {
                 if (item.equals(""))
                     continue;
@@ -399,9 +397,14 @@ public class Player {
                     _storeItems.put(obj.getGuid(), price);
                 }
             }
-            this.maxPdv = (this.level - 1) * 5 + 55
-                    + getTotalStats().getEffect(Constant.STATS_ADD_VITA)
-                    + getTotalStats().getEffect(Constant.STATS_ADD_VIE);
+            final Prestige p = World.world.getPrestigeById(prestige);
+            if(p != null) 
+        	{
+            	this.pdvMaxByLevel = p.getPrestigeBonus().getPdvMax();
+            	this.capitalByLevel = p.getPrestigeBonus().getCapital();
+        	}
+            
+            this.initialiseMaxPdv();
             if (this.curPdv <= 0)
                 this.curPdv = 1;
             this.tacticalMode=false;
@@ -427,10 +430,28 @@ public class Player {
                     }
                 }
             }
+            this.prestige = prestige;
             if (this.energy == 0)
                 setGhost();
             else if (this.energy == -1)
                 setFuneral();
+            
+           // prestige
+            if(p != null)
+            	p.getPrestigeBonus().giveStatsToConnection(this);
+            
+            this.artefact = new HashMap<>();
+            if(artefact != null && !artefact.isEmpty())
+            {
+            	try {
+            		for(final String mob : artefact.split(";"))
+            			this.artefact.put(Integer.parseInt(mob.split(",")[0]), Integer.parseInt(mob.split(",")[1]));
+            	}catch(NumberFormatException | ArrayIndexOutOfBoundsException e)
+            	{
+            		e.printStackTrace();
+            		Main.stop("Problème lors de la création de personnnage au niveau des artefact");
+            	}
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -457,11 +478,7 @@ public class Player {
         this.changeName = false;
         this.restriction = null;
         this.set_isClone(true);
-        if (!stuff.equals("")) {
-            if (stuff.charAt(stuff.length() - 1) == '|')
-                stuff = stuff.substring(0, stuff.length() - 1);
-            Database.getStatics().getObjectData().load(stuff.replace("|", ","));
-        }
+        
         for (String item : stuff.split("\\|")) {
             if (item.equals(""))
                 continue;
@@ -472,7 +489,14 @@ public class Player {
                 continue;
             objects.put(obj.getGuid(), obj);
         }
-        this.maxPdv = (this.level - 1) * 5 + 50
+        final Prestige p = World.world.getPrestigeById(prestige);
+        if(p != null) 
+    	{
+        	this.pdvMaxByLevel = p.getPrestigeBonus().getPdvMax();
+        	this.capitalByLevel = p.getPrestigeBonus().getCapital();
+    	}
+        
+        this.maxPdv = (this.level - 1) * this.pdvMaxByLevel + 50
                 + getStats().getEffect(Constant.STATS_ADD_VITA);
         // this.maxPdv = (this.level-1)*5+50+getTotalStats().getEffect(Constant.STATS_ADD_VITA);
         this.curPdv = (this.maxPdv * pdvPer) / 100;
@@ -502,25 +526,36 @@ public class Player {
                 //224,
                 "", "", 100, "", (Config.getInstance().startMap != 0 ? (short) Config.getInstance().startMap : Constant.getStartMap(classe))
                 + ","
-                + (Config.getInstance().startCell != 0 ? (short) Config.getInstance().startCell : Constant.getStartCell(classe)), "", 0, -1, 0, 0, 0, z, (byte) 0, 0, "0;0", "", (Config.getInstance().allEmote ? "0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21" : "0"), 0, true, "118,0;119,0;123,0;124,0;125,0;126,0", 0, false, "0,0,0,0", (byte) 0, 0);
+                + (Config.getInstance().startCell != 0 ? (short) Config.getInstance().startCell : Constant.getStartCell(classe)), "", 0, -1, 0, 0, 0, z, (byte) 0, 0, "0;0", "", (Config.getInstance().allEmote ? "0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21" : "0"), 0, true, "118,0;119,0;123,0;124,0;125,0;126,0", 0, false, "0,0,0,0", (byte) 0, 0, (short)0, null);
         perso.emotes.add(1);
         perso._sorts = Constant.getStartSorts(classe);
         for (int a = 1; a <= perso.getLevel(); a++)
-            Constant.onLevelUpSpells(perso, a);
+            Constant.onLevelUpSpells(perso, a, true);
         perso._sortsPlaces = Constant.getStartSortsPlaces(classe);
 
         SocketManager.GAME_SEND_WELCOME(perso);
-
-        if (!Database.getStatics().getPlayerData().add(perso))
-            return null;
-        World.world.addPlayer(perso);
-        if (Main.key.equals("eratz")) {
-            for (ObjectTemplate t : World.world.getItemSet(5).getItemTemplates()) {
-                GameObject obj = t.createNewItem(1, true);
+        
+        for(final int id : Config.START_PANO)
+        {
+        	for (final ObjectTemplate t : World.world.getItemSet(id).getItemTemplates()) 
+            {
+        		final GameObject obj = t.createNewItem(1, true);
                 if (perso.addObjet(obj, true))
                     World.world.addGameObject(obj, true);
             }
         }
+        
+        for(final int id : Config.START_ITEM)
+        {
+        	final ObjectTemplate objetTemplate = World.world.getObjTemplate(id);
+        	final GameObject obj = objetTemplate.createNewItem(1, true);
+        	if (perso.addObjet(obj, true))
+                World.world.addGameObject(obj, true);
+        }
+
+        if (!Database.getStatics().getPlayerData().add(perso))
+            return null;
+        World.world.addPlayer(perso);
         return perso;
     }
 
@@ -2539,6 +2574,45 @@ public class Player {
 
         return null;
     }
+    
+    public void DestuffALL() {
+        if(this._onMount)
+		     this.toogleOnMount();	
+        
+		for(byte n = 0; n <=15 ; ++n)
+		{
+			final GameObject obj = this.getObjetByPos(n);
+			if(obj != null)
+				this.DesequiperItem(obj);
+		}		
+	}
+    
+    public synchronized void DesequiperItem(final GameObject item) {
+		if (item == null)
+			return;
+		if (!hasItemGuid(item.getGuid()))
+			return;
+		if (item.getPosition() == Constant.ITEM_POS_NO_EQUIPED)
+			return;
+    	
+		GameObject obj2;
+		if ((obj2 = getSimilarItem(item)) != null)// On le possède deja
+		{
+			obj2.setQuantity(obj2.getQuantity() + item.getQuantity());
+			SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this, obj2);
+              World.world.removeGameObject(item.getGuid());
+			removeItem(item.getGuid());
+			SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, item.getGuid());
+		} else// On ne le possède pas
+		{
+			item.setPosition(Constant.ITEM_POS_NO_EQUIPED);
+			SocketManager.GAME_SEND_OBJET_MOVE_PACKET(this, item);
+		}
+		// Si objet de panoplie
+		if (item.getTemplate().getPanoId() > 0)
+			SocketManager.GAME_SEND_OS_PACKET(this, item.getTemplate()
+					.getPanoId());
+	}
 
     //TODO: Delete s'te fonction.
     public GameObject getObjetByPos2(int pos) {
@@ -2555,24 +2629,24 @@ public class Player {
     }
 
     public void refreshStats() {
-        double actPdvPer = (100 * (double) this.curPdv) / (double) this.maxPdv;
+    	final double actPdvPer = (100.0 * (double) this.curPdv) / (double) this.maxPdv;
         if (!useStats)
-            this.maxPdv = (this.getLevel() - 1) * 5 + 50 + getTotalStats().getEffect(Constant.STATS_ADD_VITA);
-        this.curPdv = (int) Math.round(maxPdv * actPdvPer / 100);
+            this.maxPdv = (this.getLevel() - 1) * this.pdvMaxByLevel + 50 + getTotalStats().getEffect(Constant.STATS_ADD_VITA);
+        this.curPdv = (int) Math.round(maxPdv * actPdvPer / 100.0);
     }
 
     public boolean levelUp(boolean send, boolean addXp) {
         if (this.getLevel() == World.world.getExpLevelSize())
             return false;
         this.level++;
-        _capital += 5;
+        _capital += this.capitalByLevel;
         _spellPts++;
-        this.maxPdv += 5;
+        this.maxPdv += this.pdvMaxByLevel;
         this.setPdv(this.getMaxPdv());
         SocketManager.GAME_SEND_STATS_PACKET(this);
         if (this.getLevel() == 100)
             this.getStats().addOneStat(Constant.STATS_ADD_PA, 1);
-        Constant.onLevelUpSpells(this, this.getLevel());
+        Constant.onLevelUpSpells(this, this.getLevel(), true);
         if (addXp)
             this.exp = World.world.getExpLevel(this.getLevel()).perso;
         if (send && isOnline) {
@@ -2581,6 +2655,10 @@ public class Player {
             SocketManager.GAME_SEND_SPELL_LIST(this);
         }
         return true;
+    }
+    
+    public void setXp(final int xp) {
+    	this.exp = xp;
     }
 
     public boolean addXp(long winxp) {
@@ -4488,14 +4566,7 @@ public class Player {
             this.curMap = World.world.getMap((short) 7411);
             this.curCell = World.world.getMap((short) 7411).getCase(311);
         } else {
-            this.getStats().addOneStat(125, -this.getStats().getEffect(125));
-            this.getStats().addOneStat(124, -this.getStats().getEffect(124));
-            this.getStats().addOneStat(118, -this.getStats().getEffect(118));
-            this.getStats().addOneStat(123, -this.getStats().getEffect(123));
-            this.getStats().addOneStat(119, -this.getStats().getEffect(119));
-            this.getStats().addOneStat(126, -this.getStats().getEffect(126));
-            this.addCapital((this.getLevel() - 1) * 5 - this.get_capital());
-            this.getStatsParcho().getMap().clear();
+        	this.restatAll(0);
             this._sorts = Constant.getStartSorts(classe);
             this._sortsPlaces = Constant.getStartSortsPlaces(classe);
             this.level = 1;
@@ -5536,6 +5607,18 @@ public class Player {
     public void sendMessage(String msg) {
         SocketManager.GAME_SEND_MESSAGE(this, msg);
     }
+    
+    public void sendErrorMessage(String msg) {
+        SocketManager.GAME_SEND_MESSAGE(this, "[<b>ERROR</b>] " + msg);
+    }
+    
+    public void sendPartyMessage(String msg) {
+    	SocketManager.GAME_SEND_MESSAGE(this, "[<b>Groupe infos</b>] " + msg);
+    }
+    
+    public void sendInformationMessage(String msg) {
+    	SocketManager.GAME_SEND_MESSAGE(this, "[<b>Information</b>] " + msg);
+    }
 
     public void sendServerMessage(String msg) {
         this.send("Im116;<b>Server</b>~" + msg);
@@ -5755,6 +5838,123 @@ public class Player {
     {
       this.autoSkip=autoSkip;
     }
+    
+    public void resetCapital()
+	{
+		this._capital = (this.getLevel() - 1) * this.capitalByLevel;
+	}
+    
+	public void restatAll(final int keep)
+	{
+		this.resetCapital();
+		this.getStatsParcho().getMap().clear();
+		final Stats stats = this.getStats();
+		stats.addOneStat(Constant.STATS_ADD_VITA, keep - stats.getEffect(Constant.STATS_ADD_VITA));
+		stats.addOneStat(Constant.STATS_ADD_SAGE, keep - stats.getEffect(Constant.STATS_ADD_SAGE));
+		stats.addOneStat(Constant.STATS_ADD_FORC, keep - stats.getEffect(Constant.STATS_ADD_FORC));
+		stats.addOneStat(Constant.STATS_ADD_INTE, keep - stats.getEffect(Constant.STATS_ADD_INTE));
+		stats.addOneStat(Constant.STATS_ADD_AGIL, keep - stats.getEffect(Constant.STATS_ADD_AGIL));
+		stats.addOneStat(Constant.STATS_ADD_CHAN, keep - stats.getEffect(Constant.STATS_ADD_CHAN));
+		final Prestige prestige = World.world.getPrestigeById(this.getPrestige());
+		if(prestige != null) prestige.getPrestigeBonus().giveBonusAfterRestat(this);
+	}
+	
+	public void restatKeepParcho()
+	{
+		this.resetCapital();
+		final Stats stats = this.getStats();
+		final Stats statsParcho = this.getStatsParcho();
+		stats.addOneStat(Constant.STATS_ADD_VITA, statsParcho.getEffect(Constant.STATS_ADD_VITA) - stats.getEffect(Constant.STATS_ADD_VITA));
+		stats.addOneStat(Constant.STATS_ADD_SAGE, statsParcho.getEffect(Constant.STATS_ADD_SAGE) - stats.getEffect(Constant.STATS_ADD_SAGE));
+		stats.addOneStat(Constant.STATS_ADD_FORC, statsParcho.getEffect(Constant.STATS_ADD_FORC) - stats.getEffect(Constant.STATS_ADD_FORC));
+		stats.addOneStat(Constant.STATS_ADD_INTE, statsParcho.getEffect(Constant.STATS_ADD_INTE) - stats.getEffect(Constant.STATS_ADD_INTE));
+		stats.addOneStat(Constant.STATS_ADD_AGIL, statsParcho.getEffect(Constant.STATS_ADD_AGIL) - stats.getEffect(Constant.STATS_ADD_AGIL));
+		stats.addOneStat(Constant.STATS_ADD_CHAN, statsParcho.getEffect(Constant.STATS_ADD_CHAN) - stats.getEffect(Constant.STATS_ADD_CHAN));
+		final Prestige prestige = World.world.getPrestigeById(this.getPrestige());
+		if(prestige != null) prestige.getPrestigeBonus().giveBonusAfterRestat(this);
+	}
+	
+	public void parcho()
+	{
+		final int add;
+		
+		final Prestige prestige = World.world.getPrestigeById(this.getPrestige());
+		
+		if(prestige != null) add = prestige.getPrestigeBonus().getParcho();
+		else add = 101;
+		
+		restatAll(add);
+		final Stats statsParcho = this.getStatsParcho();
+		statsParcho.addOneStat(Constant.STATS_ADD_VITA, add);
+		statsParcho.addOneStat(Constant.STATS_ADD_SAGE, add);
+		statsParcho.addOneStat(Constant.STATS_ADD_FORC, add);
+		statsParcho.addOneStat(Constant.STATS_ADD_INTE, add);
+		statsParcho.addOneStat(Constant.STATS_ADD_AGIL, add);
+		statsParcho.addOneStat(Constant.STATS_ADD_CHAN, add);
+		
+	}
+	
+	public void save()
+	{
+		Database.getStatics().getPlayerData().update(this);
+	}
+    
+    public short getPrestige()
+	{
+		return this.prestige;
+	}
+	
+	public void setPrestige(short prestige)
+	{
+		this.prestige = prestige;
+	}
+	
+	public void incrementePrestige()
+	{
+		++this.prestige;
+	}
+
+	public int getPdvMaxByLevel() {
+		return pdvMaxByLevel;
+	}
+
+	public void setPdvMaxByLevel(int pdvMaxByLevel) {
+		this.pdvMaxByLevel = pdvMaxByLevel;
+	}
+
+	public int getCapitalByLevel() {
+		return capitalByLevel;
+	}
+
+	public void setCapitalByLevel(int capitalByLevel) {
+		this.capitalByLevel = capitalByLevel;
+	}
+
+	public void initialiseMaxPdv() {
+		this.maxPdv = (this.getLevel() - 1) * this.pdvMaxByLevel + 55
+	            + this.getTotalStats().getEffect(Constant.STATS_ADD_VITA)
+	            + this.getTotalStats().getEffect(Constant.STATS_ADD_VIE);		
+	}
+	
+	public Map<Integer, Integer> getArtefact() {
+		return artefact;
+	}
+	
+	public void addArtefact(final int template, int count)
+	{
+		if(this.artefact.containsKey(template)) this.artefact.put(template,  this.artefact.get(template) + count);
+		else this.artefact.put(template, count);
+	}
+	
+	public String getArtefactToString()
+	{
+		String response = "";
+		for(final Entry<Integer, Integer> entry : this.artefact.entrySet())
+			response += entry.getKey() + "," + entry.getValue() + ";";
+		if(response.isEmpty()) return "";
+		return response.substring(0, response.length() - 1);
+		
+	}
     
     
 }

@@ -3,6 +3,7 @@ package org.starloco.locos.command;
 import org.starloco.locos.area.SubArea;
 import org.starloco.locos.client.Account;
 import org.starloco.locos.client.Player;
+import org.starloco.locos.client.Prestige;
 import org.starloco.locos.command.administration.AdminUser;
 import org.starloco.locos.command.administration.Command;
 import org.starloco.locos.command.administration.Group;
@@ -36,6 +37,7 @@ import org.starloco.locos.object.ObjectSet;
 import org.starloco.locos.object.ObjectTemplate;
 import org.starloco.locos.quest.Quest;
 import org.starloco.locos.quest.Quest.QuestPlayer;
+
 import org.starloco.locos.quest.Quest_Etape;
 
 import java.util.ArrayList;
@@ -96,7 +98,44 @@ public class CommandAdmin extends AdminUser {
             challenge.fightStart();
             SocketManager.GAME_SEND_CHALLENGE_FIGHT(this.getPlayer().getFight(), 1, challenge.parseToPacket());
             return;
-        } else if (command.equalsIgnoreCase("HELP")) {
+        }else if(command.equalsIgnoreCase("PRESTIGE") && Config.getInstance().prestige)
+        {
+        	if(infos.length < 2) {
+        		this.sendErrorMessage("Commande incorrect. La commande est : PRESTIGE [idPrestige]");
+        		return;
+        	}
+        	
+        	short prestigeID;
+        	
+        	try {
+        		prestigeID = Short.parseShort(infos[1]);
+        	}catch(final NumberFormatException e)
+        	{
+        		this.sendErrorMessage("Commande incorrect. La commande est : PRESTIGE [idPrestige]");
+        		return;
+        	}
+        	
+        	if(prestigeID < 1) prestigeID = 1;
+        	
+        	final Prestige prestige = World.world.getPrestigeById(prestigeID);
+        	if(prestige == null)
+        	{
+        		this.sendErrorMessage("Le prestige donné n'éxiste pas.");
+        		return;
+        	}
+        	
+        	final Player player = this.getPlayer();
+        	
+        	final short oldPrestige = player.getPrestige();
+        	
+        	player.setPrestige((short)(prestigeID - 1));
+        	
+        	prestige.apply(player, oldPrestige, true);
+        	
+        	if(player.getPrestige() != prestigeID) player.setPrestige(oldPrestige);
+        } 
+        
+        else if (command.equalsIgnoreCase("HELP")) {
             String cmd = "";
             try {
                 cmd = infos[1];
@@ -2203,14 +2242,7 @@ public class CommandAdmin extends AdminUser {
                 this.sendMessage(mess);
                 return;
             }
-            perso.getStats().addOneStat(125, -perso.getStats().getEffect(125));
-            perso.getStats().addOneStat(124, -perso.getStats().getEffect(124));
-            perso.getStats().addOneStat(118, -perso.getStats().getEffect(118));
-            perso.getStats().addOneStat(123, -perso.getStats().getEffect(123));
-            perso.getStats().addOneStat(119, -perso.getStats().getEffect(119));
-            perso.getStats().addOneStat(126, -perso.getStats().getEffect(126));
-            perso.getStatsParcho().getMap().clear();
-            perso.addCapital((perso.getLevel() - 1) * 5 - perso.get_capital());
+            perso.restatAll(0);
             SocketManager.GAME_SEND_STATS_PACKET(perso);
             this.sendMessage("Vous avez restat "
                     + perso.getName() + ".");

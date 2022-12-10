@@ -48,6 +48,7 @@ public abstract class AbstractDAO<T> implements DAO<T> {
                 logger.debug("SQL request executed successfully {}", statement.toString());
             } catch (SQLException e) {
                 e.printStackTrace();
+                System.out.println(e.getMessage());
                 logger.error("Can't execute SQL Request :" + statement.toString(), e);
             } finally {
                 close(statement);

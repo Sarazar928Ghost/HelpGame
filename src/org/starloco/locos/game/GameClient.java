@@ -8,7 +8,7 @@ import org.starloco.locos.client.Account;
 import org.starloco.locos.client.Player;
 import org.starloco.locos.client.other.Party;
 import org.starloco.locos.command.CommandAdmin;
-import org.starloco.locos.command.CommandPlayer;
+import org.starloco.locos.command.ExecuteCommandPlayer;
 import org.starloco.locos.command.administration.AdminUser;
 import org.starloco.locos.common.*;
 import org.starloco.locos.database.Database;
@@ -652,7 +652,7 @@ public class GameClient {
                     return;
 
                 msg = packet.split("\\|", 2)[1];
-                if (CommandPlayer.analyse(this.player, msg))
+                if (ExecuteCommandPlayer.analyse(this.player, msg))
                     return;
                 if (msg.equals(lastMsg)) {
                     SocketManager.GAME_SEND_Im_PACKET(this.player, "184");

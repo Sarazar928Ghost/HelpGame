@@ -3,6 +3,7 @@ package org.starloco.locos.fight;
 import org.starloco.locos.area.map.GameMap;
 import org.starloco.locos.area.map.labyrinth.Minotoror;
 import org.starloco.locos.client.Player;
+import org.starloco.locos.client.Prestige;
 import org.starloco.locos.client.other.Stalk;
 import org.starloco.locos.common.*;
 import org.starloco.locos.database.Database;
@@ -4987,7 +4988,30 @@ public class Fight {
                                     }
                                 }
                             }
+                            
+                            //artefact
+                            if(Config.getInstance().prestige) {
+                            	final Prestige prestige = World.world.getPrestigeById((short)(player.getPrestige() + 1));
+                            	final Map<Integer, Integer> artefactPrestige;
+                            	if(prestige == null) artefactPrestige = new HashMap<>();
+                            	else artefactPrestige = prestige.getArtefact();
+                            	final Map<Integer, Integer> artefactPlayer = player.getArtefact();
+                                
+                                for (final Monster.MobGrade mob : getMobGroup().getMobs().values()) {
+                                	final int idTemplateMob = mob.getTemplate().getId();
+                                	
+                                	if(artefactPrestige.isEmpty() || !artefactPrestige.containsKey(idTemplateMob)) continue;
+                                	if(artefactPlayer.containsKey(idTemplateMob))
+                                	{
+                                		final int value = artefactPlayer.get(idTemplateMob);
+                                		if(value >= artefactPrestige.get(idTemplateMob)) continue;
+                                	}
+                                	
+                                	player.addArtefact(idTemplateMob, 1);
+                                }
 
+                            }
+                            
                             switch (player.getCurMap().getId()) {
                                 case 8984:
                                     GameObject obj = World.world.getObjTemplate(8012).createNewItem(1, false);
@@ -5003,6 +5027,8 @@ public class Fight {
 
                         if (player != null) {
                             xpPlayer = XP.get();
+                            final Prestige prestige = World.world.getPrestigeById(player.getPrestige());
+                            if(prestige != null) xpPlayer *= prestige.getMalusXp();
                             if (xpPlayer != 0) {
                                 if (player.getMorphMode()) {
                                     GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ARME);

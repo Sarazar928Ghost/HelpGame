@@ -5,32 +5,19 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
-import org.starloco.locos.area.map.GameCase;
 import org.starloco.locos.area.map.GameMap;
 import org.starloco.locos.area.map.entity.InteractiveObject;
-import org.starloco.locos.client.Account;
-import org.starloco.locos.client.Player;
-import org.starloco.locos.common.CryptManager;
-import org.starloco.locos.common.Formulas;
 import org.starloco.locos.database.Database;
-import org.starloco.locos.entity.monster.Monster;
 import org.starloco.locos.entity.mount.Mount;
-import org.starloco.locos.entity.pet.Pet;
 import org.starloco.locos.exchange.ExchangeClient;
-import org.starloco.locos.fight.Fight;
-import org.starloco.locos.game.GameClient;
 import org.starloco.locos.game.GameServer;
 import org.starloco.locos.game.scheduler.entity.WorldPub;
 import org.starloco.locos.game.scheduler.entity.WorldPlayerOption;
 import org.starloco.locos.game.scheduler.entity.WorldSave;
 import org.starloco.locos.game.world.World;
-import org.starloco.locos.object.GameObject;
-import org.starloco.locos.object.ObjectTemplate;
-import org.starloco.locos.util.TimerWaiter;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -52,7 +39,7 @@ public class Main {
     //Game
     public static int gamePort = 5555;
     public static String hostDB = "127.0.0.1", nameDB = "", userDB = "root", passDB = "", portDB = "3306";
-    public static String Ip = "";
+    public static String Ip = "127.0.0.1";
 
     public static GameServer gameServer;
     public static ExchangeClient exchangeClient;

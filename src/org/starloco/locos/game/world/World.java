@@ -7,7 +7,9 @@ import org.starloco.locos.area.map.labyrinth.PigDragon;
 import org.starloco.locos.area.map.labyrinth.Minotoror;
 import org.starloco.locos.client.Account;
 import org.starloco.locos.client.Player;
+import org.starloco.locos.client.Prestige;
 import org.starloco.locos.client.other.Stats;
+import org.starloco.locos.command.PlayerCommand;
 import org.starloco.locos.common.Formulas;
 import org.starloco.locos.common.SocketManager;
 import org.starloco.locos.database.Database;
@@ -35,6 +37,7 @@ import org.starloco.locos.object.entity.Fragment;
 import org.starloco.locos.object.entity.SoulStone;
 import org.starloco.locos.area.map.GameMap;
 import ch.qos.logback.classic.Logger;
+
 import org.starloco.locos.common.CryptManager;
 
 import org.slf4j.LoggerFactory;
@@ -93,6 +96,9 @@ public class World {
     private Map<Integer, org.starloco.locos.area.map.entity.Tutorial> Tutorial = new HashMap<>();
     private CryptManager cryptManager=new CryptManager();
     private int nextObjectHdvId, nextLineHdvId;
+    
+    private Map<Short, Prestige> prestiges = new HashMap<>();
+    private List<PlayerCommand> playerCommand = new ArrayList<>();
 
     
     public CryptManager getCryptManager()
@@ -196,6 +202,25 @@ public class World {
             objects.remove(id);
         Database.getStatics().getObjectData().delete(id);
     }
+    
+    public void addPlayerCommand(final PlayerCommand pc)
+    {
+    	this.playerCommand.add(pc);
+    }
+    
+    public List<PlayerCommand> getPlayerCommand() {
+		return playerCommand;
+	}
+    
+    public PlayerCommand getPlayerCommandByName(final String searchName)
+    {
+    	for(final PlayerCommand pc : this.getPlayerCommand())
+    		for(final String name : pc.getName()) 
+    			if(name.equalsIgnoreCase(searchName))
+    				return pc;
+    	return null;
+    }
+    
     //endregion
 
     public Map<Integer, Spell> getSpells() {
@@ -249,6 +274,21 @@ public class World {
     public Map<Integer, Map<String, Map<String, Integer>>> getExtraMonsters() {
         return extraMonstre;
     }
+    
+    public void addPrestige(Prestige prestige)
+    {
+    	this.prestiges.put(prestige.getId(), prestige);
+    }
+    
+    public Prestige getPrestigeById(final short id)
+    {
+    	return this.prestiges.get(id);
+    }
+    
+    public Map<Short, Prestige> getPrestiges()
+    {
+    	return this.prestiges;
+    }
     /**
      * end region *
      */
@@ -256,6 +296,9 @@ public class World {
     public void createWorld() {
         logger.info("Loading of data..");
         long time = System.currentTimeMillis();
+        
+        Database.getDynamics().getPlayerCommandData().load(null);
+        logger.debug("The player command data of the logged players were done successfully.");
 
         Database.getStatics().getServerData().loggedZero();
         logger.debug("The reset of the logged players were done successfully.");
@@ -365,6 +408,12 @@ public class World {
         Database.getStatics().getAccountData().load();
         logger.debug("The accounts were loaded successfully.");
 
+        Database.getStatics().getPrestigeData().load();
+        logger.debug("The prestiges were loaded successfully.");
+        
+        Database.getStatics().getPrestigeBonusData().load();
+        logger.debug("The prestiges bonus were loaded successfully.");
+        
         Database.getStatics().getPlayerData().load();
         logger.debug("The players were loaded successfully.");
 

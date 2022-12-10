@@ -32,6 +32,8 @@ public class StaticsDatabase {
     private PubData pubData;
     private PetData petData;
     private QuestPlayerData questPlayerData;
+    private PrestigeData prestigeData;
+    private PrestigeBonusData prestigeBonusData;
 
     public void initializeData() {
         this.accountData = new AccountData(this.dataSource);
@@ -52,6 +54,8 @@ public class StaticsDatabase {
         this.pubData = new PubData(this.dataSource);
         this.petData = new PetData(this.dataSource);
         this.questPlayerData = new QuestPlayerData(this.dataSource);
+        this.prestigeData = new PrestigeData(this.dataSource);
+        this.prestigeBonusData = new PrestigeBonusData(this.dataSource);
     }
 
     public boolean initializeConnection() {
@@ -161,4 +165,12 @@ public class StaticsDatabase {
     public QuestPlayerData getQuestPlayerData() {
         return questPlayerData;
     }
+
+	public PrestigeData getPrestigeData() {
+		return prestigeData;
+	}
+
+	public PrestigeBonusData getPrestigeBonusData() {
+		return prestigeBonusData;
+	}
 }

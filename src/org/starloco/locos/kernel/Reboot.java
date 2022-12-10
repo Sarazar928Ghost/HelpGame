@@ -3,7 +3,6 @@ package org.starloco.locos.kernel;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Timer;
 
 public class Reboot {
 
