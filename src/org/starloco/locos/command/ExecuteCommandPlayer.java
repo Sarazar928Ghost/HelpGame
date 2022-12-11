@@ -207,100 +207,6 @@ public class ExecuteCommandPlayer {
         return "Unknown";
     }
     
-    // .exo 
-    // Marche pas autrement qu'en faisant un gros copier coller de noob
-    // Cette partie de code provient de locos.job.JobAction
-    public static byte viewActualStatsItem(GameObject obj, String stats)//retourne vrai si la stats est actuellement sur l'item
-    {
-        if (!obj.parseStatsString().isEmpty()) {
-            for (Entry<Integer, Integer> entry : obj.getStats().getMap().entrySet()) {
-                if (Integer.toHexString(entry.getKey()).compareTo(stats) > 0)//Effets inutiles
-                {
-                    if (Integer.toHexString(entry.getKey()).compareTo("98") == 0
-                            && stats.compareTo("7b") == 0) {
-                        return 2;
-                    } else if (Integer.toHexString(entry.getKey()).compareTo("9a") == 0
-                            && stats.compareTo("77") == 0) {
-                        return 2;
-                    } else if (Integer.toHexString(entry.getKey()).compareTo("9b") == 0
-                            && stats.compareTo("7e") == 0) {
-                        return 2;
-                    } else if (Integer.toHexString(entry.getKey()).compareTo("9d") == 0
-                            && stats.compareTo("76") == 0) {
-                        return 2;
-                    } else if (Integer.toHexString(entry.getKey()).compareTo("74") == 0
-                            && stats.compareTo("75") == 0) {
-                        return 2;
-                    } else if (Integer.toHexString(entry.getKey()).compareTo("99") == 0
-                            && stats.compareTo("7d") == 0) {
-                        return 2;
-                    } else {
-                    }
-                } else if (Integer.toHexString(entry.getKey()).compareTo(stats) == 0)//L'effet existe bien !
-                {
-                    return 1;
-                }
-            }
-            return 0;
-        } else {
-            return 0;
-        }
-    }
-    
-    public static byte viewBaseStatsItem(GameObject obj, String ItemStats)//retourne vrai si le stats existe de base sur l'item
-    {
-
-        String[] splitted = obj.getTemplate().getStrTemplate().split(",");
-        for (String s : splitted) {
-            String[] stats = s.split("#");
-            if (stats[0].compareTo(ItemStats) > 0)//Effets n'existe pas de base
-            {
-                if (stats[0].compareTo("98") == 0
-                        && ItemStats.compareTo("7b") == 0) {
-                    return 2;
-                } else if (stats[0].compareTo("9a") == 0
-                        && ItemStats.compareTo("77") == 0) {
-                    return 2;
-                } else if (stats[0].compareTo("9b") == 0
-                        && ItemStats.compareTo("7e") == 0) {
-                    return 2;
-                } else if (stats[0].compareTo("9d") == 0
-                        && ItemStats.compareTo("76") == 0) {
-                    return 2;
-                } else if (stats[0].compareTo("74") == 0
-                        && ItemStats.compareTo("75") == 0) {
-                    return 2;
-                } else if (stats[0].compareTo("99") == 0
-                        && ItemStats.compareTo("7d") == 0) {
-                    return 2;
-                } else {
-                }
-            } else if (stats[0].compareTo(ItemStats) == 0)//L'effet existe bien !
-            {
-                return 1;
-            }
-        }
-        return 0;
-    }
-       
-    public static int getBaseMaxJet(int templateID, String statsModif) {
-        ObjectTemplate t = World.world.getObjTemplate(templateID);
-        String[] splitted = t.getStrTemplate().split(",");
-        for (String s : splitted) {
-            String[] stats = s.split("#");
-            if (stats[0].compareTo(statsModif) > 0)//Effets n'existe pas de base
-            {
-            } else if (stats[0].compareTo(statsModif) == 0)//L'effet existe bien !
-            {
-                int max = Integer.parseInt(stats[2], 16);
-                if (max == 0)
-                    max = Integer.parseInt(stats[1], 16);//Pas de jet maximum on prend le minimum
-                return max;
-            }
-        }
-        return 0;
-    }
-    
     private static boolean doParcho(final String msg, final Player player)
     {
     	if(player.getFight() != null)
@@ -827,13 +733,33 @@ public class ExecuteCommandPlayer {
 			player.sendErrorMessage("Action impossible : vous ne portez pas de "+split[1]+".");
 		    return false;
 		}
+		
+		boolean alreadyHaveTheExo = false;
+		
+		boolean haveCheckExo = false;
+		boolean haveBaseStats = false;
+		
+		for(final Integer key : obj.getStats().getMap().keySet())
+		{
+			if(Integer.toHexString(key).equals(statsToAdd)) alreadyHaveTheExo = true;
+			else if(Integer.toHexString(key).equals(statsToCheck)) haveCheckExo = true;
+		}
+		
 		// Pour éviter d'avoir des items 2Pa/2Pm
-		if(viewActualStatsItem(obj, statsToAdd) == 1) {
+		if(alreadyHaveTheExo) {
 			player.sendErrorMessage("Cette "+split[1]+" possède déjà 1 "+split[2].toUpperCase()+", action impossible.");
 		    return false;
 		}
+		
+		for(final String stats : obj.getTemplate().getStrTemplate().split(","))
+		{
+			if(!stats.split("#")[0].equals(statsToCheck)) continue;
+			haveBaseStats = true;
+			break;
+		}
+		
 		// Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base         
-		if(viewActualStatsItem(obj, statsToCheck) == 1 && viewBaseStatsItem(obj, statsToCheck) == 0) {
+		if(haveCheckExo && !haveBaseStats) {
 			player.sendErrorMessage("Cette "+split[1]+" est déjà exo.");
 		    return false;
 		}

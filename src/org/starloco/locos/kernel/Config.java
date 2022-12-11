@@ -10,7 +10,6 @@ import java.io.IOException;
 public class Config {
 
     public static final Config singleton = new Config();
-    public static int config = 0;
 
     public final long startTime = System.currentTimeMillis();
     public boolean HALLOWEEN = false, NOEL = false, HEROIC = false;
