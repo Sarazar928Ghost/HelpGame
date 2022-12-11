@@ -76,7 +76,7 @@ public class ExecuteCommandPlayer {
 	        		removePoint = doTp(args, player);
 	        		break;
 	        	case 1:
-	        		removePoint = doAll(msg, player);
+	        		removePoint = doAll(msg, player, commandName.length());
 	        		break;
 	        	case 2:
 	        		removePoint = noAll(player);
@@ -327,7 +327,7 @@ public class ExecuteCommandPlayer {
     	return true;
     }
     
-    private static boolean doAll(final String msg, final Player player) {
+    private static boolean doAll(final String msg, final Player player, final int commandNameLength) {
     	if (player.isInPrison())
             return false;
         if (player.noall) {
@@ -343,12 +343,12 @@ public class ExecuteCommandPlayer {
 
         String prefix = "<font color='#C35617'>[" + (new SimpleDateFormat("HH:mm").format(new Date(System.currentTimeMillis()))) + "] (" + canal + ") (" + getNameServerById(Main.serverId) + ") <b><a href='asfunction:onHref,ShowPlayerPopupMenu," + player.getName() + "'>" + player.getName() + "</a></b>";
 
-        Logging.getInstance().write("AllMessage", "[" + (new SimpleDateFormat("HH:mm").format(new Date(System.currentTimeMillis()))) + "] : " + player.getName() + " : " + msg.substring(5, msg.length() - 1));
+        Logging.getInstance().write("AllMessage", "[" + (new SimpleDateFormat("HH:mm").format(new Date(System.currentTimeMillis()))) + "] : " + player.getName() + " : " + msg.substring(commandNameLength, msg.length() - 1));
 
-        final String message = "Im116;" + prefix + "~" + msg.substring(5, msg.length() - 1).replace(";", ":").replace("~", "").replace("|", "").replace("<", "").replace(">", "") + "</font>";
+        final String message = "Im116;" + prefix + "~" + msg.substring(commandNameLength, msg.length() - 1).replace(";", ":").replace("~", "").replace("|", "").replace("<", "").replace(">", "") + "</font>";
 
         World.world.getOnlinePlayers().stream().filter(p -> !p.noall).forEach(p -> p.send(message));
-        Main.exchangeClient.send("DM" + player.getName() + "|" + getNameServerById(Main.serverId) + "|" + msg.substring(5, msg.length() - 1).replace("\n", "").replace("\r", "").replace(";", ":").replace("~", "").replace("|", "").replace("<", "").replace(">", "") + "|");
+        Main.exchangeClient.send("DM" + player.getName() + "|" + getNameServerById(Main.serverId) + "|" + msg.substring(commandNameLength, msg.length() - 1).replace("\n", "").replace("\r", "").replace(";", ":").replace("~", "").replace("|", "").replace("<", "").replace(">", "") + "|");
         return true;
     }
     
@@ -441,7 +441,7 @@ public class ExecuteCommandPlayer {
         Player target = player;
 
         if (msg.length() > 8) {
-            String name = msg.substring(8, msg.length() - 1);
+            String name = msg.substring(0, msg.length() - 1).trim().split(" ")[1];
             target = World.world.getPlayerByName(name);
         }
 
@@ -1164,127 +1164,80 @@ public class ExecuteCommandPlayer {
     
     private static boolean doFmCac(final String msg, final Player player)
     {
-    	// Cette commande est bug sur le deuxième jet neutre de suite ex : Épée Kukri Kura
-		   // Le deuxième jet est fm à 100% de son jet initial.
-        GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ARME); // obj
         if (player.getFight() != null) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : vous ne devez pas être en combat.");
-            return false;
-        } else if (obj == null) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : vous ne portez pas d'arme");
+        	player.sendErrorMessage("Action impossible : vous ne devez pas être en combat.");
             return false;
         }
+        final GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ARME);
+        if (obj == null) {
+        	player.sendErrorMessage("Action impossible : vous ne portez pas d'arme");
+            return false;
+        }
+        
+        final String[] split = msg.substring(0, msg.length() - 1).trim().split(" ");
+        if(split.length < 2) {
+        	player.sendErrorMessage("Action impossible : vous n'avez pas spécifié l'élément (air, feu, terre, eau) qui remplacera les dégats/vols de vies neutres");
+        	return false;
+        }
+        
         boolean containNeutre = false;
-        for (SpellEffect effect : obj.getEffects()) {
-            if (effect.getEffectID() == 100 || effect.getEffectID() == 95) {
-                containNeutre = true;
-            }
+        for (final SpellEffect effect : obj.getEffects()) {
+            if (effect.getEffectID() != 100 && effect.getEffectID() != 95) continue;
+            containNeutre = true;
+            break;
         }
         if (!containNeutre) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : votre arme n'a pas de dégats neutre");
+        	player.sendErrorMessage("Action impossible : votre arme n'a pas de dégats neutre");
             return false;
         }
 
-        String answer;
+        final String element = split[1];
 
-        try {
-            answer = msg.substring(7, msg.length() - 1);
-        } catch (Exception e) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : vous n'avez pas spécifié l'élément (air, feu, terre, eau) qui remplacera les dégats/vols de vies neutres");
-            return false;
-        }
-
-        if (!answer.equalsIgnoreCase("air") && !answer.equalsIgnoreCase(
-                "terre") && !answer.equalsIgnoreCase("feu") && !answer.equalsIgnoreCase(
+        if (!element.equalsIgnoreCase("air") && !element.equalsIgnoreCase(
+                "terre") && !element.equalsIgnoreCase("feu") && !element.equalsIgnoreCase(
                 "eau")) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : l'élément " + answer + " est incorrect. (Disponible : air, feu, terre, eau)");
+        	player.sendErrorMessage("Action impossible : l'élément " + element + " est incorrect. (Disponible : air, feu, terre, eau)");
             return false;
         }
+        for (final SpellEffect effect : obj.getEffects()) {
+            if (effect.getEffectID() != 100 && effect.getEffectID() != 95)
+                continue;
+            final String[] infos = effect.getArgs().split(";");
+                               	   
+     	    final int coef = 85;
+     	    final int min = Integer.parseInt(infos[0], 16);
+     	    final int max = Integer.parseInt(infos[1], 16);
+     	    int newMin = (min * coef) / 100;
+     	    final int newMax = (max * coef) / 100;
+            if (newMin == 0)
+                newMin = 1;
+            final  String newRange = "1d" + (newMax - newMin + 1) + "+"
+                    + (newMin - 1);
+            final String newArgs = Integer.toHexString(newMin) + ";"
+                    + Integer.toHexString(newMax) + ";-1;-1;0;"
+                    + newRange;
+            effect.setArgs(newArgs);
+            
+            final byte toRemove =  effect.getEffectID() == 95 ? (byte)5 : 0;
+            if (element.equalsIgnoreCase("air")) {
+                effect.setEffectID(98 - toRemove);
+            }
+            else if (element.equalsIgnoreCase("feu")) {
+                effect.setEffectID(99 - toRemove);
+            }
+            else if (element.equalsIgnoreCase("terre")) {
+                effect.setEffectID(97 - toRemove);
+            }
+            else if (element.equalsIgnoreCase("eau")) {
+                effect.setEffectID(96 - toRemove);
+            }
+        } 
         
-        // Ajout des 85% du jet (pas 100% debug)
-            for (SpellEffect effect : obj.getEffects()) {
-                if (effect.getEffectID() != 100)
-                    continue;
-                String[] infos = effect.getArgs().split(";");
-                try {                      	   
-             	   int coef = 85;  // fm à 85%
-                    int min = Integer.parseInt(infos[0], 16);
-                    int max = Integer.parseInt(infos[1], 16);
-                    int newMin = (min * coef) / 100;
-                    int newMax = (max * coef) / 100;
-                    if (newMin == 0)
-                        newMin = 1;
-                    String newRange = "1d" + (newMax - newMin + 1) + "+"
-                            + (newMin - 1);
-                    String newArgs = Integer.toHexString(newMin) + ";"
-                            + Integer.toHexString(newMax) + ";-1;-1;0;"
-                            + newRange;
-                    effect.setArgs(newArgs);
-                    
-                    
-                    /*
-                    if (effect.getEffectID() != 95)
-                        continue;
-                    effect.setArgs(newArgs); // Souci ; les jets sont ok mais restent neutre (Kukri Kura)
-                    */
-                    
-                    for (int i = 0; i < obj.getEffects().size(); i++) {
-                        if (obj.getEffects().get(i).getEffectID() == 100) {
-                            if (answer.equalsIgnoreCase("air")) {
-                                obj.getEffects().get(i).setEffectID(98);
-                            }
-                            if (answer.equalsIgnoreCase("feu")) {
-                                obj.getEffects().get(i).setEffectID(99);
-                            }
-                            if (answer.equalsIgnoreCase("terre")) {
-                                obj.getEffects().get(i).setEffectID(97);
-                            }
-                            if (answer.equalsIgnoreCase("eau")) {
-                                obj.getEffects().get(i).setEffectID(96);
-                            }
-                        }
-
-                        if (obj.getEffects().get(i).getEffectID() == 95) {                             	   
-                            if (answer.equalsIgnoreCase("air")) {
-                                obj.getEffects().get(i).setEffectID(93);
-                            }
-                            if (answer.equalsIgnoreCase("feu")) {
-                                obj.getEffects().get(i).setEffectID(94);
-                            }
-                            if (answer.equalsIgnoreCase("terre")) {
-                                obj.getEffects().get(i).setEffectID(92);
-                            }
-                            if (answer.equalsIgnoreCase("eau")) {
-                                obj.getEffects().get(i).setEffectID(91);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } 
-        long new_kamas = player.getKamas();
-        if (new_kamas < 0) //Ne devrait pas arriver...
-        {
-            new_kamas = 0;
-        }
-        player.setKamas(new_kamas);
-        
-        SocketManager.GAME_SEND_STATS_PACKET(player);
-        // Pour éviter de déco-reco :
-        GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_ARME);
-        int idObjPos = itemPos.getGuid();
-        SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-        SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
+        SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, obj.getGuid());
+        SocketManager.GAME_SEND_OAKO_PACKET(player, obj);
         SocketManager.GAME_SEND_STATS_PACKET(player);
 
-        SocketManager.GAME_SEND_MESSAGE(player,
-                "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été FM avec succès en <b>" + answer + "</b> !" , "009900");
+        player.sendMessage("Votre item : <b>" + obj.getTemplate().getName() + "</b> a été FM avec succès en <b>" + element + "</b> !");
         return true;
     }
     
