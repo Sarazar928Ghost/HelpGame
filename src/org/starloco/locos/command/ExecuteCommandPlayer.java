@@ -50,7 +50,7 @@ public class ExecuteCommandPlayer {
     public static boolean analyse(Player player, String msg) {
         if (msg.charAt(0) == '.' && msg.charAt(1) != '.') {
         	
-        	final String commandName = msg.substring(0, msg.length() - 1).split(" ")[0].substring(1);
+        	final String commandName = msg.substring(0, msg.length() - 1).trim().split(" ")[0].substring(1);
         	
         	final PlayerCommand playerCommand = World.world.getPlayerCommandByName(commandName);
         	if(playerCommand == null) 
@@ -342,7 +342,7 @@ public class ExecuteCommandPlayer {
     
     private static void doPrestige(final String msg, final Player player)
     {
-    	final String[] arguments = msg.substring(0, msg.length() - 1).split(" ");
+    	final String[] arguments = msg.substring(0, msg.length() - 1).trim().split(" ");
     	if(arguments.length == 1)
     	{
     		final String message = "Commande Prestige : <br><br>"
@@ -764,873 +764,97 @@ public class ExecuteCommandPlayer {
         return false;
     }
     
+    
     private static boolean doExo(final String msg, final Player player) {
+    	
     	if (player.getFight() != null) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : vous ne devez pas être en combat.");
+    		player.sendErrorMessage("Action impossible : vous ne devez pas être en combat.");
             return false;
         } 
-        String answer;
-        try {
-            answer = msg.substring(5, msg.length() - 1); // 5 = nbr carac après ".exo " (avec espace) 
-        } catch (Exception e) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : vous n'avez pas spécifié l'item à exo.");
-            return false;
-        }
+    	
+    	final String[] split = msg.substring(0, msg.length() - 1).trim().split(" ");
+    	
+    	if(split.length < 3) {
+    		player.sendErrorMessage("La commande doit être : .[commandeName] [coiffe, cape, ceinture, bottes, amulette, anneauG, anneauD, cac] [pa, pm]");
+    		return false;
+    	}
+    	
+    	final String[] emplacements = new String[] {
+	    		"coiffe", 
+	    		"cape", 
+	    		"ceinture", 
+	    		"bottes",
+	    		"amulette", 
+	    		"anneauG",
+	    		"anneauD",
+	    		"cac"
+	    };
+    	final byte[] emplacementsID = new byte[] {
+	    		Constant.ITEM_POS_COIFFE,
+	    		Constant.ITEM_POS_CAPE, 
+	    		Constant.ITEM_POS_CEINTURE, 
+	    		Constant.ITEM_POS_BOTTES,
+	    		Constant.ITEM_POS_AMULETTE, 
+	    		Constant.ITEM_POS_ANNEAU1,
+	    		Constant.ITEM_POS_ANNEAU2,
+	    		Constant.ITEM_POS_ARME
+	    };
+    	
+    	byte emplacementID = -1;
+    	
+    	for(byte i = 0; i < emplacements.length; ++i) {
+    		if(!emplacements[i].equalsIgnoreCase(split[1])) continue;
+    		emplacementID = emplacementsID[i];
+    		break;
+    	}
+    	
+    	if(!split[2].equalsIgnoreCase("pa") && !split[2].equalsIgnoreCase("pm")) {
+    		player.sendErrorMessage("Le exo doit soit être pa ou pm et rien d'autres.");
+    		return false;
+    	}
+    	
+    	final String statsToAdd = split[2].equalsIgnoreCase("pa") ? "6f" : "80";
+    	final String statsToCheck = split[2].equalsIgnoreCase("pa") ? "80f" : "6f";
+    	
         
-        
-        if (!answer.equalsIgnoreCase("coiffe pa") && !answer.equalsIgnoreCase(
-                "coiffe pm") && !answer.equalsIgnoreCase("cape pa") && !answer.equalsIgnoreCase(
-                        "cape pm") && !answer.equalsIgnoreCase("ceinture pa") && !answer.equalsIgnoreCase(
-                                "ceinture pm") && !answer.equalsIgnoreCase("bottes pa") && !answer.equalsIgnoreCase(
-                                        "bottes pm") && !answer.equalsIgnoreCase("amulette pa") && !answer.equalsIgnoreCase(
-                                                "amulette pm") && !answer.equalsIgnoreCase("anneauG pa") && !answer.equalsIgnoreCase(
-                                                        "anneauG pm") && !answer.equalsIgnoreCase("anneauD pa") && !answer.equalsIgnoreCase(
-                                                                "anneauD pm") && !answer.equalsIgnoreCase("cac pa") && !answer.equalsIgnoreCase(
-                                                                        "cac pm") ) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : l'option " + answer + " est incomplète ou incorrecte. "
-                    		+ "(Disponible : coiffe pa, coiffe pm, cape pa , cape pm, ceinture pa, ceinture pm,"
-                    		+ " bottes pa, bottes pm, amulette pa, amulette pm, anneauG pa, anneauG pm, anneauD pa, anneauD pm, "
-                    		+ "cac pa, cac pm)");
-            return false;
-        }
-        
-        
-        String statsObjectFmPa = "6f";
-        String statsObjectFmPm = "80";
-        int statsAdd = 1;
-        boolean negative = false;
-        
-        // Cas d'une coiffe pa
-        if (answer.equalsIgnoreCase("coiffe pa")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_COIFFE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de coiffe.");
-                return false;
-            }
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPa);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette coiffe possède déjà 1 PA, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPm);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPm);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette cape est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PA
-            
-            String statsStr = obj.parseFMStatsString(statsObjectFmPa, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPa
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_COIFFE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        // Cas coiffe pm
-        if (answer.equalsIgnoreCase("coiffe pm")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_COIFFE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de coiffe.");
-                return false;
-            }
-
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPm);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette coiffe possède déjà 1 PM, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPa);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPa);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette coiffe est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PM
-            String statsStr = obj.parseFMStatsString(statsObjectFmPm, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPm
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_COIFFE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        // Cas d'une cape pa
-        if (answer.equalsIgnoreCase("cape pa")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_CAPE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de cape.");
-                return false;
-            }
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPa);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette cape possède déjà 1 PA, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPm);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPm);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette cape est déjà exo.");
-         	   
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        " Pensez à vous deco/reco pour voir les changements !");
-         	   
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PA
-            String statsStr = obj.parseFMStatsString(statsObjectFmPa, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPa
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_CAPE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        // Cas cape pm
-        if (answer.equalsIgnoreCase("cape pm")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_CAPE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de cape.");
-                return false;
-            }
-
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPm);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette cape possède déjà 1 PM, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPa);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPa);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette cape est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PM
-            String statsStr = obj.parseFMStatsString(statsObjectFmPm, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPm
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_CAPE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-     // Cas de bottes pa
-        if (answer.equalsIgnoreCase("bottes pa")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_BOTTES);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de bottes.");
-                return false;
-            }
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPa);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Ces bottes possèdent déjà 1 PA, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPm);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPm);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Ces bottes sont déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PA
-            String statsStr = obj.parseFMStatsString(statsObjectFmPa, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPa
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_BOTTES);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-        // Cas bottes pm
-        if (answer.equalsIgnoreCase("bottes pm")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_BOTTES);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de bottes.");
-                return false;
-            }
-
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPm);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Ces bottes possèdent déjà 1 PM, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPa);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPa);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Ces bottes sont déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PM
-            String statsStr = obj.parseFMStatsString(statsObjectFmPm, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPm
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_BOTTES);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-     // Cas ceinture pa
-        if (answer.equalsIgnoreCase("ceinture pa")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_CEINTURE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de ceinture.");
-                return false;
-            }
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPa);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette ceinture possède déjà 1 PA, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPm);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPm);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette ceinture est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PA
-            String statsStr = obj.parseFMStatsString(statsObjectFmPa, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPa
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_CEINTURE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-        
-     // Cas ceinture pm
-        if (answer.equalsIgnoreCase("ceinture pm")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_CEINTURE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de ceinture.");
-                return false;
-            }
-
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPm);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette ceinture possède déjà 1 PM, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPa);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPa);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette ceinture est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PM
-            String statsStr = obj.parseFMStatsString(statsObjectFmPm, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPm
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_CEINTURE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-     // Cas amulette pa
-        if (answer.equalsIgnoreCase("amulette pa")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_AMULETTE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas d'amulette.");
-                return false;
-            }
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPa);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette amulette possède déjà 1 PA, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPm);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPm);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette amulette est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PA
-            String statsStr = obj.parseFMStatsString(statsObjectFmPa, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPa
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_AMULETTE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-        // Cas amulette pm
-        if (answer.equalsIgnoreCase("amulette pm")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_AMULETTE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas d'amulette.");
-                return false;
-            }
-
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPm);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette amulette possède déjà 1 PM, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPa);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPa);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cette amulette est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PM
-            String statsStr = obj.parseFMStatsString(statsObjectFmPm, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPm
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_AMULETTE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-        // Cas anneau gauche pa
-        if (answer.equalsIgnoreCase("anneauG pa")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ANNEAU1);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas d'anneau gauche.");
-                return false;
-            }
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPa);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cet anneau possède déjà 1 PA, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPm);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPm);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cet anneau est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PA
-            String statsStr = obj.parseFMStatsString(statsObjectFmPa, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPa
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_ANNEAU1);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-     // Cas anneau gauche pm
-        if (answer.equalsIgnoreCase("anneauG pm")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ANNEAU1);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas d'anneau gauche.");
-                return false;
-            }
-
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPm);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cet anneau possède déjà 1 PM, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPa);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPa);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cet anneau est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PM
-            String statsStr = obj.parseFMStatsString(statsObjectFmPm, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPm
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_ANNEAU1);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-     // Cas anneau droit pa
-        if (answer.equalsIgnoreCase("anneauD pa")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ANNEAU2);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas d'anneau droit.");
-                return false;
-            }
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPa);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cet anneau possède déjà 1 PA, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPm);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPm);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cet anneau est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PA
-            String statsStr = obj.parseFMStatsString(statsObjectFmPa, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPa
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_ANNEAU2);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-     // Cas anneau droit pm
-        if (answer.equalsIgnoreCase("anneauD pm")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ANNEAU2);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas d'anneau droit.");
-                return false;
-            }
-
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPm);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cet anneau possède déjà 1 PM, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPa);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPa);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Cet anneau est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PM
-            String statsStr = obj.parseFMStatsString(statsObjectFmPm, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPm
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_ANNEAU2);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-     // Cas cac pa
-        if (answer.equalsIgnoreCase("cac pa")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ARME);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de CAC.");
-                return false;
-            }
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPa);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Ce CAC possède déjà 1 PA, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPm);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPm);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Ce CAC est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PA
-            String statsStr = obj.parseFMStatsString(statsObjectFmPa, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPa
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_ARME);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-            return true;
-        }
-        
-        
-         // Cac pm
-        if (answer.equalsIgnoreCase("cac pm")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ARME);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de CAC.");
-                return false;
-            }
-
-            // Pour éviter d'avoir des items 2Pa/2Pm
-            int currentStats = viewActualStatsItem(obj, statsObjectFmPm);
-            if(currentStats == 1) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Ce CAC possède déjà 1 PM, action impossible.");
-         	   return false;
-            }
-            // Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base
-            int currentStats2 = viewActualStatsItem(obj, statsObjectFmPa);
-            
-            if(currentStats2 == 1) {
-         	   int baseStats = viewBaseStatsItem(obj, statsObjectFmPa);
-         	   if(baseStats == 0) {
-         	   SocketManager.GAME_SEND_MESSAGE(player,
-                        "Ce CAC est déjà exo.");
-         	   return false;
-         	   }
-            }
-     	   // Ajout de l'exo PM
-            String statsStr = obj.parseFMStatsString(statsObjectFmPm, obj, statsAdd, negative)
-                   + ","
-                   + statsObjectFmPm
-                   + "#"
-                   + Integer.toHexString(statsAdd)
-                   + "#0#0#0d0+"
-                   + statsAdd;
-            obj.clearStats();
-            obj.refreshStatsObjet(statsStr);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_ARME);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !" , "009900");
-            
-     	   return true;
-        }
-		return false;
+      	   
+		final GameObject obj = player.getObjetByPos(emplacementID);
+		if (obj == null) {
+			player.sendErrorMessage("Action impossible : vous ne portez pas de "+split[1]+".");
+		    return false;
+		}
+		// Pour éviter d'avoir des items 2Pa/2Pm
+		if(viewActualStatsItem(obj, statsToAdd) == 1) {
+			player.sendErrorMessage("Cette "+split[1]+" possède déjà 1 "+split[2].toUpperCase()+", action impossible.");
+		    return false;
+		}
+		// Pour éviter l'ajout de PA + PM sur un item qui n'en possède aucun de base         
+		if(viewActualStatsItem(obj, statsToCheck) == 1 && viewBaseStatsItem(obj, statsToCheck) == 0) {
+			player.sendErrorMessage("Cette "+split[1]+" est déjà exo.");
+		    return false;
+		}
+		// Ajout de l'exo
+		 
+        final byte statsAdd = 1;
+        final boolean negative = false;
+		
+		final String statsStr = obj.parseFMStatsString(statsToAdd, obj, statsAdd, negative)
+		       + ","
+		       + statsToAdd
+		       + "#"
+		       + Integer.toHexString(statsAdd)
+		       + "#0#0#0d0+"
+		       + statsAdd;
+		obj.clearStats();
+		obj.refreshStatsObjet(statsStr);
+		
+		SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, obj.getGuid());
+		SocketManager.GAME_SEND_OAKO_PACKET(player, obj);
+		SocketManager.GAME_SEND_STATS_PACKET(player);
+		
+		player.sendMessage("Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !");
+		 
+		return true;
 
     }
     
@@ -2547,7 +1771,7 @@ public class ExecuteCommandPlayer {
                return false;       
 	    }
 	    
-	    final String[] split = msg.substring(0, msg.length() - 1).split(" ");
+	    final String[] split = msg.substring(0, msg.length() - 1).trim().split(" ");
 	    
 	    if(split.length < 3) {
 	    	player.sendErrorMessage("La commande doit être .boost [sagesse, force, vita, intel, chance, agi] [quantity]");
