@@ -28,24 +28,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map.Entry;
 
 public class ExecuteCommandPlayer {
 
     public final static String canal = "Général";
     
-
-//    public void apply(String packet) {  // Ajouté pour commande .level
-//    	String msg = packet.substring(2);
-//    	String[] infos = msg.split(" ");  
-    
-//    	if (infos.length == 0) return false;
-//    	String command = infos[0];
-//    }
-    
-
-    	
-
     public static boolean analyse(Player player, String msg) {
         if (msg.charAt(0) == '.' && msg.charAt(1) != '.') {
         	
@@ -1054,51 +1041,51 @@ public class ExecuteCommandPlayer {
     private static boolean doLevel(final String msg, final Player player)
     {
     	if (player.getFight() != null) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : vous ne devez pas être en combat.");
+    		player.sendErrorMessage("Action impossible : vous ne devez pas être en combat.");
             return false;       
 	    }
-		 String answer;
-		 try {
-		 	answer = msg.substring(7, msg.length() - 1);
-		     int count = 0;
-				count = Integer.parseInt(answer);						
-				if(count == player.getLevel())
-		     {
-		     	SocketManager.GAME_SEND_MESSAGE(player, 
-		     			"Le level demandé est identique à votre level actuel.");
-		     	return false;
-		     }
-				if(count < player.getLevel())
-		     {
-		     	SocketManager.GAME_SEND_MESSAGE(player, 
-		     			"Vous ne pouvez pas vous donner un niveau inférieur à votre niveau actuel.");
-		     	return false;
-		     }					
-		     if (count < 1)
-		         count = 1;
-		     if (count > World.world.getExpLevelSize())
-		         count = World.world.getExpLevelSize();
-		         Player perso = player;
-		     if (perso.getLevel() < count) {
-		         while (perso.getLevel() < count)
-		             perso.levelUp(false, true);
-		         if (perso.isOnline()) {
-		             SocketManager.GAME_SEND_SPELL_LIST(perso);
-		             SocketManager.GAME_SEND_NEW_LVL_PACKET(perso.getGameClient(), perso.getLevel());
-		             SocketManager.GAME_SEND_STATS_PACKET(perso);
-		         }
-		     }
-		     String mess = "Vous avez fixé le niveau de <b>" + perso.getName()
-		             + "</b> à <b>" + count + "</b>.";
-		     SocketManager.GAME_SEND_MESSAGE(player, mess, "009900");
-		     
-		 } catch (Exception e) {
-		     // ok
-		 	SocketManager.GAME_SEND_MESSAGE(player, "Valeur incorrecte.");
-		     return false;
-		 }
-		 return true;
+    	
+    	if(player.getLevel() == World.world.getExpLevelSize()) {
+    		player.sendErrorMessage("Vous êtes déjà au level maximum.");
+    		return false;
+    	}
+    	
+    	final String[] split = msg.substring(0, msg.length() - 1).trim().split(" ");
+    	
+    	if(split.length < 2)
+    	{
+    		player.sendErrorMessage("La commande doit être : .[commandeName] [level]");
+    		return false;
+    	}
+    	
+    	int level = -1;
+    	
+    	try {
+    		level = Integer.parseInt(split[1]);
+    	}catch (NumberFormatException e) {
+    		player.sendErrorMessage("Le level doit être un nombre.");
+    		return false;
+		}
+    	
+    	if(level <= player.getLevel()) {
+    		player.sendErrorMessage("Le level données doit être supérieur au votre.");
+    		return false;
+    	}
+    	
+    	final int maxLevel = World.world.getExpLevelSize();
+    	level = level > maxLevel ? maxLevel : level;
+    	
+    		    
+    	while(player.getLevel() < level)
+    		player.levelUp(false, true);
+    	
+    	if(player.isOnline()) {
+    		SocketManager.GAME_SEND_SPELL_LIST(player);
+            SocketManager.GAME_SEND_NEW_LVL_PACKET(player.getGameClient(), player.getLevel());
+            SocketManager.GAME_SEND_STATS_PACKET(player);
+    	}
+		
+    	return true;
     }
     
     private static boolean doDemon(final String msg, final Player player)
@@ -1366,7 +1353,7 @@ public class ExecuteCommandPlayer {
 	    	return false;
 	    }
 	    
-	    player.boostStatFixedCount(10, statID);
+	    player.boostStatFixedCount(statID, value);
         player.sendInformationMessage("Vous avez boost " + value + " point de capitaux en " + type + ".");
         
         return true;
