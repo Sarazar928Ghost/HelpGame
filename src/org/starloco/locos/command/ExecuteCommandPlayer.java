@@ -7,7 +7,6 @@ import org.starloco.locos.client.Player;
 import org.starloco.locos.client.Prestige;
 import org.starloco.locos.client.other.Maitre;
 import org.starloco.locos.client.other.Party;
-import org.starloco.locos.client.other.Stats;
 import org.starloco.locos.common.ConditionParser;
 import org.starloco.locos.common.PathFinding;
 import org.starloco.locos.common.SocketManager;
@@ -919,496 +918,103 @@ public class ExecuteCommandPlayer {
         return false;
     }
     
+    private static boolean jetMaxAItem(final Player player, final String emplacementName, final byte emplacmentID, final boolean sendMessage) {
+    	final GameObject obj = player.getObjetByPos(emplacmentID);
+        if (obj == null) {
+        	if(sendMessage) player.sendErrorMessage("Action impossible : vous ne portez pas de "+emplacementName+".");
+            return false;
+        }
+        obj.setStats(obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true));
+        SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, obj.getGuid());
+        SocketManager.GAME_SEND_OAKO_PACKET(player, obj);
+        SocketManager.GAME_SEND_STATS_PACKET(player);
+
+        if(sendMessage) player.sendMessage("Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !");
+        
+        return true;
+    }
+    
     private static boolean doJetMax(final String msg, final Player player)
     {
     	if (player.getFight() != null) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : vous ne devez pas être en combat.");
+    		player.sendErrorMessage("Action impossible : vous ne devez pas être en combat.");
             return false;
         } 
-        String answer;
-        try {
-        answer = msg.substring(8, msg.length() - 1); // 5 = nbr carac après ".jetmax " (avec espace) 
-        } catch (Exception e) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : vous n'avez pas spécifié l'item à améliorer.");
-            return false;
-        }
-        
-        
-        if (!answer.equalsIgnoreCase("coiffe") && !answer.equalsIgnoreCase(
-                "cape") && !answer.equalsIgnoreCase(
-                        "ceinture") && !answer.equalsIgnoreCase(
-                                "bottes") && !answer.equalsIgnoreCase(
-                                        "amulette") && !answer.equalsIgnoreCase(
-                                                "anneauG") && !answer.equalsIgnoreCase(
-                                                        "anneauD") && !answer.equalsIgnoreCase(
-                                                                "cac") && !answer.equalsIgnoreCase(
-                                                                        "familier") && !answer.equalsIgnoreCase(
- 	                                                                           "dofus") && !answer.equalsIgnoreCase(
- 	    	                                                                           "bouclier") && !answer.equalsIgnoreCase(
- 	    	    	                                                                           "all")) {
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Action impossible : l'option " + answer + " est incomplète ou incorrecte. "
-                    		+ "(Disponible : all, coiffe, cape, ceinture,"
-                    		+ " bottes, amulette, anneauG, anneauD, "
-                    		+ "cac, familier, dofus, bouclier.)");
-            return false;
-        }           
-        // Cas d'une coiffe
-        if (answer.equalsIgnoreCase("coiffe")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_COIFFE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de coiffe.");
-                return false;
-            }
-            Stats maxStats = obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true);
-            obj.setStats(maxStats);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_COIFFE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-        }
-        // Cas d'une cape
-        if (answer.equalsIgnoreCase("cape")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_CAPE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de cape.");
-                return false;
-            }
-            Stats maxStats = obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true);
-            obj.setStats(maxStats);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_CAPE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-        }          
-     // Cas de bottes
-        if (answer.equalsIgnoreCase("bottes")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_BOTTES);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de bottes.");
-                return false;
-            }
-            Stats maxStats = obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true);
-            obj.setStats(maxStats);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_BOTTES);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-        }
-     // Cas ceinture
-        if (answer.equalsIgnoreCase("ceinture")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_CEINTURE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de ceinture.");
-                return false;
-            }
-            Stats maxStats = obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true);
-            obj.setStats(maxStats);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_CEINTURE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-        }
-     // Cas amulette
-        if (answer.equalsIgnoreCase("amulette")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_AMULETTE);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas d'amulette.");
-                return false;
-            }
-            Stats maxStats = obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true);
-            obj.setStats(maxStats);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_AMULETTE);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-        }
-        // Cas anneau gauche
-        if (answer.equalsIgnoreCase("anneauG")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ANNEAU1);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas d'anneau gauche.");
-                return false;
-            }
-            Stats maxStats = obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true);
-            obj.setStats(maxStats);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_ANNEAU1);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-        }
-     // Cas anneau droit
-        if (answer.equalsIgnoreCase("anneauD")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ANNEAU2);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas d'anneau droit.");
-                return false;
-            }
-            Stats maxStats = obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true);
-            obj.setStats(maxStats);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_ANNEAU2);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-        }
-     // Cas du cac
-        if (answer.equalsIgnoreCase("cac")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_ARME);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de CAC.");
-                return false;
-            }
-            Stats maxStats = obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true);
-            obj.setStats(maxStats);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_ARME);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-        }
-         // Cas du familier
-        if (answer.equalsIgnoreCase("familier")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_FAMILIER);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de familier.");
-                return false;
-            }
-            Stats maxStats = obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true);
-            obj.setStats(maxStats);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_FAMILIER);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-        } 
-         // Cas du bouclier
-        if (answer.equalsIgnoreCase("bouclier")) {
-     	   
-     	   GameObject obj = player.getObjetByPos(Constant.ITEM_POS_BOUCLIER);
-            if (obj == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : vous ne portez pas de bouclier.");
-                return false;
-            }
-            Stats maxStats = obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true);
-            obj.setStats(maxStats);
-            // Pour éviter de déco-reco :
-            GameObject itemPos = player.getObjetByPos(Constant.ITEM_POS_BOUCLIER);
-            int idObjPos = itemPos.getGuid();
-            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos);
-            SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-        
-		   }
-     // Cas des dofus
-        if (answer.equalsIgnoreCase("dofus")) {
-     	   
-     	   GameObject obj1 = player.getObjetByPos(Constant.ITEM_POS_DOFUS1);
-     	   GameObject obj2 = player.getObjetByPos(Constant.ITEM_POS_DOFUS2);
-     	   GameObject obj3 = player.getObjetByPos(Constant.ITEM_POS_DOFUS3);
-     	   GameObject obj4 = player.getObjetByPos(Constant.ITEM_POS_DOFUS4);
-     	   GameObject obj5 = player.getObjetByPos(Constant.ITEM_POS_DOFUS5);
-     	   GameObject obj6 = player.getObjetByPos(Constant.ITEM_POS_DOFUS6);
-            if (obj1 == null && obj2 == null && obj3 == null && obj4 == null && obj5 == null && obj6 == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : il faut porter au moins un dofus.");
-                return false;
-            }
-            // Dofus 1
-            if(obj1 != null) {
-                Stats maxStats1 = obj1.generateNewStatsFromTemplate(obj1.getTemplate().getStrTemplate(), true);
-                obj1.setStats(maxStats1);
-                // Pour éviter de déco-reco :
-                GameObject itemPos1 = player.getObjetByPos(Constant.ITEM_POS_DOFUS1);
-                int idObjPos1 = itemPos1.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos1);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos1);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Dofus 2
-            if(obj2 != null) {
-                Stats maxStats2 = obj2.generateNewStatsFromTemplate(obj2.getTemplate().getStrTemplate(), true);
-                obj2.setStats(maxStats2);
-                // Pour éviter de déco-reco :
-                GameObject itemPos2 = player.getObjetByPos(Constant.ITEM_POS_DOFUS2);
-                int idObjPos2 = itemPos2.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos2);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos2);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Dofus 3
-            if(obj3 != null) {
-                Stats maxStats3 = obj3.generateNewStatsFromTemplate(obj3.getTemplate().getStrTemplate(), true);
-                obj3.setStats(maxStats3);
-                // Pour éviter de déco-reco :
-                GameObject itemPos2 = player.getObjetByPos(Constant.ITEM_POS_DOFUS3);
-                int idObjPos2 = itemPos2.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos2);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos2);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Dofus 4
-            if(obj4 != null) {
-                Stats maxStats4 = obj4.generateNewStatsFromTemplate(obj4.getTemplate().getStrTemplate(), true);
-                obj4.setStats(maxStats4);
-                // Pour éviter de déco-reco :
-                GameObject itemPos4 = player.getObjetByPos(Constant.ITEM_POS_DOFUS4);
-                int idObjPos4 = itemPos4.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos4);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos4);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Dofus 5
-            if(obj5 != null) {
-                Stats maxStats5 = obj5.generateNewStatsFromTemplate(obj5.getTemplate().getStrTemplate(), true);
-                obj5.setStats(maxStats5);
-                // Pour éviter de déco-reco :
-                GameObject itemPos5 = player.getObjetByPos(Constant.ITEM_POS_DOFUS5);
-                int idObjPos5 = itemPos5.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos5);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos5);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Dofus 6
-            if(obj6 != null) {
-                Stats maxStats6 = obj6.generateNewStatsFromTemplate(obj6.getTemplate().getStrTemplate(), true);
-                obj6.setStats(maxStats6);
-                // Pour éviter de déco-reco :
-                GameObject itemPos6 = player.getObjetByPos(Constant.ITEM_POS_DOFUS6);
-                int idObjPos6 = itemPos6.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos6);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos6);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Tous vos <b>dofus</b> ont été modifiés avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-        
-		   }
-     // Cas des dofus
-        if (answer.equalsIgnoreCase("all")) {
-     	   
-     	   GameObject obj1 = player.getObjetByPos(Constant.ITEM_POS_COIFFE);
-     	   GameObject obj2 = player.getObjetByPos(Constant.ITEM_POS_CAPE);
-     	   GameObject obj3 = player.getObjetByPos(Constant.ITEM_POS_FAMILIER);
-     	   GameObject obj4 = player.getObjetByPos(Constant.ITEM_POS_AMULETTE);
-     	   GameObject obj5 = player.getObjetByPos(Constant.ITEM_POS_CEINTURE);
-     	   GameObject obj6 = player.getObjetByPos(Constant.ITEM_POS_ANNEAU1);
-     	   GameObject obj7 = player.getObjetByPos(Constant.ITEM_POS_ANNEAU2);
-     	   GameObject obj8 = player.getObjetByPos(Constant.ITEM_POS_BOTTES);
-     	   GameObject obj9 = player.getObjetByPos(Constant.ITEM_POS_ARME);
-     	   GameObject obj10 = player.getObjetByPos(Constant.ITEM_POS_BOUCLIER);
-            if (obj1 == null && obj2 == null && obj3 == null && obj4 == null && obj5 == null && obj6 == null && obj7 == null && obj8 == null && obj9 == null && obj10 == null) {
-                SocketManager.GAME_SEND_MESSAGE(player,
-                        "Action impossible : il faut porter au moins un item qui ne soit pas un dofus.");
-                return false;
-            }
-            
-            // Coiffe
-            if(obj1 != null ) {
-                Stats maxStats1 = obj1.generateNewStatsFromTemplate(obj1.getTemplate().getStrTemplate(), true);
-                obj1.setStats(maxStats1);
-                // Pour éviter de déco-reco :
-                GameObject itemPos1 = player.getObjetByPos(Constant.ITEM_POS_COIFFE);
-                int idObjPos1 = itemPos1.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos1);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos1);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Cape
-            if(obj2 != null ) {
-                Stats maxStats2 = obj2.generateNewStatsFromTemplate(obj2.getTemplate().getStrTemplate(), true);
-                obj2.setStats(maxStats2);
-                // Pour éviter de déco-reco :
-                GameObject itemPos2 = player.getObjetByPos(Constant.ITEM_POS_CAPE);
-                int idObjPos2 = itemPos2.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos2);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos2);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Familier
-            if(obj3 != null ) {
-                Stats maxStats3 = obj3.generateNewStatsFromTemplate(obj3.getTemplate().getStrTemplate(), true);
-                obj3.setStats(maxStats3);
-                // Pour éviter de déco-reco :
-                GameObject itemPos3 = player.getObjetByPos(Constant.ITEM_POS_FAMILIER);
-                int idObjPos3 = itemPos3.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos3);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos3);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Amulette
-            if(obj4 != null ) {
-                Stats maxStats4 = obj4.generateNewStatsFromTemplate(obj4.getTemplate().getStrTemplate(), true);
-                obj4.setStats(maxStats4);
-                // Pour éviter de déco-reco :
-                GameObject itemPos4 = player.getObjetByPos(Constant.ITEM_POS_AMULETTE);
-                int idObjPos4 = itemPos4.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos4);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos4);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Ceinture
-            if(obj5 != null ) {
-                Stats maxStats5 = obj5.generateNewStatsFromTemplate(obj5.getTemplate().getStrTemplate(), true);
-                obj5.setStats(maxStats5);
-                // Pour éviter de déco-reco :
-                GameObject itemPos5 = player.getObjetByPos(Constant.ITEM_POS_CEINTURE);
-                int idObjPos5 = itemPos5.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos5);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos5);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Anneau 1
-            if(obj6 != null ) {
-                Stats maxStats6 = obj6.generateNewStatsFromTemplate(obj6.getTemplate().getStrTemplate(), true);
-                obj6.setStats(maxStats6);
-                // Pour éviter de déco-reco :
-                GameObject itemPos6 = player.getObjetByPos(Constant.ITEM_POS_ANNEAU1);
-                int idObjPos6 = itemPos6.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos6);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos6);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Anneau 2
-            if(obj7 != null ) {
-                Stats maxStats7 = obj7.generateNewStatsFromTemplate(obj7.getTemplate().getStrTemplate(), true);
-                obj7.setStats(maxStats7);
-                GameObject itemPos7 = player.getObjetByPos(Constant.ITEM_POS_ANNEAU2);
-                int idObjPos7 = itemPos7.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos7);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos7);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Bottes
-            if(obj8 != null ) {
-                Stats maxStats8 = obj8.generateNewStatsFromTemplate(obj8.getTemplate().getStrTemplate(), true);
-                obj8.setStats(maxStats8);
-                // Pour éviter de déco-reco :
-                GameObject itemPos8 = player.getObjetByPos(Constant.ITEM_POS_BOTTES);
-                int idObjPos8 = itemPos8.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos8);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos8);
-            SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Arme
-            if(obj9 != null ) {
-                Stats maxStats9 = obj9.generateNewStatsFromTemplate(obj9.getTemplate().getStrTemplate(), true);
-                obj9.setStats(maxStats9);
-                GameObject itemPos9 = player.getObjetByPos(Constant.ITEM_POS_ARME);
-                int idObjPos9 = itemPos9.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos9);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos9);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            // Bouclier
-            if(obj10 != null ) {
-                Stats maxStats10 = obj10.generateNewStatsFromTemplate(obj10.getTemplate().getStrTemplate(), true);
-                obj10.setStats(maxStats10);
-                GameObject itemPos10 = player.getObjetByPos(Constant.ITEM_POS_BOUCLIER);
-                int idObjPos10 = itemPos10.getGuid();
-                SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, idObjPos10);
-                SocketManager.GAME_SEND_OAKO_PACKET(player, itemPos10);
-                SocketManager.GAME_SEND_STATS_PACKET(player);
-            }
-            
-
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Tous vos <b>items</b> (à l'exception des dofus) ont été modifiés avec les caractéristiques maximales !" , "009900");
-            
-            return true;
-	       }
-		return false;
+    	
+    	final String[] split = msg.substring(0, msg.length() - 1).trim().split(" ");
+    	
+    	if(split.length < 2) {
+    		player.sendErrorMessage("La commande doit être : .[commandeName] [coiffe, cape, ceinture, bottes, amulette, anneauG, anneauD, cac, familier, dofus, bouclier, all]");
+    		return false;
+    	}
+    	
+    	final String[] emplacements = new String[] {
+	    		"coiffe", 
+	    		"cape", 
+	    		"ceinture", 
+	    		"bottes",
+	    		"amulette", 
+	    		"anneauG",
+	    		"anneauD",
+	    		"cac",
+	    		"familier",
+	    		"bouclier",
+	    		"dofus",
+	    		"all"
+	    };
+    	final byte[] emplacementsID = new byte[] {
+	    		Constant.ITEM_POS_COIFFE,
+	    		Constant.ITEM_POS_CAPE, 
+	    		Constant.ITEM_POS_CEINTURE, 
+	    		Constant.ITEM_POS_BOTTES,
+	    		Constant.ITEM_POS_AMULETTE, 
+	    		Constant.ITEM_POS_ANNEAU1,
+	    		Constant.ITEM_POS_ANNEAU2,
+	    		Constant.ITEM_POS_ARME,
+	    		Constant.ITEM_POS_FAMILIER,
+	    		Constant.ITEM_POS_BOUCLIER,
+	    		-2,
+	    		-3
+	    };
+    	
+    	byte emplacementID = -1;
+    	
+    	for(byte i = 0; i < emplacements.length; ++i) {
+    		if(!emplacements[i].equalsIgnoreCase(split[1])) continue;
+    		emplacementID = emplacementsID[i];
+    		break;
+    	}
+    	
+    	if(emplacementID == -1) {
+    		player.sendErrorMessage("Seul ces objets peuvent être indiqué : [coiffe, cape, ceinture, bottes, amulette, anneauG, anneauD, cac, familier, dofus, bouclier, all]");
+    		return false;
+    	}
+    	
+    	if(emplacementID > 0)
+    		return jetMaxAItem(player, split[1], emplacementID, true);
+    	
+    	final byte[] dofusEmplacements = new byte[] {
+    			Constant.ITEM_POS_DOFUS1,
+    			Constant.ITEM_POS_DOFUS2,
+    			Constant.ITEM_POS_DOFUS3,
+    			Constant.ITEM_POS_DOFUS4,
+    			Constant.ITEM_POS_DOFUS5,
+    			Constant.ITEM_POS_DOFUS6
+	    };
+    	
+		for(byte i = 0; i < dofusEmplacements.length; ++i)
+			jetMaxAItem(player, split[1], dofusEmplacements[i], false);
+		
+    	if(emplacementID != -3) {
+    		player.sendMessage("Toutes les dofus équipé ont été modifié avec les caractéristiques maximales !");
+    		return true; 
+    	}
+    	
+		for(byte i = 0; i < emplacementsID.length - 2; ++i)
+			jetMaxAItem(player, split[1], emplacementsID[i], false);
+    	
+		player.sendMessage("Tout les items équipé ont été modifié avec les caractéristiques maximales !");
+		return true;
     }
     
     private static boolean doVie(final String msg, final Player player)
