@@ -932,47 +932,31 @@ public class ExecuteCommandPlayer {
     
     private static boolean doVie(final String msg, final Player player)
     {
-    	if(player.getFight() != null) return false;
-    	int count = 100;
-		Player perso = player;
-		int recupPDV = perso.getMaxPdv() - perso.getCurPdv();
-		int newPDV = (perso.getMaxPdv() * count) / 100;
-		perso.setPdv(newPDV);
-		if(perso.isOnline())
-		{
-		SocketManager.GAME_SEND_STATS_PACKET(perso);
-		}
-		SocketManager.GAME_SEND_MESSAGE(player, "Vous avez récupéré <b>" + recupPDV + "</b> points de vie." , "009900");
+    	if(player.getFight() != null) {
+    		player.sendErrorMessage("Commande inutilisable en combat.");
+    		return false;
+    	}
+		player.setPdv(player.getMaxPdv());
+		SocketManager.GAME_SEND_STATS_PACKET(player);
+		player.sendMessage("Vous avez récupéré tout vos points de vies.");
 		return true;
     }
     
     private static boolean doIpDrop(final String msg, final Player player)
     {
-    	if(player.ipDrop)
-        {
-          player.ipDrop=false;
-          SocketManager.GAME_SEND_MESSAGE(player,"Les drops associés à votre adresse IP ne vous seront plus attribués.", "009900");
-        }
-        else
-        {
-          player.ipDrop=true;
-          SocketManager.GAME_SEND_MESSAGE(player,"Tous les drops associés à votre adresse IP vous seront attribués.", "009900");
-        }
+    	if(player.getFight() != null) {
+    		player.sendErrorMessage("Commande inutilisable en combat.");
+    		return false;
+    	}
+    	player.ipDrop = !player.ipDrop;
+    	player.sendMessage("Les drops associés à votre adresse IP " + (player.ipDrop ? "vous seront attribués." : "ne vous seront plus attribués."));
     	return true;
     }
     
     private static boolean doPass(final String msg, final Player player)
     {
-    	if(player.getAutoSkip()==false)
-        {
-          player.setAutoSkip(true);
-          SocketManager.GAME_SEND_MESSAGE(player,"Vous tours seront passés automatiquement en combat.", "009900");
-        }
-        else
-        {
-          player.setAutoSkip(false);
-          SocketManager.GAME_SEND_MESSAGE(player,"Vous tours ne seront plus passés automatiquement en combat.", "009900");
-        }
+    	player.setAutoSkip(!player.getAutoSkip());
+    	player.sendMessage((player.getAutoSkip() ? "Vos tours seront" : "Vos tours ne seront plus") + " passés automatiquement en combat.");
     	return true;
     }
     
@@ -1204,7 +1188,7 @@ public class ExecuteCommandPlayer {
                 continue;
             final String[] infos = effect.getArgs().split(";");
                                	   
-     	    final int coef = 85;
+     	    final byte coef = 85;
      	    final int min = Integer.parseInt(infos[0], 16);
      	    final int max = Integer.parseInt(infos[1], 16);
      	    int newMin = (min * coef) / 100;

@@ -1,8 +1,6 @@
 package org.starloco.locos.game;
 
-import org.starloco.locos.common.CryptManager;
 import org.starloco.locos.game.world.World;
-import org.starloco.locos.kernel.Config;
 import org.starloco.locos.kernel.Main;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
@@ -11,20 +9,21 @@ import org.apache.mina.core.session.IoSession;
 public class GameHandler implements IoHandler {
 
     @Override
-    public void sessionCreated(IoSession arg0) throws Exception {
-        World.world.logger.info("Session " + arg0.getId() + " created");
-        arg0.setAttachment(new GameClient(arg0));
+    public void sessionCreated(IoSession ioSession) throws Exception {
+        World.world.logger.info("Session " + ioSession.getId() + " created");
+        
+        ioSession.setAttribute("client", new GameClient(ioSession));
         Main.refreshTitle();
     }
 
     @Override
-    public void messageReceived(IoSession arg0, Object arg1) throws Exception {
-        GameClient client = (GameClient) arg0.getAttachment();
-        String packet = (String) arg1;
+    public void messageReceived(IoSession ioSession, Object response) throws Exception {
+        GameClient client = (GameClient) ioSession.getAttribute("client");
+        String packet = (String) response;
 
         String[] s = packet.split("\n");
 
-        Integer i = new Integer(0);
+        int i = 0;
         do {
             client.parsePacket(s[i]);
             if (Main.modDebug)
@@ -35,27 +34,24 @@ public class GameHandler implements IoHandler {
 
 
     @Override
-    public void sessionClosed(IoSession arg0) throws Exception {
-        GameClient client = (GameClient) arg0.getAttachment();
+    public void sessionClosed(IoSession ioSession) throws Exception {
+        GameClient client = (GameClient) ioSession.getAttribute("client");
         if(client != null)
             client.disconnect();
-        World.world.logger.info("Session " + arg0.getId() + " closed");
+        World.world.logger.info("Session " + ioSession.getId() + " closed");
     }
 
     @Override
-    public void exceptionCaught(IoSession arg0, Throwable arg1) throws Exception {
-        if(arg1 instanceof org.apache.mina.filter.codec.RecoverableProtocolDecoderException) {
-
-        }
+    public void exceptionCaught(IoSession ioSession, Throwable arg1) throws Exception {
         arg1.printStackTrace();
         if (Main.modDebug)
             World.world.logger.error("Exception connexion client : " + arg1.getMessage());
-        this.kick(arg0);
+        this.kick(ioSession);
     }
 
     @Override
-    public void messageSent(IoSession arg0, Object arg1) throws Exception {
-        GameClient client = (GameClient) arg0.getAttachment();
+    public void messageSent(IoSession ioSession, Object arg1) throws Exception {
+        GameClient client = (GameClient) ioSession.getAttribute("client");
 
         if (client != null) {
             if (Main.modDebug) {
@@ -72,20 +68,20 @@ public class GameHandler implements IoHandler {
     }
 
     @Override
-    public void sessionIdle(IoSession arg0, IdleStatus arg1) throws Exception {
-        World.world.logger.info("Session " + arg0.getId() + " idle");
+    public void sessionIdle(IoSession ioSession, IdleStatus arg1) throws Exception {
+        World.world.logger.info("Session " + ioSession.getId() + " idle");
 }
 
     @Override
-    public void sessionOpened(IoSession arg0) throws Exception {
-        World.world.logger.info("Session " + arg0.getId() + " opened");
+    public void sessionOpened(IoSession ioSession) throws Exception {
+        World.world.logger.info("Session " + ioSession.getId() + " opened");
     }
 
-    private void kick(IoSession arg0) {
-        GameClient client = (GameClient) arg0.getAttachment();
+    private void kick(IoSession ioSession) {
+        GameClient client = (GameClient) ioSession.getAttribute("client");
         if (client != null) {
             client.kick();
-            arg0.setAttachment(null);
+            ioSession.setAttribute("client", null);
         }
         Main.refreshTitle();
     }

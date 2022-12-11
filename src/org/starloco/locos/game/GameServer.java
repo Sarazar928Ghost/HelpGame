@@ -3,8 +3,6 @@ package org.starloco.locos.game;
 import org.apache.mina.core.session.IdleStatus;
 import org.starloco.locos.client.Account;
 import org.starloco.locos.client.Player;
-import org.starloco.locos.common.SocketManager;
-import org.starloco.locos.database.Database;
 import org.starloco.locos.game.world.World;
 import org.starloco.locos.kernel.Main;
 import org.apache.mina.core.service.IoAcceptor;
@@ -62,7 +60,7 @@ public class GameServer {
     }
 
     public ArrayList<GameClient> getClients() {
-        return acceptor.getManagedSessions().values().stream().filter(session -> session.getAttachment() != null).map(session -> (GameClient) session.getAttachment()).collect(Collectors.toCollection(ArrayList::new));
+        return acceptor.getManagedSessions().values().stream().filter(session -> session.getAttribute("client") != null).map(session -> (GameClient) session.getAttribute("client")).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public int getPlayersNumberByIp() {
