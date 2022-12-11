@@ -808,6 +808,11 @@ public class ExecuteCommandPlayer {
     		break;
     	}
     	
+    	if(emplacementID == -1) {
+    		player.sendErrorMessage("Seul ces objets peuvent être exo : [coiffe, cape, ceinture, bottes, amulette, anneauG, anneauD, cac]");
+    		return false;
+    	}
+    	
     	if(!split[2].equalsIgnoreCase("pa") && !split[2].equalsIgnoreCase("pm")) {
     		player.sendErrorMessage("Le exo doit soit être pa ou pm et rien d'autres.");
     		return false;
