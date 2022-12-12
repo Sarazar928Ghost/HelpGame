@@ -39,7 +39,6 @@ import org.starloco.locos.other.Guild;
 import org.starloco.locos.quest.Quest;
 import org.starloco.locos.client.other.Party;
 import org.starloco.locos.util.TimerWaiter;
-import org.starloco.locos.utility.Pair;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -4078,7 +4077,6 @@ public class Fight {
                 type = 1;
             if (this.getType() == Constant.FIGHT_TYPE_PVT)
                 type = Constant.FIGHT_TYPE_CHALLENGE;
-            ArrayList<Pair<Integer, Integer>> stakeItems=null;
             long stakeKamas=0;
 
             final StringBuilder packet = new StringBuilder();
@@ -5162,15 +5160,6 @@ public class Fight {
                         continue;
 
                       String drops="";
-                      if(stakeItems!=null&&!stakeItems.isEmpty())
-                      {
-                        for(Pair<Integer, Integer> drop : stakeItems)
-                        {
-                          if(!drops.isEmpty())
-                            drops+=",";
-                          drops+=World.world.getGameObject(drop.getLeft()).getTemplate().getId()+"~"+drop.getRight();
-                        }
-                      }
 
                       StringBuilder p=new StringBuilder();
                       p.append("2;");

@@ -33,6 +33,53 @@ public class ExecuteCommandPlayer {
 
     public final static String canal = "Général";
     
+    private static final String[] emplacements = new String[] {
+    		
+    		// Pour jetMax et exo
+    		"coiffe", 
+    		"cape", 
+    		"ceinture", 
+    		"bottes",
+    		"amulette", 
+    		"anneauG",
+    		"anneauD",
+    		"cac",
+    		
+    		// Pour jetMax
+    		"familier",
+    		"bouclier",
+    		"dofus",
+    		"all"
+    };
+	private static final byte[] emplacementsID = new byte[] {
+			
+			// Pour jetMax et exo
+    		Constant.ITEM_POS_COIFFE,
+    		Constant.ITEM_POS_CAPE, 
+    		Constant.ITEM_POS_CEINTURE, 
+    		Constant.ITEM_POS_BOTTES,
+    		Constant.ITEM_POS_AMULETTE, 
+    		Constant.ITEM_POS_ANNEAU1,
+    		Constant.ITEM_POS_ANNEAU2,
+    		Constant.ITEM_POS_ARME,
+    		
+    		// Pour jetMax
+    		Constant.ITEM_POS_FAMILIER,
+    		Constant.ITEM_POS_BOUCLIER,
+    		-2,
+    		-3
+    };
+	
+	// Pour jetMax
+	private static final byte[] dofusEmplacements = new byte[] {
+			Constant.ITEM_POS_DOFUS1,
+			Constant.ITEM_POS_DOFUS2,
+			Constant.ITEM_POS_DOFUS3,
+			Constant.ITEM_POS_DOFUS4,
+			Constant.ITEM_POS_DOFUS5,
+			Constant.ITEM_POS_DOFUS6
+    };
+    
     public static boolean analyse(Player player, String msg) {
         if (msg.charAt(0) == '.' && msg.charAt(1) != '.') {
         	
@@ -91,7 +138,7 @@ public class ExecuteCommandPlayer {
 	        		removePoint = doTransfer(msg, player);
 	        		break;
 	        	case 6:
-	        		removePoint = doOnBoard(msg, player);
+	        		removePoint = doGiveItem(args, player);
 	        		break;
 	        	case 7:
 	        		doPrestige(msg, player);
@@ -671,30 +718,10 @@ public class ExecuteCommandPlayer {
     		return false;
     	}
     	
-    	final String[] emplacements = new String[] {
-	    		"coiffe", 
-	    		"cape", 
-	    		"ceinture", 
-	    		"bottes",
-	    		"amulette", 
-	    		"anneauG",
-	    		"anneauD",
-	    		"cac"
-	    };
-    	final byte[] emplacementsID = new byte[] {
-	    		Constant.ITEM_POS_COIFFE,
-	    		Constant.ITEM_POS_CAPE, 
-	    		Constant.ITEM_POS_CEINTURE, 
-	    		Constant.ITEM_POS_BOTTES,
-	    		Constant.ITEM_POS_AMULETTE, 
-	    		Constant.ITEM_POS_ANNEAU1,
-	    		Constant.ITEM_POS_ANNEAU2,
-	    		Constant.ITEM_POS_ARME
-	    };
-    	
     	byte emplacementID = -1;
     	
-    	for(byte i = 0; i < emplacements.length; ++i) {
+    	// 8 correspond aux 8 premiers elements du tableau emplacements
+    	for(byte i = 0; i < 8; ++i) {
     		if(!emplacements[i].equalsIgnoreCase(split[1])) continue;
     		emplacementID = emplacementsID[i];
     		break;
@@ -781,16 +808,6 @@ public class ExecuteCommandPlayer {
             SocketManager.GAME_SEND_MESSAGE(player, "Cette commande est disponible toutes les 5 secondes.");
             return false;
         }
-        /*
-        if (player.getCurMap().haveMobFix()) {
-            SocketManager.GAME_SEND_MESSAGE(player, "Vous ne pouvez pas utiliser cette commande en donjon.");
-            return true;
-        }
-        if (player.isInDungeon()) {
-            SocketManager.GAME_SEND_MESSAGE(player, "Vous ne pouvez pas utiliser cette commande en donjon.");
-            return true;
-        }
-        */
         if (player.getFight() != null){
             SocketManager.GAME_SEND_MESSAGE(player, "Vous ne pouvez pas utiliser cette commande en combat.");
             return false;
@@ -800,35 +817,33 @@ public class ExecuteCommandPlayer {
             return false;
         }
 	    if(player.get_maitre() != null){
-	    player.getGameClient().timeLastTP = System.currentTimeMillis();
-		player.get_maitre().teleportAllEsclaves();
-		SocketManager.GAME_SEND_MESSAGE(player, "Vous avez téléporté <b>"+player.get_maitre().getEsclaves().size()+"</b> joueurs." , "009900");
-		return true;
+		    player.getGameClient().timeLastTP = System.currentTimeMillis();
+			player.get_maitre().teleportAllEsclaves();
+			SocketManager.GAME_SEND_MESSAGE(player, "Vous avez téléporté <b>"+player.get_maitre().getEsclaves().size()+"</b> joueurs." , "009900");
+			return true;
 		}
 	    else
-		SocketManager.GAME_SEND_MESSAGE(player, "Aucun joueur n'a été trouvé pour la téléportation.");
+	    	SocketManager.GAME_SEND_MESSAGE(player, "Aucun joueur n'a été trouvé pour la téléportation.");
 	    return false;
     }
     
     private static boolean doSpellMax(final String msg, final Player player)
     {
-    	int lvlMax = player.getLevel() > 99 ? (6) : (5);
+    	final byte lvlMax = player.getLevel() > 99 ? (byte)6 : (byte)5;
         boolean changed = false;
-        for (Spell.SortStats sort : player.getSorts()) {
-            if (sort.getLevel() == lvlMax) {
-                continue;
-            }
-            player.learnSpell(sort.getSpellID(), lvlMax, false,
-                    false, false);
+        for (final Spell.SortStats sort : player.getSorts()) {
+            if (sort.getLevel() == lvlMax) continue;
+            player.learnSpell(sort.getSpellID(), lvlMax, false, false, false);
             changed = true;
         }
-        if (changed) {
-            SocketManager.GAME_SEND_SPELL_LIST(player);
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    "Tous vos sorts ont été montés au niveau <b>" + lvlMax + "</b>." , "009900");
-            return true;
+        if (!changed) {
+        	player.sendMessage("Aucun sorts n'a pu être montés.");
+        	return false;
         }
-        return false;
+        
+        SocketManager.GAME_SEND_SPELL_LIST(player);
+        player.sendMessage("Tous vos sorts ont été montés au niveau <b>" + lvlMax + "</b>.");
+        return true;
     }
     
     private static boolean jetMaxAItem(final Player player, final String emplacementName, final byte emplacmentID, final boolean sendMessage) {
@@ -861,35 +876,6 @@ public class ExecuteCommandPlayer {
     		return false;
     	}
     	
-    	final String[] emplacements = new String[] {
-	    		"coiffe", 
-	    		"cape", 
-	    		"ceinture", 
-	    		"bottes",
-	    		"amulette", 
-	    		"anneauG",
-	    		"anneauD",
-	    		"cac",
-	    		"familier",
-	    		"bouclier",
-	    		"dofus",
-	    		"all"
-	    };
-    	final byte[] emplacementsID = new byte[] {
-	    		Constant.ITEM_POS_COIFFE,
-	    		Constant.ITEM_POS_CAPE, 
-	    		Constant.ITEM_POS_CEINTURE, 
-	    		Constant.ITEM_POS_BOTTES,
-	    		Constant.ITEM_POS_AMULETTE, 
-	    		Constant.ITEM_POS_ANNEAU1,
-	    		Constant.ITEM_POS_ANNEAU2,
-	    		Constant.ITEM_POS_ARME,
-	    		Constant.ITEM_POS_FAMILIER,
-	    		Constant.ITEM_POS_BOUCLIER,
-	    		-2,
-	    		-3
-	    };
-    	
     	byte emplacementID = -1;
     	
     	for(byte i = 0; i < emplacements.length; ++i) {
@@ -905,15 +891,6 @@ public class ExecuteCommandPlayer {
     	
     	if(emplacementID > 0)
     		return jetMaxAItem(player, split[1], emplacementID, true);
-    	
-    	final byte[] dofusEmplacements = new byte[] {
-    			Constant.ITEM_POS_DOFUS1,
-    			Constant.ITEM_POS_DOFUS2,
-    			Constant.ITEM_POS_DOFUS3,
-    			Constant.ITEM_POS_DOFUS4,
-    			Constant.ITEM_POS_DOFUS5,
-    			Constant.ITEM_POS_DOFUS6
-	    };
     	
 		for(byte i = 0; i < dofusEmplacements.length; ++i)
 			jetMaxAItem(player, split[1], dofusEmplacements[i], false);
@@ -960,26 +937,20 @@ public class ExecuteCommandPlayer {
     	return true;
     }
     
-    private static boolean doOnBoard(final String msg, final Player player)
-    {
-    	final int[] onboardItems= {6894,8575,7114,739,694,6980,7754,7115,8474,8472,8877,9464};
-        for(int i=0;i < onboardItems.length;i++) {
-            final ObjectTemplate t = World.world.getObjTemplate(onboardItems[i]);
-            final boolean useMax = true;
-            final GameObject obj = t.createNewItem(1, useMax);
+    private static boolean doGiveItem(final String args, final Player player) {
+    	final String[] itemsInfos = args.trim().split(";");
+    	final boolean jetMax = itemsInfos[1].equalsIgnoreCase("true");
+    	final String[] items = itemsInfos[0].trim().split(",");
+    	for(byte i = 0; i < items.length; ++i) {
+    		final ObjectTemplate t = World.world.getObjTemplate(Integer.parseInt(items[i]));
+            final GameObject obj = t.createNewItem(1, jetMax);
             
-            World.world.addGameObject(obj,true);
-            player.addObjet(obj);
-            String mesg= obj.getTemplate().getName()+" a été ajouté a votre inventaire (stats MAX)";
-            SocketManager.GAME_SEND_MESSAGE(player,
-                    mesg , "009900");
-      
-        
-        }
-        //player.sendMessage("La création du pack Onboarding est est terminée");
-        SocketManager.GAME_SEND_MESSAGE(player,
-                "La création du pack Onboarding est est terminée" , "009900");
-        return true;
+            if(player.addObjet(obj, true))
+            	World.world.addGameObject(obj, true);
+            
+            player.sendMessage(obj.getTemplate().getName()+" a été ajouté a votre inventaire"+(jetMax ? " avec les stats au maximum !" : "."));
+    	}
+    	return true;
     }
     
     private static boolean doKralaClose(final String msg, final Player player)
