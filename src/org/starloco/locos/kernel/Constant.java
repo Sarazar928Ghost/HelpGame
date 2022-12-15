@@ -3010,9 +3010,7 @@ public class Constant {
                 break;
 
             case ITEM_TYPE_DOFUS:
-                if (place == ITEM_POS_DOFUS1 || place == ITEM_POS_DOFUS2
-                        || place == ITEM_POS_DOFUS3 || place == ITEM_POS_DOFUS4
-                        || place == ITEM_POS_DOFUS5 || place == ITEM_POS_DOFUS6)
+                if (isPlaceDofus(place))
                     return true;
                 break;
 
@@ -3024,6 +3022,14 @@ public class Constant {
         }
         
         return (isAValidConsumableItem(template) && (place >= CONSO_POS_1 && place <= CONSO_POS_14));
+    }
+    
+    public static boolean isPlaceDofus(final int place) {
+    	if (place == ITEM_POS_DOFUS1 || place == ITEM_POS_DOFUS2
+                || place == ITEM_POS_DOFUS3 || place == ITEM_POS_DOFUS4
+                || place == ITEM_POS_DOFUS5 || place == ITEM_POS_DOFUS6)
+            return true;
+    	return false;
     }
 
 	/*

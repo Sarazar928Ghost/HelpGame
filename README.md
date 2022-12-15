@@ -26,6 +26,7 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 
 - Refactoring du code en masse afin de le rendre plus lisible et professionel.
 - Refonte système de parchotage et reset stats.
+- Refactoring mouvement des objects dans l'inventaire. Grosse optimisation + un nouveau système de stockage des items équipés.
 
 ## TELECHARGEMENT :
 - GameCompiled.rar contient le game compilé avec le .bat pour le lancer.

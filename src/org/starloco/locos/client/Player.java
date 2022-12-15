@@ -125,6 +125,7 @@ public class Player {
     private int duelId = -1;
     private Map<Integer, SpellEffect> buffs = new HashMap<Integer, SpellEffect>();
     private Map<Integer, GameObject> objects = new HashMap<Integer, GameObject>();
+    private Map<Integer, GameObject> equipedObjects = new HashMap<Integer, GameObject>();
     private String _savePos;
     private int _emoteActive = 0;
     private int savestat;
@@ -2124,22 +2125,22 @@ public class Player {
         Stats stats = new Stats(false, null);
         ArrayList<Integer> itemSetApplied = new ArrayList<>();
 
-        for (GameObject gameObject : this.objects.values()) {
+        for (final GameObject gameObject : this.equipedObjects.values()) {
+        	if(gameObject == null) continue;
             byte position = (byte) gameObject.getPosition();
-            if (position != Constant.ITEM_POS_NO_EQUIPED) {
-                if (position >= 35 && position <= 48)
-                    continue;
+            if (position >= Constant.CONSO_POS_1 && position <= Constant.CONSO_POS_14)
+                continue;
 
-                stats = Stats.cumulStat(stats, gameObject.getStats());
-                int id = gameObject.getTemplate().getPanoId();
+            stats = Stats.cumulStat(stats, gameObject.getStats());
+            int id = gameObject.getTemplate().getPanoId();
 
-                if (id > 0 && !itemSetApplied.contains(id)) {
-                    itemSetApplied.add(id);
-                    ObjectSet objectSet = World.world.getItemSet(id);
-                    if (objectSet != null)
-                        stats = Stats.cumulStat(stats, objectSet.getBonusStatByItemNumb(this.getNumbEquipedItemOfPanoplie(id)));
-                }
+            if (id > 0 && !itemSetApplied.contains(id)) {
+                itemSetApplied.add(id);
+                ObjectSet objectSet = World.world.getItemSet(id);
+                if (objectSet != null)
+                    stats = Stats.cumulStat(stats, objectSet.getBonusStatByItemNumb(this.getNumbEquipedItemOfPanoplie(id)));
             }
+            
         }
 
         if (this._mount != null && this._onMount)
@@ -2531,7 +2532,7 @@ public class Player {
     public void removeItem(int guid, int nombre, boolean send,
                            boolean deleteFromWorld) {
         GameObject obj = objects.get(guid);
-
+        
         if (nombre > obj.getQuantity())
             nombre = obj.getQuantity();
 
@@ -2544,6 +2545,8 @@ public class Player {
             } else {
                 //on supprime de l'inventaire et du Monde
                 objects.remove(obj.getGuid());
+                if(obj.getPosition() != Constant.ITEM_POS_NO_EQUIPED)
+                	this.unEquipItem(obj.getPosition());
                 if (deleteFromWorld)
                     World.world.removeGameObject(obj.getGuid());
                 //on envoie le packet si connectê
@@ -2563,16 +2566,8 @@ public class Player {
     public GameObject getObjetByPos(int pos) {
         if (pos == Constant.ITEM_POS_NO_EQUIPED)
             return null;
-
-        for (GameObject gameObject : this.objects.values()) {
-            if (gameObject.getPosition() == pos && pos == Constant.ITEM_POS_FAMILIER) {
-                if (gameObject.getTxtStat().isEmpty()) return null;
-                else if (World.world.getPetsEntry(gameObject.getGuid()) == null) return null;
-            }
-            if (gameObject.getPosition() == pos) return gameObject;
-        }
-
-        return null;
+        
+        return this.equipedObjects.get(pos);
     }
     
     public void DestuffALL() {
@@ -2583,36 +2578,10 @@ public class Player {
 		{
 			final GameObject obj = this.getObjetByPos(n);
 			if(obj != null)
-				this.DesequiperItem(obj);
+				this.getGameClient().onMovementEquipUnequipItem(obj, Constant.ITEM_POS_NO_EQUIPED, 1);
 		}		
 	}
-    
-    public synchronized void DesequiperItem(final GameObject item) {
-		if (item == null)
-			return;
-		if (!hasItemGuid(item.getGuid()))
-			return;
-		if (item.getPosition() == Constant.ITEM_POS_NO_EQUIPED)
-			return;
-    	
-		GameObject obj2;
-		if ((obj2 = getSimilarItem(item)) != null)// On le possède deja
-		{
-			obj2.setQuantity(obj2.getQuantity() + item.getQuantity());
-			SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this, obj2);
-              World.world.removeGameObject(item.getGuid());
-			removeItem(item.getGuid());
-			SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, item.getGuid());
-		} else// On ne le possède pas
-		{
-			item.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-			SocketManager.GAME_SEND_OBJET_MOVE_PACKET(this, item);
-		}
-		// Si objet de panoplie
-		if (item.getTemplate().getPanoId() > 0)
-			SocketManager.GAME_SEND_OS_PACKET(this, item.getTemplate()
-					.getPanoId());
-	}
+
 
     public void refreshStats() {
     	final double actPdvPer = (100.0 * (double) this.curPdv) / (double) this.maxPdv;
@@ -2787,27 +2756,6 @@ public class Player {
         _metiers.remove(Integer.valueOf(m));
     }
 
-    public void unequipedObjet(GameObject o) {
-        o.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-        ObjectTemplate oTpl = o.getTemplate();
-        int idSetExObj = oTpl.getPanoId();
-        if ((idSetExObj >= 81 && idSetExObj <= 92)
-                || (idSetExObj >= 201 && idSetExObj <= 212)) {
-            String[] stats = oTpl.getStrTemplate().split(",");
-            for (String stat : stats) {
-                String[] val = stat.split("#");
-                String modifi = Integer.parseInt(val[0], 16) + ";"
-                        + Integer.parseInt(val[1], 16) + ";0";
-                SocketManager.SEND_SB_SPELL_BOOST(this, modifi);
-                this.removeItemClasseSpell(Integer.parseInt(val[1], 16));
-            }
-            this.removeItemClasse(oTpl.getId());
-        }
-        SocketManager.GAME_SEND_OBJET_MOVE_PACKET(this, o);
-        if (oTpl.getPanoId() > 0)
-            SocketManager.GAME_SEND_OS_PACKET(this, oTpl.getPanoId());
-    }
-
     public void verifEquiped() {
         if (this.getMorphMode())
             return;
@@ -2815,27 +2763,26 @@ public class Player {
         GameObject bouclier = this.getObjetByPos(Constant.ITEM_POS_BOUCLIER);
         if (arme != null) {
             if (arme.getTemplate().isTwoHanded() && bouclier != null) {
-                this.unequipedObjet(arme);
+            	this.getGameClient().onMovementEquipUnequipItem(bouclier, Constant.ITEM_POS_NO_EQUIPED, 1);
                 SocketManager.GAME_SEND_Im_PACKET(this, "119|44");
             } else if (!arme.getTemplate().getConditions().equalsIgnoreCase("")
                     && !ConditionParser.validConditions(this, arme.getTemplate().getConditions())) {
-                this.unequipedObjet(arme);
+            	this.getGameClient().onMovementEquipUnequipItem(arme, Constant.ITEM_POS_NO_EQUIPED, 1);
                 SocketManager.GAME_SEND_Im_PACKET(this, "119|44");
             }
         }
         if (bouclier != null) {
             if (!bouclier.getTemplate().getConditions().equalsIgnoreCase("")
                     && !ConditionParser.validConditions(this, bouclier.getTemplate().getConditions())) {
-                this.unequipedObjet(bouclier);
+            	this.getGameClient().onMovementEquipUnequipItem(bouclier, Constant.ITEM_POS_NO_EQUIPED, 1);
                 SocketManager.GAME_SEND_Im_PACKET(this, "119|44");
             }
         }
     }
 
     public boolean hasEquiped(int id) {
-        for (Entry<Integer, GameObject> entry : objects.entrySet())
-            if (entry.getValue().getTemplate().getId() == id
-                    && entry.getValue().getPosition() != Constant.ITEM_POS_NO_EQUIPED)
+        for (final GameObject gameObject : this.equipedObjects.values())
+            if (gameObject != null && gameObject.getTemplate().getId() == id)
                 return true;
 
         return false;
@@ -2874,17 +2821,12 @@ public class Player {
         return str.toString();
     }
 
-    public int getNumbEquipedItemOfPanoplie(int panID) {
-        int nb = 0;
-
-        for (Entry<Integer, GameObject> i : objects.entrySet()) {
-            //On ignore les objets non êquipês
-            if (i.getValue().getPosition() == Constant.ITEM_POS_NO_EQUIPED)
-                continue;
-            //On prend que les items de la pano demandêe, puis on augmente le nombre si besoin
-            if (i.getValue().getTemplate().getPanoId() == panID)
-                nb++;
-        }
+    public byte getNumbEquipedItemOfPanoplie(int panID) {
+        byte nb = 0;
+        for (final GameObject gameObject : this.equipedObjects.values())
+            if (gameObject != null && gameObject.getTemplate().getPanoId() == panID)
+                ++nb;
+        
         return nb;
     }
 
@@ -4281,124 +4223,15 @@ public class Player {
 
     //FIN CLONAGE
     public void VerifAndChangeItemPlace() {
-        boolean isFirstAM = true;
-        boolean isFirstAN = true;
-        boolean isFirstANb = true;
-        boolean isFirstAR = true;
-        boolean isFirstBO = true;
-        boolean isFirstBOb = true;
-        boolean isFirstCA = true;
-        boolean isFirstCE = true;
-        boolean isFirstCO = true;
-        boolean isFirstDa = true;
-        boolean isFirstDb = true;
-        boolean isFirstDc = true;
-        boolean isFirstDd = true;
-        boolean isFirstDe = true;
-        boolean isFirstDf = true;
-        boolean isFirstFA = true;
-
-        for (GameObject obj : objects.values()) {
-            if (obj.getPosition() == Constant.ITEM_POS_NO_EQUIPED)
+    	
+    	for (final GameObject obj : objects.values()) {
+    		if (obj.getPosition() == Constant.ITEM_POS_NO_EQUIPED)
                 continue;
-            if (obj.getPosition() == Constant.ITEM_POS_AMULETTE) {
-                if (isFirstAM) {
-                    isFirstAM = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_ANNEAU1) {
-                if (isFirstAN) {
-                    isFirstAN = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_ANNEAU2) {
-                if (isFirstANb) {
-                    isFirstANb = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_ARME) {
-                if (isFirstAR) {
-                    isFirstAR = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_BOTTES) {
-                if (isFirstBO) {
-                    isFirstBO = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_BOUCLIER) {
-                if (isFirstBOb) {
-                    isFirstBOb = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_CAPE) {
-                if (isFirstCA) {
-                    isFirstCA = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_CEINTURE) {
-                if (isFirstCE) {
-                    isFirstCE = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_COIFFE) {
-                if (isFirstCO) {
-                    isFirstCO = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_DOFUS1) {
-                if (isFirstDa) {
-                    isFirstDa = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_DOFUS2) {
-                if (isFirstDb) {
-                    isFirstDb = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_DOFUS3) {
-                if (isFirstDc) {
-                    isFirstDc = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_DOFUS4) {
-                if (isFirstDd) {
-                    isFirstDd = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_DOFUS5) {
-                if (isFirstDe) {
-                    isFirstDe = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_DOFUS6) {
-                if (isFirstDf) {
-                    isFirstDf = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            } else if (obj.getPosition() == Constant.ITEM_POS_FAMILIER) {
-                if (isFirstFA) {
-                    isFirstFA = false;
-                } else {
-                    obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                }
-            }
-        }
+    		if(this.equipedObjects.get(obj.getPosition()) == null)
+    			this.equipedObjects.put(obj.getPosition(), obj);
+    		else
+    			obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
+    	}
     }
 
     //Mariage
@@ -5941,6 +5774,18 @@ public class Player {
 		return response.substring(0, response.length() - 1);
 		
 	}
+	
+	public void unEquipItem(final int pos)
+	{
+		this.equipedObjects.put(pos, null);
+	}
+	
+	public void equipItem(final GameObject gameObject)
+	{
+		this.equipedObjects.put(gameObject.getPosition(), gameObject);
+	}
+	
+	
     
     
 }

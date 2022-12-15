@@ -5970,6 +5970,7 @@ public class GameClient {
     }
     
     private synchronized void onMovementUnEquipObject(final GameObject objectToRemove) {
+    	this.player.unEquipItem(objectToRemove.getPosition());
         final GameObject object = this.player.getSimilarItem(objectToRemove);
         if (object != null)//On le posséde deja
         {
@@ -5989,6 +5990,7 @@ public class GameClient {
     private synchronized void onMovementEquipItem(final GameObject object, final int position, final boolean isAConsumableItem, int quantity) {
     	// Equiper un item de manière basique
         object.setPosition(position);
+        this.player.equipItem(object);
         SocketManager.GAME_SEND_OBJET_MOVE_PACKET(this.player, object);
         if(!isAConsumableItem)
         	quantity = 1;
@@ -6049,6 +6051,123 @@ public class GameClient {
         
     }
     
+    public synchronized void onMovementEquipUnequipItem(GameObject object, final int position, final int quantity) {
+    	final GameObject exObj = this.player.getObjetByPos(position);//Objet a l'ancienne position
+        if(this.onMovementItemObvi(object, exObj, quantity, position)) return;
+        
+        if(exObj != null)
+        	object = exObj;
+    	
+        this.onMovementItemClass(object, position);
+        
+        final int oldPosition = object.getPosition();
+        final boolean isAConsumableItem = Constant.isAValidConsumableItem(object.getTemplate());
+        
+        // Si la position est de retirer
+        // Ou bien
+        // Si il y avait déjà un item sur l'emplacement on le retire
+        if(position == Constant.ITEM_POS_NO_EQUIPED || exObj != null)
+        	this.onMovementUnEquipObject(object);
+        else
+        	this.onMovementEquipItem(object, position, isAConsumableItem, quantity);
+        
+        if(isAConsumableItem) return;
+       
+
+        if (object.getTemplate().getPanoId() > 0)
+            SocketManager.GAME_SEND_OS_PACKET(this.player, object.getTemplate().getPanoId());
+        
+        if (position == Constant.ITEM_POS_NO_EQUIPED && Constant.isIncarnationWeapon(object.getTemplate().getId()))
+            this.player.unsetFullMorph();
+        
+        else if(object.getTemplate().getId() == 2157) {
+        	if(position == Constant.ITEM_POS_NO_EQUIPED)
+        	{
+        		this.player.setGfxId(this.player.getClasse() * 10 + this.player.getSexe());
+        		SocketManager.GAME_SEND_ERASE_ON_MAP_TO_MAP(this.player.getCurMap(), this.player.getId());
+        		SocketManager.GAME_SEND_ADD_PLAYER_TO_MAP(this.player.getCurMap(), this.player);
+        		SocketManager.GAME_SEND_MESSAGE(this.player, "Vous n'êtes plus mercenaire.");
+        	}else if (position == Constant.ITEM_POS_COIFFE) {
+        		this.player.setGfxId((this.player.getSexe() == 1) ? 8009 : 8006);
+                SocketManager.GAME_SEND_ERASE_ON_MAP_TO_MAP(this.player.getCurMap(), this.player.getId());
+                SocketManager.GAME_SEND_ADD_PLAYER_TO_MAP(this.player.getCurMap(), this.player);
+                SocketManager.GAME_SEND_MESSAGE(this.player, "Vous avez été transformé en mercenaire.");
+        	}
+        } else if (position == Constant.ITEM_POS_ARME) {
+            switch (object.getTemplate().getId())
+            //Incarnation
+            {
+                case 9544: // Tourmenteur tÃ©nebres
+                    this.player.setFullMorph(1, false, false);
+                    break;
+                case 9545: // Tourmenteur feu
+                    this.player.setFullMorph(5, false, false);
+                    break;
+                case 9546: // Tourmenteur feuille
+                    this.player.setFullMorph(4, false, false);
+                    break;
+                case 9547: // Tourmenteur gthiste
+                    this.player.setFullMorph(3, false, false);
+                    break;
+                case 9548: // Tourmenteur terre
+                    this.player.setFullMorph(2, false, false);
+                    break;
+                case 10125: // Bandit Archer
+                    this.player.setFullMorph(7, false, false);
+                    break;
+                case 10126: // Bandit Fine Lame
+                    this.player.setFullMorph(6, false, false);
+                    break;
+                case 10127: // Bandit Baroudeur
+                    this.player.setFullMorph(8, false, false);
+                    break;
+                case 10133: // Bandit Ensorcelleur
+                    this.player.setFullMorph(9, false, false);
+                    break;
+            }
+        }
+
+        this.player.refreshStats();
+        SocketManager.GAME_SEND_STATS_PACKET(this.player);
+
+        if (this.player.getParty() != null)
+            SocketManager.GAME_SEND_PM_MOD_PACKET_TO_GROUP(this.player.getParty(), this.player);
+
+        if (position == Constant.ITEM_POS_ARME || position == Constant.ITEM_POS_COIFFE || position == Constant.ITEM_POS_FAMILIER || position == Constant.ITEM_POS_CAPE || position == Constant.ITEM_POS_BOUCLIER || position == Constant.ITEM_POS_NO_EQUIPED)
+            SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player);
+
+        //Si familier
+        if (position == Constant.ITEM_POS_FAMILIER && this.player.isOnMount())
+            this.player.toogleOnMount();
+        
+        //Verif pour les thisils de métier
+        
+        if (position == Constant.ITEM_POS_NO_EQUIPED && oldPosition == Constant.ITEM_POS_ARME)
+            SocketManager.GAME_SEND_OT_PACKET(this, -1);
+        
+        if (position == Constant.ITEM_POS_ARME) 
+        	for(final Entry<Integer, JobStat> entry : this.player.getMetiers().entrySet()) 
+        		if(entry.getValue().getTemplate().isValidTool(object.getTemplate().getId())) 
+        			SocketManager.GAME_SEND_OT_PACKET(this, entry.getValue().getTemplate().getId());
+        
+        if (this.player.getFight() != null)
+            SocketManager.GAME_SEND_ON_EQUIP_ITEM_FIGHT(this.player, this.player.getFight().getFighterByPerso(this.player), this.player.getFight());
+    
+
+        onMovementSecureCraft(object, position, oldPosition);
+        
+        if(this.player.getFight() != null) {
+            Fighter target = this.player.getFight().getFighterByPerso(this.player);
+            this.player.getFight().getFighters(7).stream().filter(fighter -> fighter != null && fighter.getPersonnage() != null).forEach(fighter -> fighter.getPersonnage().send(this.player.getCurMap().getFighterGMPacket(this.player)));
+            target.setPdv(this.player.getCurPdv());
+            target.setPdvMax(this.player.getMaxPdv());
+            SocketManager.GAME_SEND_STATS_PACKET(this.player);
+        }
+
+        this.player.verifEquiped();
+        Database.getStatics().getPlayerData().update(this.player);
+    }
+    
     private synchronized void movementObject(final String packet) {
         final String[] infos = packet.substring(2).split("" + (char) 0x0A)[0].split("\\|");
         try {
@@ -6065,7 +6184,7 @@ public class GameClient {
             }
 
             GameObject object = World.world.getGameObject(id);
-            if (!this.player.hasItemGuid(id) || object == null)
+            if (object == null || !this.player.hasItemGuid(id))
                 return;
             if (this.player.getFight() != null)
                 if (this.player.getFight().getState() > Constant.FIGHT_STATE_ACTIVE)
@@ -6078,11 +6197,8 @@ public class GameClient {
                 return;
             }
 
-            if(onMovementFeedMount(object, position, quantity, id)) return;
-            if(onMovementFeedPet(object, position)) return;
-            
-            
-            final boolean isAConsumableItem = Constant.isAValidConsumableItem(object.getTemplate());
+            if(this.onMovementFeedMount(object, position, quantity, id)) return;
+            if(this.onMovementFeedPet(object, position)) return;
             
             if (position != Constant.ITEM_POS_NO_EQUIPED && !Constant.isValidPlaceForItem(object.getTemplate(), position))
                 return;
@@ -6097,127 +6213,15 @@ public class GameClient {
                 return;
             }
             
-            if(onMovementItemIsTwoHand(object, position)) return;
+            if(this.onMovementItemIsTwoHand(object, position)) return;
             
             //On ne peut équiper 2 items de panoplies identiques, ou 2 Dofus identiques
             if (position != Constant.ITEM_POS_NO_EQUIPED && (object.getTemplate().getPanoId() != -1 || object.getTemplate().getType() == Constant.ITEM_TYPE_DOFUS) && this.player.hasEquiped(object.getTemplate().getId()))
                 return;
 
-            // FIN DES VERIFS
+            this.onMovementEquipUnequipItem(object, position, quantity);
 
-            final GameObject exObj = this.player.getObjetByPos(position);//Objet a l'ancienne position
-            if(onMovementItemObvi(object, exObj, quantity, position)) return;
             
-            if(exObj != null)
-            	object = exObj;
-        	
-            onMovementItemClass(object, position);
-            
-            final int oldPosition = object.getPosition();
-            
-            // Si la position est de retirer
-            // Ou bien
-            // Si il y avait déjà un item sur l'emplacement on le retire
-            if(position == Constant.ITEM_POS_NO_EQUIPED || exObj != null)
-            	onMovementUnEquipObject(object);
-            else
-            	onMovementEquipItem(object, position, isAConsumableItem, quantity);
-            
-            if(isAConsumableItem) return;
-           
-
-            if (object.getTemplate().getPanoId() > 0)
-                SocketManager.GAME_SEND_OS_PACKET(this.player, object.getTemplate().getPanoId());
-            
-            if (position == Constant.ITEM_POS_NO_EQUIPED && Constant.isIncarnationWeapon(object.getTemplate().getId()))
-                this.player.unsetFullMorph();
-            
-            else if(object.getTemplate().getId() == 2157) {
-            	if(position == Constant.ITEM_POS_NO_EQUIPED)
-            	{
-            		this.player.setGfxId(this.player.getClasse() * 10 + this.player.getSexe());
-            		SocketManager.GAME_SEND_ERASE_ON_MAP_TO_MAP(this.player.getCurMap(), this.player.getId());
-            		SocketManager.GAME_SEND_ADD_PLAYER_TO_MAP(this.player.getCurMap(), this.player);
-            		SocketManager.GAME_SEND_MESSAGE(this.player, "Vous n'êtes plus mercenaire.");
-            	}else if (position == Constant.ITEM_POS_COIFFE) {
-            		this.player.setGfxId((this.player.getSexe() == 1) ? 8009 : 8006);
-                    SocketManager.GAME_SEND_ERASE_ON_MAP_TO_MAP(this.player.getCurMap(), this.player.getId());
-                    SocketManager.GAME_SEND_ADD_PLAYER_TO_MAP(this.player.getCurMap(), this.player);
-                    SocketManager.GAME_SEND_MESSAGE(this.player, "Vous avez été transformé en mercenaire.");
-            	}
-            } else if (position == Constant.ITEM_POS_ARME) {
-                switch (object.getTemplate().getId())
-                //Incarnation
-                {
-                    case 9544: // Tourmenteur tÃ©nebres
-                        this.player.setFullMorph(1, false, false);
-                        break;
-                    case 9545: // Tourmenteur feu
-                        this.player.setFullMorph(5, false, false);
-                        break;
-                    case 9546: // Tourmenteur feuille
-                        this.player.setFullMorph(4, false, false);
-                        break;
-                    case 9547: // Tourmenteur gthiste
-                        this.player.setFullMorph(3, false, false);
-                        break;
-                    case 9548: // Tourmenteur terre
-                        this.player.setFullMorph(2, false, false);
-                        break;
-                    case 10125: // Bandit Archer
-                        this.player.setFullMorph(7, false, false);
-                        break;
-                    case 10126: // Bandit Fine Lame
-                        this.player.setFullMorph(6, false, false);
-                        break;
-                    case 10127: // Bandit Baroudeur
-                        this.player.setFullMorph(8, false, false);
-                        break;
-                    case 10133: // Bandit Ensorcelleur
-                        this.player.setFullMorph(9, false, false);
-                        break;
-                }
-            }
-
-            this.player.refreshStats();
-            SocketManager.GAME_SEND_STATS_PACKET(this.player);
-
-            if (this.player.getParty() != null)
-                SocketManager.GAME_SEND_PM_MOD_PACKET_TO_GROUP(this.player.getParty(), this.player);
-
-            if (position == Constant.ITEM_POS_ARME || position == Constant.ITEM_POS_COIFFE || position == Constant.ITEM_POS_FAMILIER || position == Constant.ITEM_POS_CAPE || position == Constant.ITEM_POS_BOUCLIER || position == Constant.ITEM_POS_NO_EQUIPED)
-                SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player);
-
-            //Si familier
-            if (position == Constant.ITEM_POS_FAMILIER && this.player.isOnMount())
-                this.player.toogleOnMount();
-            
-            //Verif pour les thisils de métier
-            
-            if (position == Constant.ITEM_POS_NO_EQUIPED && oldPosition == Constant.ITEM_POS_ARME)
-                SocketManager.GAME_SEND_OT_PACKET(this, -1);
-            
-            if (position == Constant.ITEM_POS_ARME) 
-            	for(final Entry<Integer, JobStat> entry : this.player.getMetiers().entrySet()) 
-            		if(entry.getValue().getTemplate().isValidTool(object.getTemplate().getId())) 
-            			SocketManager.GAME_SEND_OT_PACKET(this, entry.getValue().getTemplate().getId());
-            
-            if (this.player.getFight() != null)
-                SocketManager.GAME_SEND_ON_EQUIP_ITEM_FIGHT(this.player, this.player.getFight().getFighterByPerso(this.player), this.player.getFight());
-        
-
-            onMovementSecureCraft(object, position, oldPosition);
-            
-            if(this.player.getFight() != null) {
-                Fighter target = this.player.getFight().getFighterByPerso(this.player);
-                this.player.getFight().getFighters(7).stream().filter(fighter -> fighter != null && fighter.getPersonnage() != null).forEach(fighter -> fighter.getPersonnage().send(this.player.getCurMap().getFighterGMPacket(this.player)));
-                target.setPdv(this.player.getCurPdv());
-                target.setPdvMax(this.player.getMaxPdv());
-                SocketManager.GAME_SEND_STATS_PACKET(this.player);
-            }
-
-            this.player.verifEquiped();
-            Database.getStatics().getPlayerData().update(this.player);
         } catch (Exception e) {
             e.printStackTrace();
             SocketManager.GAME_SEND_DELETE_OBJECT_FAILED_PACKET(this);

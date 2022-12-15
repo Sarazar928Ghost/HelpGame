@@ -33,7 +33,6 @@ import org.starloco.locos.client.other.Party;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 
 public class SocketManager {
 
