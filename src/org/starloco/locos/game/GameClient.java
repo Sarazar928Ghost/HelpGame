@@ -60,6 +60,7 @@ import org.starloco.locos.util.lang.Lang;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -5792,14 +5793,276 @@ public class GameClient {
         SocketManager.GAME_SEND_GDO_PACKET_TO_MAP(this.player.getCurMap(), '+', this.player.getCurMap().getCase(cellPosition).getId(), obj.getTemplate().getId(), 0);
         SocketManager.GAME_SEND_STATS_PACKET(this.player);
     }
+    
+    private synchronized boolean onMovementFeedMount(final GameObject object, final int position, int quantity, final int id) {
+    	if (position != Constant.ITEM_POS_DRAGODINDE || this.player.getMount() == null) return false;
+    	
+        if (object.getTemplate().getType() != Constant.ITEM_TYPE_POISSON) {
+            SocketManager.GAME_SEND_Im_PACKET(this.player, "190");
+            return false;
+        }
+        if (quantity > object.getQuantity())
+            quantity = object.getQuantity();
+        if (object.getQuantity() - quantity > 0) {
+            object.setQuantity(object.getQuantity() - quantity);
+            SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, object);
+        } else {
+            this.player.deleteItem(id);
+            World.world.removeGameObject(id);
+            SocketManager.SEND_OR_DELETE_ITEM(this, id);
+        }
+        
+        this.player.getMount().aumEnergy(5000 * quantity);
+        SocketManager.GAME_SEND_Re_PACKET(this.player, "+", this.player.getMount());
+        SocketManager.GAME_SEND_Im_PACKET(this.player, "0105");
+        return true;
+            
+    }
+    
+    private synchronized boolean onMovementFeedPet(final GameObject object, final int position) {
+    	final GameObject pets = this.player.getObjetByPos(position);
+    	if (position != Constant.ITEM_POS_FAMILIER || object.getTemplate().getType() == Constant.ITEM_TYPE_FAMILIER || pets == null) 
+    		return false;
+        final Pet p = World.world.getPets(pets.getTemplate().getId());
+        if (p == null)
+            return true;
+        if (p.getEpo() == object.getTemplate().getId()) {
+            PetEntry pet = World.world.getPetsEntry(pets.getGuid());
+            if (pet != null && p.getEpo() == object.getTemplate().getId())
+                pet.giveEpo(this.player);
+            return true;
+        }
+        if (object.getTemplate().getId() != 2239 && !p.canEat(object.getTemplate().getId(), object.getTemplate().getType(), -1)) {
+            SocketManager.GAME_SEND_Im_PACKET(this.player, "153");
+            return true;
+        }
 
-    private synchronized void movementObject(String packet) {
-        String[] infos = packet.substring(2).split("" + (char) 0x0A)[0].split("\\|");
+        int min = 0, max = 0;
         try {
-            int quantity = 1, id = Integer.parseInt(infos[0]), position = Integer.parseInt(infos[1]);
+            min = Integer.parseInt(p.getGap().split(",")[0]);
+            max = Integer.parseInt(p.getGap().split(",")[1]);
+        } catch (Exception e) {
+            // ok
+        }
+
+        final PetEntry MyPets = World.world.getPetsEntry(pets.getGuid());
+        if (MyPets == null)
+            return true;
+        
+        if (p.getType() != 2 && p.getType() != 3 && object.getTemplate().getId() != 2239)
+        	return true;
+        
+        if (object.getQuantity() - 1 > 0) {//Si il en reste
+            object.setQuantity(object.getQuantity() - 1);
+            SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, object);
+        } else {
+            World.world.removeGameObject(object.getGuid());
+            this.player.removeItem(object.getGuid());
+            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, object.getGuid());
+        }
+
+        if (object.getTemplate().getId() == 2239)
+            MyPets.restoreLife(this.player);
+        else
+            MyPets.eat(this.player, min, max, p.statsIdByEat(object.getTemplate().getId(), object.getTemplate().getType(), -1), object);
+
+        SocketManager.GAME_SEND_UPDATE_OBJECT_DISPLAY_PACKET(this.player, pets);
+        SocketManager.GAME_SEND_Ow_PACKET(this.player);
+        this.player.refreshStats();
+        SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player);
+        SocketManager.GAME_SEND_STATS_PACKET(this.player);
+        if (this.player.getParty() != null)
+            SocketManager.GAME_SEND_PM_MOD_PACKET_TO_GROUP(this.player.getParty(), this.player);
+        
+        return true;
+    }
+
+    private synchronized void onMovementItemClass(final GameObject object, final int position)
+    {
+    	
+    	final ObjectTemplate objTemplate = object.getTemplate();
+    	if(!Constant.isPanoIdClass(objTemplate.getPanoId())) return;
+    	
+    	
+    	if (position == 2 || position == 3 || position == 4 || position == 5 || position == 6 || position == 7 || position == 0) {
+            String[] stats = objTemplate.getStrTemplate().split(",");
+            for (String stat : stats) {
+                String[] val = stat.split("#");
+                int effect = Integer.parseInt(val[0], 16);
+                int spell = Integer.parseInt(val[1], 16);
+                int modif = Integer.parseInt(val[3], 16);
+                String modifi = effect + ";" + spell + ";" + modif;
+                SocketManager.SEND_SB_SPELL_BOOST(this.player, modifi);
+                this.player.addItemClasseSpell(spell, effect, modif);
+            }
+            this.player.addItemClasse(objTemplate.getId());
+        }
+    	else if (position == Constant.ITEM_POS_NO_EQUIPED) {
+            String[] stats = objTemplate.getStrTemplate().split(",");
+            for (String stat : stats) {
+                String[] val = stat.split("#");
+                String modifi = Integer.parseInt(val[0], 16) + ";" + Integer.parseInt(val[1], 16) + ";0";
+                SocketManager.SEND_SB_SPELL_BOOST(this.player, modifi);
+                this.player.removeItemClasseSpell(Integer.parseInt(val[1], 16));
+            }
+            this.player.removeItemClasse(objTemplate.getId());
+        }
+    }
+    
+    private synchronized boolean onMovementItemIsTwoHand(final GameObject object, final int position) {
+    	final GameObject weapon = this.player.getObjetByPos(Constant.ITEM_POS_ARME);
+    	
+    	if(position == Constant.ITEM_POS_BOUCLIER && weapon != null && weapon.getTemplate().isTwoHanded()) {
+    		SocketManager.GAME_SEND_Im_PACKET(this.player, "119|44");
+            return true;
+    	}
+    	
+    	if(position == Constant.ITEM_POS_ARME && this.player.getObjetByPos(Constant.ITEM_POS_BOUCLIER) != null && object.getTemplate().isTwoHanded())
+    	{
+    		SocketManager.GAME_SEND_Im_PACKET(this.player, "119|44");
+            return true;
+    	}
+    	
+    	return false;
+    }
+    
+    private synchronized boolean onMovementItemObvi(final GameObject object, final GameObject exObj, int quantity, final int position) {
+    	final int objGUID = object.getTemplate().getId();
+        if (object.getTemplate().getType() != Constant.ITEM_TYPE_OBJET_VIVANT) return false;
+        
+        if (exObj == null) {// si on place l'obvi sur un emplacement vide
+            SocketManager.send(this.player, "Im1161");
+            return true;
+        }
+        if (exObj.getObvijevanPos() != 0) {// si il y a déjé un obvi
+            SocketManager.GAME_SEND_BN(this.player);
+            return true;
+        }
+        exObj.setObvijevanPos(object.getObvijevanPos()); // L'objet qui était en place a maintenant un obvi
+        Database.getStatics().getObvejivanData().add(object, exObj);
+        this.player.removeItem(object.getGuid(), 1, false, false); // on enléve l'existance de l'obvi en lui-méme
+        SocketManager.send(this.player, "OR" + object.getGuid()); // on le précise au client.
+        Database.getStatics().getObjectData().delete(object.getGuid());
+
+        exObj.refreshStatsObjet(object.parseStatsStringSansUserObvi() + ",3ca#" + Integer.toHexString(objGUID) + "#0#0#0d0+" + objGUID);
+
+        SocketManager.send(this.player, exObj.obvijevanOCO_Packet(position));
+        SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player); // Si l'obvi était cape ou coiffe : packet au client
+        // S'il y avait plusieurs objets
+        if (object.getQuantity() > 1) {
+            if (quantity > object.getQuantity())
+                quantity = object.getQuantity();
+
+            if (object.getQuantity() - quantity > 0)//Si il en reste
+            {
+                int newItemQua = object.getQuantity() - quantity;
+                GameObject newItem = GameObject.getCloneObjet(object, newItemQua);
+                this.player.addObjet(newItem, false);
+                World.world.addGameObject(newItem, true);
+                object.setQuantity(quantity);
+                SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, object);
+            }
+        } else {
+            World.world.removeGameObject(object.getGuid());
+        }
+        Database.getStatics().getPlayerData().update(this.player);
+        return true;
+    }
+    
+    private synchronized void onMovementUnEquipObject(final GameObject objectToRemove) {
+        final GameObject object = this.player.getSimilarItem(objectToRemove);
+        if (object != null)//On le posséde deja
+        {
+        	object.setQuantity(object.getQuantity() + objectToRemove.getQuantity());
+            SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, object);
+            World.world.removeGameObject(objectToRemove.getGuid());
+            this.player.removeItem(objectToRemove.getGuid());
+            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, objectToRemove.getGuid());
+        } else{
+            objectToRemove.setPosition(Constant.ITEM_POS_NO_EQUIPED);
+            SocketManager.GAME_SEND_OBJET_MOVE_PACKET(this.player, objectToRemove);
+        }
+        
+        return;
+    }
+    
+    private synchronized void onMovementEquipItem(final GameObject object, final int position, final boolean isAConsumableItem, int quantity) {
+    	// Equiper un item de manière basique
+        object.setPosition(position);
+        SocketManager.GAME_SEND_OBJET_MOVE_PACKET(this.player, object);
+        if(!isAConsumableItem)
+        	quantity = 1;
+        
+        if (object.getQuantity() > 1 && object.getQuantity() - quantity > 0) {
+            final int newItemQua = object.getQuantity() - quantity;
+            final GameObject newItem = GameObject.getCloneObjet(object, newItemQua);
+            if (this.player.addObjet(newItem, false))
+                World.world.addGameObject(newItem, true);
+            object.setQuantity(quantity);
+            SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, object);
+        }
+    }
+    
+    private synchronized void onMovementSecureCraft(final GameObject weapon, final int position, final int oldPosition) {
+    	
+    	if(position != Constant.ITEM_POS_ARME && (position != Constant.ITEM_POS_NO_EQUIPED || oldPosition != Constant.ITEM_POS_ARME)) return;
+    	final ArrayList<Job> jobs = this.player.getJobs();
+        if (jobs == null) return;
+        
+        if (weapon == null) {
+        	for (final Player player : this.player.getCurMap().getPlayers())
+                player.send("EW+" + this.player.getId());
+        	return;
+        }
+        
+        final String arg = "EW+" + this.player.getId() + "|";
+        String data = "";
+
+        for (final Job job : jobs) {
+            if (job.getSkills().isEmpty())
+                continue;
+            if (job.isMaging())//FIXME: pour l'instant.
+                continue;
+            if (!job.isValidTool(weapon.getTemplate().getId()))
+                continue;
+
+            for (final GameCase cell : this.player.getCurMap().getCases()) {
+                if (cell.getObject() == null) continue;
+                if (cell.getObject().getTemplate() == null) continue;
+                
+                final int io = cell.getObject().getTemplate().getId();
+                final ArrayList<Integer> skills = job.getSkills().get(io);
+
+                if (skills == null) continue;
+                
+                for (final int skill : skills)
+                    if (!data.contains(String.valueOf(skill)))
+                        data += (data.isEmpty() ? skill : ";" + skill);
+            }
+
+            if (!data.isEmpty())
+                break;
+        }
+
+        for (Player player : this.player.getCurMap().getPlayers())
+            player.send(arg + data);
+        
+    }
+    
+    private synchronized void movementObject(final String packet) {
+        final String[] infos = packet.substring(2).split("" + (char) 0x0A)[0].split("\\|");
+        try {
+            int quantity = 1;
+            final int id = Integer.parseInt(infos[0]);
+            final int position = Integer.parseInt(infos[1]);
+            
+            // Pour obvi et nourrir la monture
             try {
-                quantity = Integer.parseInt(infos[2]);
-            } catch (Exception ignored) {}
+            	if(infos.length > 2) 
+            		quantity = Integer.parseInt(infos[2]);
+            }catch(NumberFormatException e) {
+            	// Pas de quantité donnée
+            }
 
             GameObject object = World.world.getGameObject(id);
             if (!this.player.hasItemGuid(id) || object == null)
@@ -5808,426 +6071,143 @@ public class GameClient {
                 if (this.player.getFight().getState() > Constant.FIGHT_STATE_ACTIVE)
                     return;
 
-            /** Pet subscribe **/
+        	if(object.getPosition() == position) return;
+            
             if (position == Constant.ITEM_POS_FAMILIER && !this.player.isSubscribe()) {
                 SocketManager.GAME_SEND_EXCHANGE_REQUEST_ERROR(this, 'S');
                 return;
             }
-            /** End pet subscribe **/
 
-            /** Feed mount **/
-            if ((position == Constant.ITEM_POS_DRAGODINDE) && (this.player.getMount() != null)) {
-                if (object.getTemplate().getType() == 41) {
-                    if (object.getQuantity() > 0) {
-                        if (quantity > object.getQuantity())
-                            quantity = object.getQuantity();
-                        if (object.getQuantity() - quantity > 0) {
-                            int newQua = object.getQuantity() - quantity;
-                            object.setQuantity(newQua);
-                            SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, object);
-                        } else {
-                            this.player.deleteItem(id);
-                            World.world.removeGameObject(id);
-                            SocketManager.SEND_OR_DELETE_ITEM(this, id);
-                        }
-                    }
-                    this.player.getMount().aumEnergy(5000 * quantity);
-                    SocketManager.GAME_SEND_Re_PACKET(this.player, "+", this.player.getMount());
-                    SocketManager.GAME_SEND_Im_PACKET(this.player, "0105");
-                    return;
-                }
-                SocketManager.GAME_SEND_Im_PACKET(this.player, "190");
+            if(onMovementFeedMount(object, position, quantity, id)) return;
+            if(onMovementFeedPet(object, position)) return;
+            
+            
+            final boolean isAConsumableItem = Constant.isAValidConsumableItem(object.getTemplate());
+            
+            if (position != Constant.ITEM_POS_NO_EQUIPED && !Constant.isValidPlaceForItem(object.getTemplate(), position))
+                return;
+
+            if (!object.getTemplate().getConditions().equalsIgnoreCase("") && !ConditionParser.validConditions(this.player, object.getTemplate().getConditions())) {
+                SocketManager.GAME_SEND_Im_PACKET(this.player, "119|44");
                 return;
             }
-            /** End feed mount **/
-
-            /** Feed pet **/
-            if (position == Constant.ITEM_POS_FAMILIER && object.getTemplate().getType() != Constant.ITEM_TYPE_FAMILIER && this.player.getObjetByPos(position) != null) {
-                GameObject pets = this.player.getObjetByPos(position);
-                Pet p = World.world.getPets(pets.getTemplate().getId());
-                if (p == null)
-                    return;
-                if (p.getEpo() == object.getTemplate().getId()) {
-                    PetEntry pet = World.world.getPetsEntry(pets.getGuid());
-                    if (pet != null && p.getEpo() == object.getTemplate().getId())
-                        pet.giveEpo(this.player);
-                    return;
-                }
-                if (object.getTemplate().getId() != 2239 && !p.canEat(object.getTemplate().getId(), object.getTemplate().getType(), -1)) {
-                    SocketManager.GAME_SEND_Im_PACKET(this.player, "153");
-                    return;
-                }
-
-                int min = 0, max = 0;
-                try {
-                    min = Integer.parseInt(p.getGap().split(",")[0]);
-                    max = Integer.parseInt(p.getGap().split(",")[1]);
-                } catch (Exception e) {
-                    // ok
-                }
-
-                PetEntry MyPets = World.world.getPetsEntry(pets.getGuid());
-                if (MyPets == null)
-                    return;
-                if (p.getType() == 2 || p.getType() == 3
-                        || object.getTemplate().getId() == 2239) {
-                    if (object.getQuantity() - 1 > 0) {//Si il en reste
-                        object.setQuantity(object.getQuantity() - 1);
-                        SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, object);
-                    } else {
-                        World.world.removeGameObject(object.getGuid());
-                        this.player.removeItem(object.getGuid());
-                        SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, object.getGuid());
-                    }
-
-                    if (object.getTemplate().getId() == 2239)
-                        MyPets.restoreLife(this.player);
-                    else
-                        MyPets.eat(this.player, min, max, p.statsIdByEat(object.getTemplate().getId(), object.getTemplate().getType(), -1), object);
-
-                    SocketManager.GAME_SEND_UPDATE_OBJECT_DISPLAY_PACKET(this.player, pets);
-                    SocketManager.GAME_SEND_Ow_PACKET(this.player);
-                    this.player.refreshStats();
-                    SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player);
-                    SocketManager.GAME_SEND_STATS_PACKET(this.player);
-                    if (this.player.getParty() != null)
-                        SocketManager.GAME_SEND_PM_MOD_PACKET_TO_GROUP(this.player.getParty(), this.player);
-                }
+            
+            if (object.getTemplate().getLevel() > this.player.getLevel()) {
+                SocketManager.GAME_SEND_OAEL_PACKET(this);
                 return;
-            /** End feed pet **/
-            } else {
-                ObjectTemplate objTemplate = object.getTemplate();
-                int ObjPanoID = objTemplate.getPanoId();
-                if (((ObjPanoID >= 81 && ObjPanoID <= 92) || (ObjPanoID >= 201 && ObjPanoID <= 212)) && (position == 2 || position == 3 || position == 4 || position == 5 || position == 6 || position == 7 || position == 0)) {
-                    String[] stats = objTemplate.getStrTemplate().split(",");
-                    for (String stat : stats) {
-                        String[] val = stat.split("#");
-                        int effect = Integer.parseInt(val[0], 16);
-                        int spell = Integer.parseInt(val[1], 16);
-                        int modif = Integer.parseInt(val[3], 16);
-                        String modifi = effect + ";" + spell + ";" + modif;
-                        SocketManager.SEND_SB_SPELL_BOOST(this.player, modifi);
-                        this.player.addItemClasseSpell(spell, effect, modif);
-                    }
-                    this.player.addItemClasse(objTemplate.getId());
-                }
-                if (((ObjPanoID >= 81 && ObjPanoID <= 92) || (ObjPanoID >= 201 && ObjPanoID <= 212)) && position == -1) {
-                    String[] stats = objTemplate.getStrTemplate().split(",");
-                    for (String stat : stats) {
-                        String[] val = stat.split("#");
-                        String modifi = Integer.parseInt(val[0], 16) + ";" + Integer.parseInt(val[1], 16) + ";0";
-                        SocketManager.SEND_SB_SPELL_BOOST(this.player, modifi);
-                        this.player.removeItemClasseSpell(Integer.parseInt(val[1], 16));
-                    }
-                    this.player.removeItemClasse(objTemplate.getId());
-                }
-                if (!Constant.isValidPlaceForItem(object.getTemplate(), position) && position != Constant.ITEM_POS_NO_EQUIPED && object.getTemplate().getType() != 113)
-                    return;
+            }
+            
+            if(onMovementItemIsTwoHand(object, position)) return;
+            
+            //On ne peut équiper 2 items de panoplies identiques, ou 2 Dofus identiques
+            if (position != Constant.ITEM_POS_NO_EQUIPED && (object.getTemplate().getPanoId() != -1 || object.getTemplate().getType() == Constant.ITEM_TYPE_DOFUS) && this.player.hasEquiped(object.getTemplate().getId()))
+                return;
 
-                if (!object.getTemplate().getConditions().equalsIgnoreCase("") && !ConditionParser.validConditions(this.player, object.getTemplate().getConditions())) {
-                    SocketManager.GAME_SEND_Im_PACKET(this.player, "119|44"); // si le this.player ne vérifie pas les conditions diverses
-                    return;
-                }
-                if ((position == Constant.ITEM_POS_BOUCLIER && this.player.getObjetByPos(Constant.ITEM_POS_ARME) != null) || (position == Constant.ITEM_POS_ARME && this.player.getObjetByPos(Constant.ITEM_POS_BOUCLIER) != null)) {
-                    if (this.player.getObjetByPos(Constant.ITEM_POS_ARME) != null) {
-                        if (this.player.getObjetByPos(Constant.ITEM_POS_ARME).getTemplate().isTwoHanded()) {
-                            SocketManager.GAME_SEND_Im_PACKET(this.player, "119|44"); // si le this.player ne vérifie pas les conditions diverses
-                            return;
-                        }
-                    } else {
-                        if (object.getTemplate().isTwoHanded()) {
-                            SocketManager.GAME_SEND_Im_PACKET(this.player, "119|44"); // si le this.player ne vérifie pas les conditions diverses
-                            return;
-                        }
-                    }
+            // FIN DES VERIFS
 
-                }
+            final GameObject exObj = this.player.getObjetByPos(position);//Objet a l'ancienne position
+            if(onMovementItemObvi(object, exObj, quantity, position)) return;
+            
+            if(exObj != null)
+            	object = exObj;
+        	
+            onMovementItemClass(object, position);
+            
+            final int oldPosition = object.getPosition();
+            
+            // Si la position est de retirer
+            // Ou bien
+            // Si il y avait déjà un item sur l'emplacement on le retire
+            if(position == Constant.ITEM_POS_NO_EQUIPED || exObj != null)
+            	onMovementUnEquipObject(object);
+            else
+            	onMovementEquipItem(object, position, isAConsumableItem, quantity);
+            
+            if(isAConsumableItem) return;
+           
 
-                if (object.getTemplate().getLevel() > this.player.getLevel()) {// si le this.player n'a pas le level
-                    SocketManager.GAME_SEND_OAEL_PACKET(this);
-                    return;
-                }
-
-                //On ne peut équiper 2 items de panoplies identiques, ou 2 Dofus identiques
-                if (position != Constant.ITEM_POS_NO_EQUIPED && (object.getTemplate().getPanoId() != -1 || object.getTemplate().getType() == Constant.ITEM_TYPE_DOFUS) && this.player.hasEquiped(object.getTemplate().getId()))
-                    return;
-
-                // FIN DES VERIFS
-
-                GameObject exObj = this.player.getObjetByPos2(position);//Objet a l'ancienne position
-                int objGUID = object.getTemplate().getId();
-                // CODE OBVI
-                if (object.getTemplate().getType() == 113) {
-                    if (exObj == null) {// si on place l'obvi sur un emplacement vide
-                        SocketManager.send(this.player, "Im1161");
-                        return;
-                    }
-                    if (exObj.getObvijevanPos() != 0) {// si il y a déjé un obvi
-                        SocketManager.GAME_SEND_BN(this.player);
-                        return;
-                    }
-                    exObj.setObvijevanPos(object.getObvijevanPos()); // L'objet qui était en place a maintenant un obvi
-                    Database.getStatics().getObvejivanData().add(object, exObj);
-                    this.player.removeItem(object.getGuid(), 1, false, false); // on enléve l'existance de l'obvi en lui-méme
-                    SocketManager.send(this.player, "OR" + object.getGuid()); // on le précise au client.
-                    Database.getStatics().getObjectData().delete(object.getGuid());
-
-                    exObj.refreshStatsObjet(object.parseStatsStringSansUserObvi() + ",3ca#" + Integer.toHexString(objGUID) + "#0#0#0d0+" + objGUID);
-
-                    SocketManager.send(this.player, exObj.obvijevanOCO_Packet(position));
-                    SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player); // Si l'obvi était cape ou coiffe : packet au client
-                    // S'il y avait plusieurs objets
-                    if (object.getQuantity() > 1) {
-                        if (quantity > object.getQuantity())
-                            quantity = object.getQuantity();
-
-                        if (object.getQuantity() - quantity > 0)//Si il en reste
-                        {
-                            int newItemQua = object.getQuantity() - quantity;
-                            GameObject newItem = GameObject.getCloneObjet(object, newItemQua);
-                            this.player.addObjet(newItem, false);
-                            World.world.addGameObject(newItem, true);
-                            object.setQuantity(quantity);
-                            SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, object);
-                        }
-                    } else {
-                        World.world.removeGameObject(object.getGuid());
-                    }
-                    Database.getStatics().getPlayerData().update(this.player);
-                    return; // on s'arréte lé pour l'obvi
-                } // FIN DU CODE OBVI
-
-                if (exObj != null)//S'il y avait déja un objet sur cette place on déséquipe
-                {
-                    GameObject obj2;
-                    ObjectTemplate exObjTpl = exObj.getTemplate();
-                    int idSetExObj = exObj.getTemplate().getPanoId();
-                    if ((obj2 = this.player.getSimilarItem(exObj)) != null)//On le posséde deja
-                    {
-                        obj2.setQuantity(obj2.getQuantity()
-                                + exObj.getQuantity());
-                        SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, obj2);
-                        World.world.removeGameObject(exObj.getGuid());
-                        this.player.removeItem(exObj.getGuid());
-                        SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, exObj.getGuid());
-                    } else
-                    //On ne le posséde pas
-                    {
-                        exObj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-                        if ((idSetExObj >= 81 && idSetExObj <= 92)
-                                || (idSetExObj >= 201 && idSetExObj <= 212)) {
-                            String[] stats = exObjTpl.getStrTemplate().split(",");
-                            for (String stat : stats) {
-                                String[] val = stat.split("#");
-                                String modifi = Integer.parseInt(val[0], 16)
-                                        + ";" + Integer.parseInt(val[1], 16)
-                                        + ";0";
-                                SocketManager.SEND_SB_SPELL_BOOST(this.player, modifi);
-                                this.player.removeItemClasseSpell(Integer.parseInt(val[1], 16));
-                            }
-                            this.player.removeItemClasse(exObjTpl.getId());
-                        }
-                        SocketManager.GAME_SEND_OBJET_MOVE_PACKET(this.player, exObj);
-                    }
-                    if (this.player.getObjetByPos(Constant.ITEM_POS_ARME) == null)
-                        SocketManager.GAME_SEND_OT_PACKET(this, -1);
-
-                    //Si objet de panoplie
-                    if (exObj.getTemplate().getPanoId() > 0)
-                        SocketManager.GAME_SEND_OS_PACKET(this.player, exObj.getTemplate().getPanoId());
-                } else {
-                    GameObject obj2;
-                    //On a un objet similaire
-                    if ((obj2 = this.player.getSimilarItem(object)) != null) {
-                        if (quantity > object.getQuantity())
-                            quantity = object.getQuantity();
-
-                        obj2.setQuantity(obj2.getQuantity() + quantity);
-                        SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, obj2);
-
-                        if (object.getQuantity() - quantity > 0)//Si il en reste
-                        {
-                            object.setQuantity(object.getQuantity() - quantity);
-                            SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, object);
-                        } else
-                        //Sinon on supprime
-                        {
-                            World.world.removeGameObject(object.getGuid());
-                            this.player.removeItem(object.getGuid());
-                            SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, object.getGuid());
-                        }
-                    } else
-                    //Pas d'objets similaires
-                    {
-                        if (object.getPosition() > 16) {
-                            int oldPos = object.getPosition();
-                            object.setPosition(position);
-                            SocketManager.GAME_SEND_OBJET_MOVE_PACKET(this.player, object);
-
-                            if (object.getQuantity() > 1) {
-                                if (quantity > object.getQuantity())
-                                    quantity = object.getQuantity();
-
-                                if (object.getQuantity() - quantity > 0) {//Si il en reste
-                                    GameObject newItem = GameObject.getCloneObjet(object, object.getQuantity()
-                                            - quantity);
-                                    newItem.setPosition(oldPos);
-
-                                    object.setQuantity(quantity);
-                                    SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, object);
-
-                                    if (this.player.addObjet(newItem, false))
-                                        World.world.addGameObject(newItem, true);
-                                }
-                            }
-                        } else {
-                            object.setPosition(position);
-                            SocketManager.GAME_SEND_OBJET_MOVE_PACKET(this.player, object);
-
-                            if (object.getQuantity() > 1) {
-                                if (quantity > object.getQuantity())
-                                    quantity = object.getQuantity();
-
-                                if (object.getQuantity() - quantity > 0) {//Si il en reste
-                                    int newItemQua = object.getQuantity() - quantity;
-                                    GameObject newItem = GameObject.getCloneObjet(object, newItemQua);
-                                    if (this.player.addObjet(newItem, false))
-                                        World.world.addGameObject(newItem, true);
-                                    object.setQuantity(quantity);
-                                    SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, object);
-                                }
-                            }
-                        }
-                    }
-                }
-                if (position == Constant.ITEM_POS_ARME) {
-                    switch (object.getTemplate().getId())
-                    //Incarnation
-                    {
-                        case 9544: // Tourmenteur tÃ©nebres
-                            this.player.setFullMorph(1, false, false);
-                            break;
-                        case 9545: // Tourmenteur feu
-                            this.player.setFullMorph(5, false, false);
-                            break;
-                        case 9546: // Tourmenteur feuille
-                            this.player.setFullMorph(4, false, false);
-                            break;
-                        case 9547: // Tourmenteur gthiste
-                            this.player.setFullMorph(3, false, false);
-                            break;
-                        case 9548: // Tourmenteur terre
-                            this.player.setFullMorph(2, false, false);
-                            break;
-                        case 10125: // Bandit Archer
-                            this.player.setFullMorph(7, false, false);
-                            break;
-                        case 10126: // Bandit Fine Lame
-                            this.player.setFullMorph(6, false, false);
-                            break;
-                        case 10127: // Bandit Baroudeur
-                            this.player.setFullMorph(8, false, false);
-                            break;
-                        case 10133: // Bandit Ensorcelleur
-                            this.player.setFullMorph(9, false, false);
-                            break;
-                    }
-                } else {// Tourmenteur ; on démorphe
-                    if (Constant.isIncarnationWeapon(object.getTemplate().getId()))
-                        this.player.unsetFullMorph();
-                }
-
-                if (object.getTemplate().getId() == 2157) {
-                    if (position == Constant.ITEM_POS_COIFFE) {
-                        this.player.setGfxId((this.player.getSexe() == 1) ? 8009 : 8006);
-                        SocketManager.GAME_SEND_ERASE_ON_MAP_TO_MAP(this.player.getCurMap(), this.player.getId());
-                        SocketManager.GAME_SEND_ADD_PLAYER_TO_MAP(this.player.getCurMap(), this.player);
-                        SocketManager.GAME_SEND_MESSAGE(this.player, "Vous avez été transformé en mercenaire.");
-                    } else if (position == Constant.ITEM_POS_NO_EQUIPED) {
-                        this.player.setGfxId(this.player.getClasse() * 10 + this.player.getSexe());
-                        SocketManager.GAME_SEND_ERASE_ON_MAP_TO_MAP(this.player.getCurMap(), this.player.getId());
-                        SocketManager.GAME_SEND_ADD_PLAYER_TO_MAP(this.player.getCurMap(), this.player);
-                        SocketManager.GAME_SEND_MESSAGE(this.player, "Vous n'êtes plus mercenaire.");
-                    }
-                }
-                if (object.getTemplate().getId() != 2157 && this.player.isMorphMercenaire() && position == Constant.ITEM_POS_COIFFE) {
-                    this.player.setGfxId(this.player.getClasse() * 10 + this.player.getSexe());
+            if (object.getTemplate().getPanoId() > 0)
+                SocketManager.GAME_SEND_OS_PACKET(this.player, object.getTemplate().getPanoId());
+            
+            if (position == Constant.ITEM_POS_NO_EQUIPED && Constant.isIncarnationWeapon(object.getTemplate().getId()))
+                this.player.unsetFullMorph();
+            
+            else if(object.getTemplate().getId() == 2157) {
+            	if(position == Constant.ITEM_POS_NO_EQUIPED)
+            	{
+            		this.player.setGfxId(this.player.getClasse() * 10 + this.player.getSexe());
+            		SocketManager.GAME_SEND_ERASE_ON_MAP_TO_MAP(this.player.getCurMap(), this.player.getId());
+            		SocketManager.GAME_SEND_ADD_PLAYER_TO_MAP(this.player.getCurMap(), this.player);
+            		SocketManager.GAME_SEND_MESSAGE(this.player, "Vous n'êtes plus mercenaire.");
+            	}else if (position == Constant.ITEM_POS_COIFFE) {
+            		this.player.setGfxId((this.player.getSexe() == 1) ? 8009 : 8006);
                     SocketManager.GAME_SEND_ERASE_ON_MAP_TO_MAP(this.player.getCurMap(), this.player.getId());
                     SocketManager.GAME_SEND_ADD_PLAYER_TO_MAP(this.player.getCurMap(), this.player);
-                    SocketManager.GAME_SEND_MESSAGE(this.player, "Vous n'êtes plus mercenaire.");
+                    SocketManager.GAME_SEND_MESSAGE(this.player, "Vous avez été transformé en mercenaire.");
+            	}
+            } else if (position == Constant.ITEM_POS_ARME) {
+                switch (object.getTemplate().getId())
+                //Incarnation
+                {
+                    case 9544: // Tourmenteur tÃ©nebres
+                        this.player.setFullMorph(1, false, false);
+                        break;
+                    case 9545: // Tourmenteur feu
+                        this.player.setFullMorph(5, false, false);
+                        break;
+                    case 9546: // Tourmenteur feuille
+                        this.player.setFullMorph(4, false, false);
+                        break;
+                    case 9547: // Tourmenteur gthiste
+                        this.player.setFullMorph(3, false, false);
+                        break;
+                    case 9548: // Tourmenteur terre
+                        this.player.setFullMorph(2, false, false);
+                        break;
+                    case 10125: // Bandit Archer
+                        this.player.setFullMorph(7, false, false);
+                        break;
+                    case 10126: // Bandit Fine Lame
+                        this.player.setFullMorph(6, false, false);
+                        break;
+                    case 10127: // Bandit Baroudeur
+                        this.player.setFullMorph(8, false, false);
+                        break;
+                    case 10133: // Bandit Ensorcelleur
+                        this.player.setFullMorph(9, false, false);
+                        break;
                 }
-
-                this.player.refreshStats();
-                SocketManager.GAME_SEND_STATS_PACKET(this.player);
-
-                if (this.player.getParty() != null)
-                    SocketManager.GAME_SEND_PM_MOD_PACKET_TO_GROUP(this.player.getParty(), this.player);
-
-                if (position == Constant.ITEM_POS_ARME || position == Constant.ITEM_POS_COIFFE || position == Constant.ITEM_POS_FAMILIER || position == Constant.ITEM_POS_CAPE || position == Constant.ITEM_POS_BOUCLIER || position == Constant.ITEM_POS_NO_EQUIPED)
-                    SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player);
-
-                //Si familier
-                if (position == Constant.ITEM_POS_FAMILIER && this.player.isOnMount())
-                    this.player.toogleOnMount();
-                //Verif pour les thisils de métier
-                if (position == Constant.ITEM_POS_NO_EQUIPED && this.player.getObjetByPos(Constant.ITEM_POS_ARME) == null)
-                    SocketManager.GAME_SEND_OT_PACKET(this, -1);
-                if (position == Constant.ITEM_POS_ARME && this.player.getObjetByPos(Constant.ITEM_POS_ARME) != null)
-                    this.player.getMetiers().entrySet().stream().filter(e -> e.getValue().getTemplate().isValidTool(this.player.getObjetByPos(Constant.ITEM_POS_ARME).getTemplate().getId())).forEach(e -> SocketManager.GAME_SEND_OT_PACKET(this, e.getValue().getTemplate().getId()));
-                //Si objet de panoplie
-                if (object.getTemplate().getPanoId() > 0)
-                    SocketManager.GAME_SEND_OS_PACKET(this.player, object.getTemplate().getPanoId());
-                if (this.player.getFight() != null)
-                    SocketManager.GAME_SEND_ON_EQUIP_ITEM_FIGHT(this.player, this.player.getFight().getFighterByPerso(this.player), this.player.getFight());
             }
 
-            // Start craft secure show/hide
-            if (position == Constant.ITEM_POS_ARME || (position == Constant.ITEM_POS_NO_EQUIPED && object.getPosition() == Constant.ITEM_POS_ARME)) {
-                ArrayList<Job> jobs = this.player.getJobs();
+            this.player.refreshStats();
+            SocketManager.GAME_SEND_STATS_PACKET(this.player);
 
-                if (jobs != null) {
-                    object = this.player.getObjetByPos(Constant.ITEM_POS_ARME);
+            if (this.player.getParty() != null)
+                SocketManager.GAME_SEND_PM_MOD_PACKET_TO_GROUP(this.player.getParty(), this.player);
 
-                    if (object != null) {
-                        String arg = "EW+" + this.player.getId() + "|", data = "";
+            if (position == Constant.ITEM_POS_ARME || position == Constant.ITEM_POS_COIFFE || position == Constant.ITEM_POS_FAMILIER || position == Constant.ITEM_POS_CAPE || position == Constant.ITEM_POS_BOUCLIER || position == Constant.ITEM_POS_NO_EQUIPED)
+                SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player);
 
-                        for (Job job : jobs) {
-                            if (job.getSkills().isEmpty())
-                                continue;
-                            if (job.isMaging())//FIXME: pour l'instant.
-                                continue;
-                            if (!job.isValidTool(object.getTemplate().getId()))
-                                continue;
+            //Si familier
+            if (position == Constant.ITEM_POS_FAMILIER && this.player.isOnMount())
+                this.player.toogleOnMount();
+            
+            //Verif pour les thisils de métier
+            
+            if (position == Constant.ITEM_POS_NO_EQUIPED && oldPosition == Constant.ITEM_POS_ARME)
+                SocketManager.GAME_SEND_OT_PACKET(this, -1);
+            
+            if (position == Constant.ITEM_POS_ARME) 
+            	for(final Entry<Integer, JobStat> entry : this.player.getMetiers().entrySet()) 
+            		if(entry.getValue().getTemplate().isValidTool(object.getTemplate().getId())) 
+            			SocketManager.GAME_SEND_OT_PACKET(this, entry.getValue().getTemplate().getId());
+            
+            if (this.player.getFight() != null)
+                SocketManager.GAME_SEND_ON_EQUIP_ITEM_FIGHT(this.player, this.player.getFight().getFighterByPerso(this.player), this.player.getFight());
+        
 
-                            for (GameCase cell : this.player.getCurMap().getCases()) {
-                                if (cell.getObject() != null) {
-                                    if (cell.getObject().getTemplate() != null) {
-                                        int io = cell.getObject().getTemplate().getId();
-                                        ArrayList<Integer> skills = job.getSkills().get(io);
-
-                                        if (skills != null)
-                                            for (int skill : skills)
-                                                if (!data.contains(String.valueOf(skill)))
-                                                    data += (data.isEmpty() ? skill : ";"
-                                                            + skill);
-                                    }
-                                }
-                            }
-
-                            if (!data.isEmpty())
-                                break;
-                        }
-
-                        for (Player player : this.player.getCurMap().getPlayers())
-                            player.send(arg + data);
-                    } else {
-                        for (Player player : this.player.getCurMap().getPlayers())
-                            player.send("EW+" + this.player.getId());
-                    }
-                }
-
-            }
-            // End craft secure show/hide
+            onMovementSecureCraft(object, position, oldPosition);
+            
             if(this.player.getFight() != null) {
                 Fighter target = this.player.getFight().getFighterByPerso(this.player);
                 this.player.getFight().getFighters(7).stream().filter(fighter -> fighter != null && fighter.getPersonnage() != null).forEach(fighter -> fighter.getPersonnage().send(this.player.getCurMap().getFighterGMPacket(this.player)));

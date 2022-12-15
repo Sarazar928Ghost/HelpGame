@@ -84,6 +84,9 @@ public class Constant {
     public static final int ITEM_POS_DOFUS6 = 14;
     public static final int ITEM_POS_BOUCLIER = 15;
     public static final int ITEM_POS_DRAGODINDE = 16;
+    // Positions Consommable
+    public static final int CONSO_POS_1 = 35;
+    public static final int CONSO_POS_14 = 48;
     //Objets dons, mutations, mal�diction, ..
     public static final int ITEM_POS_MUTATION = 20;
     public static final int ITEM_POS_ROLEPLAY_BUFF = 21;
@@ -2909,31 +2912,55 @@ public class Constant {
 
         return -1;
     }
+    
+    
+    public static boolean isAValidConsumableItem(final ObjectTemplate template) {
+    	switch (template.getType()) {
+	    	case ITEM_TYPE_POTION:
+	    	case ITEM_TYPE_PARCHO_EXP:
+	    	case ITEM_TYPE_BOOST_FOOD:
+	    	case ITEM_TYPE_PAIN:
+	    	case ITEM_TYPE_BIERE:
+	    	case ITEM_TYPE_POISSON:
+	    	case ITEM_TYPE_BONBON:
+	    	case ITEM_TYPE_COMESTI_POISSON:
+	    	case ITEM_TYPE_VIANDE:
+	    	case ITEM_TYPE_VIANDE_CONSERVEE:
+	    	case ITEM_TYPE_VIANDE_COMESTIBLE:
+	    	case ITEM_TYPE_TEINTURE:
+	    	case ITEM_TYPE_MAITRISE:
+	    	case ITEM_TYPE_BOISSON:
+	    	case ITEM_TYPE_PIERRE_AME_PLEINE:
+	    	case ITEM_TYPE_PARCHO_RECHERCHE:
+	    	case ITEM_TYPE_CADEAUX:
+	    	case ITEM_TYPE_OBJET_ELEVAGE:
+	    	case ITEM_TYPE_OBJET_UTILISABLE:
+	    	case ITEM_TYPE_PRISME:
+	    	case ITEM_TYPE_FEE_ARTIFICE:
+	    	case ITEM_TYPE_DONS:
+	    	case ITEM_TYPE_PIERRE_MAGIQUE:
+	    		return true;
+    	}
+    	return false;
+    }
 
-    public static boolean isValidPlaceForItem(ObjectTemplate template, int place) {
-        if (template.getType() == 41 && place == ITEM_POS_DRAGODINDE)
-            return true;
-
+    public static boolean isValidPlaceForItem(final ObjectTemplate template, final int place) {
         switch (template.getType()) {
             case ITEM_TYPE_AMULETTE:
                 if (place == ITEM_POS_AMULETTE)
                     return true;
                 break;
-            case 113:
-                if ((template.getId() == 9233) && (place == 7))
+            case 113: // Obvi
+                if ((template.getId() == 9233) && (place == Constant.ITEM_POS_CAPE))
                     return true;
-                if ((template.getId() == 9234) && (place == 6))
+                if ((template.getId() == 9234) && (place == Constant.ITEM_POS_COIFFE))
                     return true;
-                if ((template.getId() == 9255) && (place == 0))
+                if ((template.getId() == 9255) && (place == Constant.ITEM_POS_AMULETTE))
                     return true;
-                if ((template.getId() == 9256)
-                        && ((place == 2) || (place == 4)))
+                if ((template.getId() == 9256) && (place == Constant.ITEM_POS_ANNEAU1 || place == Constant.ITEM_POS_ANNEAU1))
                     return true;
                 break;
             case 114: // tourmenteurs
-                if (place == 1) // CaC
-                    return true;
-                break;
             case ITEM_TYPE_ARC:
             case ITEM_TYPE_BAGUETTE:
             case ITEM_TYPE_BATON:
@@ -2994,35 +3021,9 @@ public class Constant {
                     return true;
                 break;
 
-            //Barre d'objets : Normalement le client bloque les items interdits
-            case ITEM_TYPE_POTION:
-            case ITEM_TYPE_PARCHO_EXP:
-            case ITEM_TYPE_BOOST_FOOD:
-            case ITEM_TYPE_PAIN:
-            case ITEM_TYPE_BIERE:
-            case ITEM_TYPE_POISSON:
-            case ITEM_TYPE_BONBON:
-            case ITEM_TYPE_COMESTI_POISSON:
-            case ITEM_TYPE_VIANDE:
-            case ITEM_TYPE_VIANDE_CONSERVEE:
-            case ITEM_TYPE_VIANDE_COMESTIBLE:
-            case ITEM_TYPE_TEINTURE:
-            case ITEM_TYPE_MAITRISE:
-            case ITEM_TYPE_BOISSON:
-            case ITEM_TYPE_PIERRE_AME_PLEINE:
-            case ITEM_TYPE_PARCHO_RECHERCHE:
-            case ITEM_TYPE_CADEAUX:
-            case ITEM_TYPE_OBJET_ELEVAGE:
-            case ITEM_TYPE_OBJET_UTILISABLE:
-            case ITEM_TYPE_PRISME:
-            case ITEM_TYPE_FEE_ARTIFICE:
-            case ITEM_TYPE_DONS:
-            case ITEM_TYPE_PIERRE_MAGIQUE:
-                if (place >= 35 && place <= 48)
-                    return true;
-                break;
         }
-        return false;
+        
+        return (isAValidConsumableItem(template) && (place >= CONSO_POS_1 && place <= CONSO_POS_14));
     }
 
 	/*
@@ -4273,5 +4274,11 @@ public class Constant {
         else if (statsId == 215)
             return new int[]{211, 212, 213, 214};
         return null;
+    }
+    
+    public static boolean isPanoIdClass(final int ObjPanoID) {
+    	if(ObjPanoID >= 81 && ObjPanoID <= 92) return true;
+    	else if(ObjPanoID >= 201 && ObjPanoID <= 212) return true;
+    	return false;
     }
 }

@@ -1,7 +1,7 @@
 ## HelpGame
 
 Cette émulateur est open source pour toute personne.  
-Merci de pas le vendre et de le partager a tous gratuitement.
+Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 
 ## Authors
 
@@ -16,7 +16,6 @@ Merci de pas le vendre et de le partager a tous gratuitement.
 - Nouvelle condition : PRE , exemple : PRE>1 , prestige supérieur a 1. A mettre dans les colonnes conditions en base de données.
 - Nouvelle config.txt.
 - Possibilités de donner des items/pano lors de la création d'un personnage via la config.txt
-- Refonte système de parchotage et reset stats.
 - Commande joueur giveItem ( numéro 6 ) avec arguments exemple : idTemplate,idTemplate,idTemplate,idTemplate;true (true veut dire jetMax)
 
 ## DEBUG :
@@ -26,6 +25,7 @@ Merci de pas le vendre et de le partager a tous gratuitement.
 ## AUTRES :
 
 - Refactoring du code en masse afin de le rendre plus lisible et professionel.
+- Refonte système de parchotage et reset stats.
 
 ## TELECHARGEMENT :
 - GameCompiled.rar contient le game compilé avec le .bat pour le lancer.

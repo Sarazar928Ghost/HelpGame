@@ -2614,20 +2614,6 @@ public class Player {
 					.getPanoId());
 	}
 
-    //TODO: Delete s'te fonction.
-    public GameObject getObjetByPos2(int pos) {
-        if (pos == Constant.ITEM_POS_NO_EQUIPED)
-            return null;
-
-        for (Entry<Integer, GameObject> entry : objects.entrySet()) {
-            GameObject obj = entry.getValue();
-
-            if (obj.getPosition() == pos)
-                return obj;
-        }
-        return null;
-    }
-
     public void refreshStats() {
     	final double actPdvPer = (100.0 * (double) this.curPdv) / (double) this.maxPdv;
         if (!useStats)
