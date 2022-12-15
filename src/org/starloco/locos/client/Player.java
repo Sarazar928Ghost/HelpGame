@@ -759,11 +759,13 @@ public class Player {
             int guid = getObjetByPos(Constant.ITEM_POS_ROLEPLAY_BUFF).getGuid();
             SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, guid);
             this.deleteItem(guid);
+            this.unEquipItem(Constant.ITEM_POS_ROLEPLAY_BUFF);
         }
 
         GameObject obj = World.world.getObjTemplate(objTemplate).createNewRoleplayBuff();
         this.addObjet(obj, false);
         World.world.addGameObject(obj, true);
+        this.equipItem(obj);
         SocketManager.GAME_SEND_ALTER_GM_PACKET(this.getCurMap(), this);
         SocketManager.GAME_SEND_Ow_PACKET(this);
         SocketManager.GAME_SEND_STATS_PACKET(this);
@@ -775,6 +777,7 @@ public class Player {
             int guid = getObjetByPos(Constant.ITEM_POS_BENEDICTION).getGuid();
             SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, guid);
             this.deleteItem(guid);
+            this.unEquipItem(Constant.ITEM_POS_BENEDICTION);
         }
         if (id == 0) {
             SocketManager.GAME_SEND_ALTER_GM_PACKET(this.getCurMap(), this);
@@ -793,6 +796,7 @@ public class Player {
         GameObject obj = World.world.getObjTemplate(id).createNewBenediction(turn);
         this.addObjet(obj, false);
         World.world.addGameObject(obj, true);
+        this.equipItem(obj);
         SocketManager.GAME_SEND_ALTER_GM_PACKET(this.getCurMap(), this);
         SocketManager.GAME_SEND_Ow_PACKET(this);
         SocketManager.GAME_SEND_STATS_PACKET(this);
@@ -816,11 +820,13 @@ public class Player {
             int guid = getObjetByPos(Constant.ITEM_POS_MALEDICTION).getGuid();
             SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, guid);
             this.deleteItem(guid);
+            this.unEquipItem(Constant.ITEM_POS_MALEDICTION);
         }
 
         GameObject obj = World.world.getObjTemplate(objTemplate).createNewMalediction();
         this.addObjet(obj, false);
         World.world.addGameObject(obj, true);
+        this.equipItem(obj);
         if (this.getFight() != null) {
             SocketManager.GAME_SEND_ALTER_GM_PACKET(this.getCurMap(), this);
             SocketManager.GAME_SEND_Ow_PACKET(this);
@@ -834,6 +840,7 @@ public class Player {
             int guid = getObjetByPos(Constant.ITEM_POS_PNJ_SUIVEUR).getGuid();
             SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, guid);
             this.deleteItem(guid);
+            this.unEquipItem(Constant.ITEM_POS_PNJ_SUIVEUR);
         }
         if (id == 0) {
             SocketManager.GAME_SEND_ALTER_GM_PACKET(this.getCurMap(), this);
@@ -842,9 +849,10 @@ public class Player {
 
         GameObject obj = World.world.getObjTemplate(id).createNewFollowPnj(1);
         if (obj != null)
-            if (this.addObjet(obj, false))
-                World.world.addGameObject(obj, true);
-
+            if (this.addObjet(obj, false)) {
+            	World.world.addGameObject(obj, true);
+            	this.equipItem(obj);
+            }
         SocketManager.GAME_SEND_ALTER_GM_PACKET(this.getCurMap(), this);
         SocketManager.GAME_SEND_Ow_PACKET(this);
         SocketManager.GAME_SEND_STATS_PACKET(this);
@@ -856,6 +864,7 @@ public class Player {
             int guid = getObjetByPos(Constant.ITEM_POS_BONBON).getGuid();
             SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, guid);
             this.deleteItem(guid);
+            this.unEquipItem(Constant.ITEM_POS_BONBON);
         }
         int turn = 30;
         switch (id) {
@@ -879,6 +888,7 @@ public class Player {
 
         GameObject obj = World.world.getObjTemplate(id).createNewCandy(turn);
         this.addObjet(obj, false);
+        this.equipItem(obj);
         World.world.addGameObject(obj, true);
         SocketManager.GAME_SEND_Ow_PACKET(this);
         SocketManager.GAME_SEND_STATS_PACKET(this);
@@ -892,6 +902,7 @@ public class Player {
             if (obj.getStats().getEffect(Constant.STATS_TURN) <= 0) {
                 SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, obj.getGuid());
                 this.deleteItem(obj.getGuid());
+                this.unEquipItem(Constant.ITEM_POS_BONBON);
             } else {
                 SocketManager.GAME_SEND_UPDATE_ITEM(this, obj);
             }
@@ -903,6 +914,7 @@ public class Player {
             if (obj.getStats().getEffect(Constant.STATS_TURN) <= 0) {
                 SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, obj.getGuid());
                 this.deleteItem(obj.getGuid());
+                this.unEquipItem(Constant.ITEM_POS_PNJ_SUIVEUR);
             } else {
                 SocketManager.GAME_SEND_UPDATE_ITEM(this, obj);
             }
@@ -914,6 +926,7 @@ public class Player {
             if (obj.getStats().getEffect(Constant.STATS_TURN) <= 0) {
                 SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, obj.getGuid());
                 this.deleteItem(obj.getGuid());
+                this.unEquipItem(Constant.ITEM_POS_BENEDICTION);
             } else {
                 SocketManager.GAME_SEND_UPDATE_ITEM(this, obj);
             }
@@ -935,6 +948,7 @@ public class Player {
                 }
 
                 this.deleteItem(obj.getGuid());
+                this.unEquipItem(Constant.ITEM_POS_MALEDICTION);
             } else {
                 SocketManager.GAME_SEND_UPDATE_ITEM(this, obj);
             }
@@ -948,6 +962,7 @@ public class Player {
                 SocketManager.GAME_SEND_ALTER_GM_PACKET(getCurMap(), this);
                 SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, obj.getGuid());
                 this.deleteItem(obj.getGuid());
+                this.unEquipItem(Constant.ITEM_POS_ROLEPLAY_BUFF);
             } else {
                 SocketManager.GAME_SEND_UPDATE_ITEM(this, obj);
             }
@@ -2443,6 +2458,7 @@ public class Player {
                 return false;
             }
         }
+        
         objects.put(newObj.getGuid(), newObj);
         SocketManager.GAME_SEND_OAKO_PACKET(this, newObj);
         return true;
