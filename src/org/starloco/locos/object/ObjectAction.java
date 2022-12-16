@@ -35,24 +35,29 @@ public class ObjectAction {
         this.cond = cond;
     }
 
-    public void apply(Player player0, Player target, int objet, int cellid) {
+    public void apply(Player player0, Player target, final int objet, int cellid) {
         if (player0 == null || !player0.isOnline() || player0.getDoAction() || player0.getGameClient() == null)
             return;
         if (!this.cond.equalsIgnoreCase("") && !this.cond.equalsIgnoreCase("-1") && !ConditionParser.validConditions(player0, this.cond)) {
             SocketManager.GAME_SEND_Im_PACKET(player0, "119");
             return;
         }
-        if (player0.getLevel() < World.world.getGameObject(objet).getTemplate().getLevel()) {
+        
+        final GameObject gameObject = World.world.getGameObject(objet);
+        
+        Player player = target != null ? target : player0;
+        
+        if (gameObject == null) {
+        	SocketManager.GAME_SEND_MESSAGE(player, "Error object null. Merci de prévenir un administrateur est d'indiquer le message.");
+        	return;
+        }
+        
+        if (player0.getLevel() < gameObject.getTemplate().getLevel()) {
             SocketManager.GAME_SEND_Im_PACKET(player0, "119");
             return;
         }
 
-        Player player = target != null ? target : player0;
 
-        if (World.world.getGameObject(objet) == null) {
-            SocketManager.GAME_SEND_MESSAGE(player, "Error object null. Merci de prévenir un administrateur est d'indiquer le message.");
-            return;
-        }
 
         boolean sureIsOk = false, isOk = true;
         int turn = 0;
@@ -106,10 +111,10 @@ public class ObjectAction {
                             int val, statId1;
                             if (arg.contains(";")) {
                                 statId1 = Integer.parseInt(arg.split(";")[0]);
-                                val = World.world.getGameObject(objet).getRandomValue(World.world.getGameObject(objet).parseStatsString(), Integer.parseInt(arg.split(";")[0]));
+                                val = gameObject.getRandomValue(gameObject.parseStatsString(), Integer.parseInt(arg.split(";")[0]));
                             } else {
                                 statId1 = Integer.parseInt(arg0);
-                                val = World.world.getGameObject(objet).getRandomValue(World.world.getGameObject(objet).parseStatsString(), Integer.parseInt(arg0));
+                                val = gameObject.getRandomValue(gameObject.parseStatsString(), Integer.parseInt(arg0));
                             }
                             switch (statId1) {
                                 case 110://Vie.
@@ -272,16 +277,13 @@ public class ObjectAction {
 
                     case 10://EPO.
                         if (player0.getFight() != null) return;
-                        GameObject obj = World.world.getGameObject(objet);
-                        if (obj == null)
-                            return;
                         GameObject pets = player.getObjetByPos(Constant.ITEM_POS_FAMILIER);
                         if (pets == null)
                             return;
                         PetEntry MyPets = World.world.getPetsEntry(pets.getGuid());
                         if (MyPets == null)
                             return;
-                        if (obj.getTemplate().getConditions().contains(pets.getTemplate().getId() + ""))
+                        if (gameObject.getTemplate().getConditions().contains(pets.getTemplate().getId() + ""))
                             MyPets.giveEpo(player);
                         break;
 
@@ -412,31 +414,31 @@ public class ObjectAction {
 
                     case 17://Bénédiction.
                         if (player0.getFight() != null) return;
-                        player.setBenediction(World.world.getGameObject(objet).getTemplate().getId());
+                        player.setBenediction(gameObject.getTemplate().getId());
                         break;
 
                     case 18://Malédiction.
                         if (player0.getFight() != null) return;
-                        player.setMalediction(World.world.getGameObject(objet).getTemplate().getId());
+                        player.setMalediction(gameObject.getTemplate().getId());
                         break;
 
                     case 19://RolePlay Buff.
                         if (player0.getFight() != null) return;
-                        player.setRoleplayBuff(World.world.getGameObject(objet).getTemplate().getId());
+                        player.setRoleplayBuff(gameObject.getTemplate().getId());
                         break;
 
                     case 20://Bonbon.
                         if (player0.getFight() != null) return;
-                        player.setCandy(World.world.getGameObject(objet).getTemplate().getId());
+                        player.setCandy(gameObject.getTemplate().getId());
                         break;
 
                     case 21://Poser un objet d'élevage.
                         if (player0.getFight() != null) return;
                         GameMap map0 = player.getCurMap();
-                        id0 = World.world.getGameObject(objet).getTemplate().getId();
+                        id0 = gameObject.getTemplate().getId();
 
-                        int resist = World.world.getGameObject(objet).getResistance(World.world.getGameObject(objet).parseStatsString());
-                        int resistMax = World.world.getGameObject(objet).getResistanceMax(World.world.getGameObject(objet).getTemplate().getStrTemplate());
+                        int resist = gameObject.getResistance(gameObject.parseStatsString());
+                        int resistMax = gameObject.getResistanceMax(gameObject.getTemplate().getStrTemplate());
                         if (map0.getMountPark() == null)
                             return;
                         MountPark MP = map0.getMountPark();
@@ -562,7 +564,7 @@ public class ObjectAction {
                         if (arg.split(";")[1].equals("1")) {
                             groupData = arg.split(";")[2];
                         } else {
-                            SoulStone soulStone = (SoulStone) World.world.getGameObject(objet);
+                            SoulStone soulStone = (SoulStone) gameObject;
                             groupData = soulStone.parseGroupData();
                         }
                         String condition = "MiS = " + player.getId();
@@ -572,7 +574,7 @@ public class ObjectAction {
                     case 26://Ajout d'objet.
                         if (player0.getFight() != null) return;
                         for (String i : arg.split(";")) {
-                            obj = World.world.getObjTemplate(Integer.parseInt(i.split(",")[0])).createNewItem(Integer.parseInt(i.split(",")[1]), false);
+                            final GameObject obj = World.world.getObjTemplate(Integer.parseInt(i.split(",")[0])).createNewItem(Integer.parseInt(i.split(",")[1]), false);
                             if (player.addObjet(obj, true))
                                 World.world.addGameObject(obj, true);
                         }
@@ -602,7 +604,7 @@ public class ObjectAction {
 
                     case 32://Géoposition traque.
                         if (player0.getFight() != null) return;
-                        String traque = World.world.getGameObject(objet).getTraquedName();
+                        String traque = gameObject.getTraquedName();
 
                         if (traque == null)
                             break;
@@ -626,9 +628,9 @@ public class ObjectAction {
                         break;
 
                     case 34://Fm cac
-                        GameObject gameObject = player.getObjetByPos(Constant.ITEM_POS_ARME);
+                        GameObject weapon = player.getObjetByPos(Constant.ITEM_POS_ARME);
 
-                        if(gameObject == null) {
+                        if(weapon == null) {
                             player.sendMessage("Vous ne portez pas de corps-Ã -corps.");
                             isOk = false;
                             send = false;
@@ -637,32 +639,32 @@ public class ObjectAction {
 
                         boolean containNeutre = false;
 
-                        for(SpellEffect effect : gameObject.getEffects())
+                        for(SpellEffect effect : weapon.getEffects())
                             if(effect.getEffectID() == 100 || effect.getEffectID() == 95)
                                 containNeutre = true;
 
                         if(containNeutre) {
-                            for(int i = 0; i < gameObject.getEffects().size(); i++) {
-                                if(gameObject.getEffects().get(i).getEffectID() == 100) {
+                            for(int i = 0; i < weapon.getEffects().size(); i++) {
+                                if(weapon.getEffects().get(i).getEffectID() == 100) {
                                     switch(this.args.toUpperCase()) {
-                                        case "EAU": gameObject.getEffects().get(i).setEffectID(96); break;
-                                        case "TERRE": gameObject.getEffects().get(i).setEffectID(97); break;
-                                        case "AIR": gameObject.getEffects().get(i).setEffectID(98); break;
-                                        case "FEU": gameObject.getEffects().get(i).setEffectID(99); break;
+                                        case "EAU": weapon.getEffects().get(i).setEffectID(96); break;
+                                        case "TERRE": weapon.getEffects().get(i).setEffectID(97); break;
+                                        case "AIR": weapon.getEffects().get(i).setEffectID(98); break;
+                                        case "FEU": weapon.getEffects().get(i).setEffectID(99); break;
                                     }
                                 }
-                                if(gameObject.getEffects().get(i).getEffectID() == 95) {
+                                if(weapon.getEffects().get(i).getEffectID() == 95) {
                                     switch(this.args.toUpperCase()) {
-                                        case "EAU": gameObject.getEffects().get(i).setEffectID(91); break;
-                                        case "TERRE": gameObject.getEffects().get(i).setEffectID(92); break;
-                                        case "AIR": gameObject.getEffects().get(i).setEffectID(93); break;
-                                        case "FEU": gameObject.getEffects().get(i).setEffectID(94); break;
+                                        case "EAU": weapon.getEffects().get(i).setEffectID(91); break;
+                                        case "TERRE": weapon.getEffects().get(i).setEffectID(92); break;
+                                        case "AIR": weapon.getEffects().get(i).setEffectID(93); break;
+                                        case "FEU": weapon.getEffects().get(i).setEffectID(94); break;
                                     }
                                 }
                             }
 
                             SocketManager.GAME_SEND_STATS_PACKET(player);
-                            SocketManager.GAME_SEND_UPDATE_ITEM(player, gameObject);
+                            SocketManager.GAME_SEND_UPDATE_ITEM(player, weapon);
                             player.sendMessage("Votre corps-corps a été modifié avec succès.");
                         } else {
                             player.sendMessage("Votre corps-à-corps ne contient aucun dégât de type neutre.");
@@ -694,7 +696,7 @@ public class ObjectAction {
         }
         
         if (type.equalsIgnoreCase("90")) return; // make sure the profession rune is not removed - Coding Mestre
-        boolean effect = this.haveEffect(World.world.getGameObject(objet).getTemplate().getId(), World.world.getGameObject(objet), player);
+        boolean effect = this.haveEffect(gameObject.getTemplate().getId(), gameObject, player);
         if (effect)
             isOk = true;
         if (isOk)
@@ -703,9 +705,11 @@ public class ObjectAction {
             isOk = true;
         if (objet != -1) {
             if (send)
-                SocketManager.GAME_SEND_Im_PACKET(player, "022;" + 1 + "~" + World.world.getGameObject(objet).getTemplate().getId());
-            if (sureIsOk || (isOk && effect && World.world.getGameObject(objet).getTemplate().getId() != 7799)) {
-                if (World.world.getGameObject(objet) != null) {
+                SocketManager.GAME_SEND_Im_PACKET(player, "022;" + 1 + "~" + gameObject.getTemplate().getId());
+            if (sureIsOk || (isOk && effect && gameObject.getTemplate().getId() != 7799)) {
+                if (gameObject != null) {
+                	if(gameObject.getPosition() != Constant.ITEM_POS_NO_EQUIPED)
+                		player0.unEquipItem(gameObject.getPosition());
                     player0.removeItem(objet, 1, true, true);
                 }
             }
