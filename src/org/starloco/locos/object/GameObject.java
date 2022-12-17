@@ -77,13 +77,13 @@ public class GameObject {
         maps.putAll(obj.getStats().getMap());
         Stats newStats = new Stats(maps);
 
-        GameObject ob = new GameObject(Database.getStatics().getObjectData().getNextId(), obj.getTemplate().getId(), qua, Constant.ITEM_POS_NO_EQUIPED, newStats, obj.getEffects(), obj.getSoulStat(), obj.getTxtStat(), obj.getPuit());
+        GameObject ob = new GameObject(Database.getDynamics().getWorldEntityData().getNextObjectId(), obj.getTemplate().getId(), qua, Constant.ITEM_POS_NO_EQUIPED, newStats, obj.getEffects(), obj.getSoulStat(), obj.getTxtStat(), obj.getPuit());
         ob.modification = 0;
         return ob;
     }
 
     public int setId() {
-        this.guid = Database.getStatics().getObjectData().getNextId();
+        this.guid = Database.getDynamics().getWorldEntityData().getNextObjectId();
         return this.getGuid();
     }
 

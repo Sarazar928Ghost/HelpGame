@@ -63,6 +63,10 @@ public class DynamicsDatabase {
     private HeroicMobsGroups heroicMobsGroups;
     public LangItemData langItemData;
     
+    private MountData mountData;
+    private ObjectData objectData;
+    private PetData petData;
+    private WorldEntityData worldEntityData;
     private PlayerCommandData playerCommandData;
 
     public void initializeData() {
@@ -118,6 +122,10 @@ public class DynamicsDatabase {
         this.heroicMobsGroups = new HeroicMobsGroups(dataSource);
         this.langItemData = new LangItemData(dataSource);
 
+        this.mountData = new MountData(this.dataSource);
+        this.objectData = new ObjectData(this.dataSource);
+        this.petData = new PetData(this.dataSource);
+        this.worldEntityData = new WorldEntityData(this.dataSource);
         this.playerCommandData = new PlayerCommandData(this.dataSource);
     }
 
@@ -336,5 +344,21 @@ public class DynamicsDatabase {
     
     public PlayerCommandData getPlayerCommandData() {
 		return playerCommandData;
+	}
+
+	public MountData getMountData() {
+		return mountData;
+	}
+
+	public ObjectData getObjectData() {
+		return objectData;
+	}
+
+	public PetData getPetData() {
+		return petData;
+	}
+
+	public WorldEntityData getWorldEntityData() {
+		return worldEntityData;
 	}
 }

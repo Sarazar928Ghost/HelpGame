@@ -37,7 +37,6 @@ import org.starloco.locos.kernel.Config;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit; // La
 import java.util.stream.Collectors;
 
 public class GameMap {
@@ -231,7 +230,7 @@ public class GameMap {
                             continue;
                         }
                         World.world.removeMount(id);
-                        Database.getStatics().getMountData().delete(id);
+                        Database.getDynamics().getMountData().delete(id);
                     }
                     park.getListOfRaising().clear();
                 }
@@ -239,7 +238,7 @@ public class GameMap {
                     for (Mount mount : new ArrayList<>(park.getEtable())) {
                         if (mount == null) continue;
                         World.world.removeMount(mount.getId());
-                        Database.getStatics().getMountData().delete(mount.getId());
+                        Database.getDynamics().getMountData().delete(mount.getId());
                     }
                     park.getEtable().clear();
                 }

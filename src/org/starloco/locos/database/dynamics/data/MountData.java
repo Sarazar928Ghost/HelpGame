@@ -1,18 +1,16 @@
-package org.starloco.locos.database.statics.data;
+package org.starloco.locos.database.dynamics.data;
 
-import com.zaxxer.hikari.HikariDataSource;
-import org.starloco.locos.client.Player;
-import org.starloco.locos.database.Database;
-import org.starloco.locos.database.statics.AbstractDAO;
-import org.starloco.locos.entity.mount.Mount;
-import org.starloco.locos.exchange.transfer.DataQueue;
-import org.starloco.locos.game.world.World;
-import org.starloco.locos.kernel.Main;
-
-import javax.xml.crypto.Data;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.starloco.locos.client.Player;
+import org.starloco.locos.database.Database;
+import org.starloco.locos.database.dynamics.AbstractDAO;
+import org.starloco.locos.entity.mount.Mount;
+import org.starloco.locos.game.world.World;
+
+import com.zaxxer.hikari.HikariDataSource;
 
 public class MountData extends AbstractDAO<Mount> {
 
@@ -24,7 +22,7 @@ public class MountData extends AbstractDAO<Mount> {
     public void load(Object obj) {
         Result result = null;
         try {
-            result = getData("SELECT * from `world.entity.mounts` WHERE `id` = " + String.valueOf((int) obj) + ";");
+            result = getData("SELECT * from `mounts` WHERE `id` = " + String.valueOf((int) obj) + ";");
             ResultSet RS = result.resultSet;
             while (RS.next()) {
                 World.world.addMount(new Mount(RS.getInt("id"), RS.getInt("color"), RS.getInt("sex"), RS.getInt("amour"), RS.getInt("endurance"), RS.getInt("level"), RS.getLong("xp"),
@@ -44,7 +42,7 @@ public class MountData extends AbstractDAO<Mount> {
     public boolean update(Mount mount) {
         PreparedStatement p = null;
         try {
-            p = getPreparedStatement("UPDATE `world.entity.mounts` SET `name` = ?, `xp` = ?, `level` = ?, `endurance` = ?, `amour` = ?, `maturity` = ?, `serenity` = ?, `reproductions` = ?," +
+            p = getPreparedStatement("UPDATE `mounts` SET `name` = ?, `xp` = ?, `level` = ?, `endurance` = ?, `amour` = ?, `maturity` = ?, `serenity` = ?, `reproductions` = ?," +
                     "`fatigue` = ?, `energy` = ?, `ancestors` = ?, `objects` = ?, `owner` = ?, `capacitys` = ?, `size` = ?, `cell` = ?, `map` = ?," +
                     " `orientation` = ?, `fecundatedDate` = ?, `couple` = ? WHERE `id` = ?;");
             p.setString(1, mount.getName());
@@ -81,7 +79,7 @@ public class MountData extends AbstractDAO<Mount> {
     public void delete(int id) {
         PreparedStatement p = null;
         try {
-            p = getPreparedStatement("DELETE FROM `world.entity.mounts` WHERE `id` = ?;");
+            p = getPreparedStatement("DELETE FROM `mounts` WHERE `id` = ?;");
             p.setInt(1, id);
             execute(p);
         } catch (SQLException e) {
@@ -102,7 +100,7 @@ public class MountData extends AbstractDAO<Mount> {
     public void add(Mount mount) {
         PreparedStatement p = null;
         try {
-            p = getPreparedStatement("INSERT INTO `world.entity.mounts`(`id`, `color`, `sex`, `name`, `xp`, `level`, `endurance`, `amour`, `maturity`, `serenity`, `reproductions`, `fatigue`, `energy`," +
+            p = getPreparedStatement("INSERT INTO `mounts`(`id`, `color`, `sex`, `name`, `xp`, `level`, `endurance`, `amour`, `maturity`, `serenity`, `reproductions`, `fatigue`, `energy`," +
                     "`objects`, `ancestors`, `capacitys`, `size`, `map`, `cell`, `owner`, `orientation`, `fecundatedDate`, `couple`, `savage`) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             p.setInt(1, mount.getId());
@@ -135,20 +133,5 @@ public class MountData extends AbstractDAO<Mount> {
         } finally {
             close(p);
         }
-    }
-
-    public int getNextId() {
-        final DataQueue.Queue<Integer> queue = new DataQueue.Queue<>((byte) 1);
-        try {
-            synchronized(queue) {
-                long count = DataQueue.count();
-                DataQueue.queues.put(count, queue);
-                Main.exchangeClient.send("DI" + queue.getType() + count);
-                queue.wait();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return queue.getValue();
     }
 }

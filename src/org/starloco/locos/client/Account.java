@@ -547,7 +547,7 @@ public class Account {
         if (player.getParty() != null)
             player.getParty().leave(player);
         if (player.getMount() != null)
-            Database.getStatics().getMountData().update(player.getMount());
+            Database.getDynamics().getMountData().update(player.getMount());
         if (player.getFight() != null) {
             if (player.getFight().playerDisconnect(player, false)) {
                 Database.getStatics().getPlayerData().update(player);

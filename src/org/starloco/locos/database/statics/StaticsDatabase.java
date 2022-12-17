@@ -25,12 +25,9 @@ public class StaticsDatabase {
     private GuildData guildData;
     private HouseData houseData;
     private TrunkData trunkData;
-    private MountData mountData;
     private MountParkData mountParkData;
-    private ObjectData objectData;
     private ObvejivanData obvejivanData;
     private PubData pubData;
-    private PetData petData;
     private QuestPlayerData questPlayerData;
     private PrestigeData prestigeData;
     private PrestigeBonusData prestigeBonusData;
@@ -47,12 +44,9 @@ public class StaticsDatabase {
         this.groupData = new GroupData(this.dataSource);
         this.houseData = new HouseData(this.dataSource);
         this.trunkData = new TrunkData(this.dataSource);
-        this.mountData = new MountData(this.dataSource);
         this.mountParkData = new MountParkData(this.dataSource);
-        this.objectData = new ObjectData(this.dataSource);
         this.obvejivanData = new ObvejivanData(this.dataSource);
         this.pubData = new PubData(this.dataSource);
-        this.petData = new PetData(this.dataSource);
         this.questPlayerData = new QuestPlayerData(this.dataSource);
         this.prestigeData = new PrestigeData(this.dataSource);
         this.prestigeBonusData = new PrestigeBonusData(this.dataSource);
@@ -138,16 +132,8 @@ public class StaticsDatabase {
         return trunkData;
     }
 
-    public MountData getMountData() {
-        return mountData;
-    }
-
     public MountParkData getMountParkData() {
         return mountParkData;
-    }
-
-    public ObjectData getObjectData() {
-        return objectData;
     }
 
     public ObvejivanData getObvejivanData() {
@@ -156,10 +142,6 @@ public class StaticsDatabase {
 
     public PubData getPubData() {
         return pubData;
-    }
-
-    public PetData getPetData() {
-        return petData;
     }
 
     public QuestPlayerData getQuestPlayerData() {

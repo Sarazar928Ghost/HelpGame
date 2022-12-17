@@ -1,15 +1,14 @@
-package org.starloco.locos.database.statics.data;
+package org.starloco.locos.database.dynamics.data;
 
 import com.zaxxer.hikari.HikariDataSource;
-import org.starloco.locos.database.statics.AbstractDAO;
-import org.starloco.locos.entity.pet.PetEntry;
-import org.starloco.locos.exchange.transfer.DataQueue;
-import org.starloco.locos.game.world.World;
-import org.starloco.locos.kernel.Main;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.starloco.locos.database.dynamics.AbstractDAO;
+import org.starloco.locos.entity.pet.PetEntry;
+import org.starloco.locos.game.world.World;
 
 public class PetData extends AbstractDAO<PetEntry> {
 
@@ -24,7 +23,7 @@ public class PetData extends AbstractDAO<PetEntry> {
     public boolean update(PetEntry pets) {
         PreparedStatement p = null;
         try {
-            p = getPreparedStatement("UPDATE `world.entity.pets` SET `lastEatDate` = ?, `quantityEat` = ?, `pdv` = ?, `corpulence` = ?, `isEPO` = ? WHERE `id` = ?;");
+            p = getPreparedStatement("UPDATE `petsOwner` SET `lastEatDate` = ?, `quantityEat` = ?, `pdv` = ?, `corpulence` = ?, `isEPO` = ? WHERE `id` = ?;");
             p.setLong(1, pets.getLastEatDate());
             p.setInt(2, pets.getQuaEat());
             p.setInt(3, pets.getPdv());
@@ -45,7 +44,7 @@ public class PetData extends AbstractDAO<PetEntry> {
         Result result = null;
         int i = 0;
         try {
-            result = getData("SELECT * FROM `world.entity.pets`;");
+            result = getData("SELECT * FROM `petsOwner`;");
             ResultSet RS = result.resultSet;
             while (RS.next()) {
                 i++;
@@ -62,7 +61,7 @@ public class PetData extends AbstractDAO<PetEntry> {
     public void add(int id, long lastEatDate, int template) {
         PreparedStatement p = null;
         try {
-            p = getPreparedStatement("INSERT INTO `world.entity.pets`(`id`, `template`, `lastEatDate`, `quantityEat`, `pdv`, `corpulence`, `isEPO`) VALUES (?, ?, ?, ?, ?, ?, ?);");
+            p = getPreparedStatement("INSERT INTO `petsOwner`(`id`, `template`, `lastEatDate`, `quantityEat`, `pdv`, `corpulence`, `isEPO`) VALUES (?, ?, ?, ?, ?, ?, ?);");
             p.setInt(1, id);
             p.setInt(2, template);
             p.setLong(3, lastEatDate);
@@ -81,7 +80,7 @@ public class PetData extends AbstractDAO<PetEntry> {
     public void delete(int id) {
         PreparedStatement p = null;
         try {
-            p = getPreparedStatement("DELETE FROM `world.entity.pets` WHERE `id` = ?");
+            p = getPreparedStatement("DELETE FROM `petsOwner` WHERE `id` = ?");
             p.setInt(1, id);
             execute(p);
         } catch (SQLException e) {
@@ -89,20 +88,5 @@ public class PetData extends AbstractDAO<PetEntry> {
         } finally {
             close(p);
         }
-    }
-
-    public int getNextId() {
-        final DataQueue.Queue<Integer> queue = new DataQueue.Queue<>((byte) 5);
-        try {
-            synchronized(queue) {
-                long count = DataQueue.count();
-                DataQueue.queues.put(count, queue);
-                Main.exchangeClient.send("DI" + queue.getType() + count);
-                queue.wait();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return queue.getValue();
     }
 }

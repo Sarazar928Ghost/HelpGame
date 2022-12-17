@@ -902,7 +902,7 @@ public class Player {
             } else {
                 SocketManager.GAME_SEND_UPDATE_ITEM(this, obj);
             }
-            Database.getStatics().getObjectData().update(obj);
+            Database.getDynamics().getObjectData().update(obj);
         }
         obj = getObjetByPos(Constant.ITEM_POS_PNJ_SUIVEUR);
         if (obj != null) {
@@ -914,7 +914,7 @@ public class Player {
             } else {
                 SocketManager.GAME_SEND_UPDATE_ITEM(this, obj);
             }
-            Database.getStatics().getObjectData().update(obj);
+            Database.getDynamics().getObjectData().update(obj);
         }
         obj = getObjetByPos(Constant.ITEM_POS_BENEDICTION);
         if (obj != null) {
@@ -926,7 +926,7 @@ public class Player {
             } else {
                 SocketManager.GAME_SEND_UPDATE_ITEM(this, obj);
             }
-            Database.getStatics().getObjectData().update(obj);
+            Database.getDynamics().getObjectData().update(obj);
         }
         obj = getObjetByPos(Constant.ITEM_POS_MALEDICTION);
         if (obj != null) {
@@ -948,7 +948,7 @@ public class Player {
             } else {
                 SocketManager.GAME_SEND_UPDATE_ITEM(this, obj);
             }
-            Database.getStatics().getObjectData().update(obj);
+            Database.getDynamics().getObjectData().update(obj);
         }
         obj = getObjetByPos(Constant.ITEM_POS_ROLEPLAY_BUFF);
         if (obj != null) {
@@ -962,7 +962,7 @@ public class Player {
             } else {
                 SocketManager.GAME_SEND_UPDATE_ITEM(this, obj);
             }
-            Database.getStatics().getObjectData().update(obj);
+            Database.getDynamics().getObjectData().update(obj);
         }
     }
 
@@ -2522,7 +2522,7 @@ public class Player {
         {
             objects.remove(guid);
             World.world.removeGameObject(guid);
-            Database.getStatics().getObjectData().delete(guid);
+            Database.getDynamics().getObjectData().delete(guid);
             SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this, guid);
         } else
         //S'il reste des items apres la vente

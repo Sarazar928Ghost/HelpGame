@@ -77,7 +77,7 @@ public class WorldSave extends Updatable {
             World.world.getMountparks().values().stream().filter(mp -> mp.getOwner() > 0 || mp.getOwner() == -1).forEach(mp -> Database.getDynamics().getMountParkData().update(mp));
 
             World.world.logger.info("-> of mounts.");
-            World.world.getMounts().values().stream().forEach(mount -> Database.getStatics().getMountData().update(mount));
+            World.world.getMounts().values().stream().forEach(mount -> Database.getDynamics().getMountData().update(mount));
 
             World.world.logger.info("-> of areas.");
             World.world.getAreas().values().stream().forEach(area -> Database.getDynamics().getAreaData().update(area));
@@ -88,9 +88,9 @@ public class WorldSave extends Updatable {
                 for (GameObject object : new ArrayList<>(World.world.getGameObjects())) {
                     if (object == null) continue;
                     if (object.modification == 0)
-                        Database.getStatics().getObjectData().insert(object);
+                        Database.getDynamics().getObjectData().insert(object);
                     else if (object.modification == 1)
-                        Database.getStatics().getObjectData().update(object);
+                        Database.getDynamics().getObjectData().update(object);
                     object.modification = -1;
                 }
             } catch(Exception e) {

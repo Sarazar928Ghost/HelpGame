@@ -1855,7 +1855,7 @@ public class GameClient {
             if (((BreakingObject) value).getObjects().isEmpty())
                 return;
 
-            Fragment fragment = new Fragment(Database.getStatics().getObjectData().getNextId(), "");
+            Fragment fragment = new Fragment(Database.getDynamics().getWorldEntityData().getNextObjectId(), "");
 
             for (Couple<Integer, Integer> couple : ((BreakingObject) value).getObjects()) {
                 GameObject object = World.world.getGameObject(couple.first);
@@ -2884,7 +2884,7 @@ public class GameClient {
 
                     SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, object.getGuid());
 
-                    Database.getStatics().getMountData().update(mount);
+                    Database.getDynamics().getMountData().update(mount);
                     Database.getStatics().getPlayerData().update(this.player);
                     SocketManager.GAME_SEND_Ee_PACKET(this.player, mount.getSize() == 50 ? '~' : '+', mount.parse());
                     break;
@@ -2905,7 +2905,7 @@ public class GameClient {
                     this.player.addObjet(object);
 
                     SocketManager.GAME_SEND_Ee_PACKET(this.player, '-', mount.getId() + "");
-                    Database.getStatics().getMountData().update(mount);
+                    Database.getDynamics().getMountData().update(mount);
                     Database.getStatics().getPlayerData().update(this.player);
                     break;
 
@@ -2932,7 +2932,7 @@ public class GameClient {
                     SocketManager.GAME_SEND_Re_PACKET(this.player, "+", mount);
                     SocketManager.GAME_SEND_Ee_PACKET(this.player, '-', mount.getId() + "");
                     SocketManager.GAME_SEND_Rx_PACKET(this.player);
-                    Database.getStatics().getMountData().update(mount);
+                    Database.getDynamics().getMountData().update(mount);
                     Database.getStatics().getPlayerData().update(this.player);
                     break;
 
@@ -2954,14 +2954,14 @@ public class GameClient {
                             mount.setOwner(this.player.getId());
                             this.player.setMount(null);
 
-                            Database.getStatics().getMountData().update(mount);
+                            Database.getDynamics().getMountData().update(mount);
                             SocketManager.GAME_SEND_Ee_PACKET(this.player, mount.getSize() == 50 ? '~' : '+', mount.parse());
                             SocketManager.GAME_SEND_Re_PACKET(this.player, "-", null);
                             SocketManager.GAME_SEND_Rx_PACKET(this.player);
                         } else {
                             SocketManager.GAME_SEND_Im_PACKET(this.player, "1106");
                         }
-                        Database.getStatics().getMountData().update(mount);
+                        Database.getDynamics().getMountData().update(mount);
                         Database.getStatics().getPlayerData().update(this.player);
                     }
                     break;
@@ -2997,7 +2997,7 @@ public class GameClient {
                     mount.setMapId((short) -1);
                     mount.setCellId(-1);
 
-                    Database.getStatics().getMountData().update(mount);
+                    Database.getDynamics().getMountData().update(mount);
                     Database.getStatics().getPlayerData().update(this.player);
                     break;
 
@@ -3032,7 +3032,7 @@ public class GameClient {
                     SocketManager.GAME_SEND_Ee_PACKET(this.player, '-', mount.getId() + "");
                     SocketManager.GAME_SEND_GM_MOUNT_TO_MAP(park.getMap(), mount);
 
-                    Database.getStatics().getMountData().update(mount);
+                    Database.getDynamics().getMountData().update(mount);
                     Database.getStatics().getPlayerData().update(this.player);
                     break;
             }
@@ -5724,7 +5724,7 @@ public class GameClient {
             if (newQua <= 0) {
                 this.player.removeItem(guid);
                 World.world.removeGameObject(guid);
-                Database.getStatics().getObjectData().delete(guid);
+                Database.getDynamics().getObjectData().delete(guid);
                 SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, guid);
             } else {
                 obj.setQuantity(newQua);
@@ -5929,7 +5929,7 @@ public class GameClient {
         Database.getStatics().getObvejivanData().add(object, exObj);
         this.player.removeItem(object.getGuid(), 1, false, false); // on enléve l'existance de l'obvi en lui-méme
         SocketManager.send(this.player, "OR" + object.getGuid()); // on le précise au client.
-        Database.getStatics().getObjectData().delete(object.getGuid());
+        Database.getDynamics().getObjectData().delete(object.getGuid());
 
         exObj.refreshStatsObjet(object.parseStatsStringSansUserObvi() + ",3ca#" + Integer.toHexString(objGUID) + "#0#0#0d0+" + objGUID);
 
@@ -6731,7 +6731,7 @@ public class GameClient {
         if (this.player.getMount() != null && this.player.isOnMount())
             this.player.toogleOnMount();
         SocketManager.GAME_SEND_Re_PACKET(this.player, "-", this.player.getMount());
-        Database.getStatics().getMountData().delete(this.player.getMount().getId());
+        Database.getDynamics().getMountData().delete(this.player.getMount().getId());
         World.world.removeMount(this.player.getMount().getId());
         this.player.setMount(null);
     }
@@ -6740,7 +6740,7 @@ public class GameClient {
         if (this.player.getMount() == null)
             return;
         this.player.getMount().setName(name);
-        Database.getStatics().getMountData().update(this.player.getMount());
+        Database.getDynamics().getMountData().update(this.player.getMount());
         SocketManager.GAME_SEND_Rn_PACKET(this.player, name);
     }
 

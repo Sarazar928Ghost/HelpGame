@@ -76,7 +76,7 @@ public class Mount {
 	private List<Integer> capacitys = new ArrayList<>(2);
 
 	public Mount(int color, int owner, boolean savage) {
-		this.id = Database.getStatics().getMountData().getNextId();
+		this.id = Database.getDynamics().getWorldEntityData().getNextMountId();
 		this.color = color;
 		this.sex = Formulas.getRandomValue(0, 1);
 		this.level = 100;
@@ -97,11 +97,11 @@ public class Mount {
 		this.savage = (savage ? 1 : 0);
 		
 		World.world.addMount(this);
-        Database.getStatics().getMountData().add(this);
+        Database.getDynamics().getMountData().add(this);
 	}
 
 	public Mount(int color, Mount mother, Mount father) {
-		this.id = Database.getStatics().getMountData().getNextId();
+		this.id = Database.getDynamics().getWorldEntityData().getNextMountId();
 		this.color = color;
 		this.sex = Formulas.getRandomValue(0, 1);
 		this.level = 100;
@@ -145,7 +145,7 @@ public class Mount {
 		this.couple = -1;
 		this.savage = 0;
 		World.world.addMount(this);
-        Database.getStatics().getMountData().add(this);
+        Database.getDynamics().getMountData().add(this);
 	}
 	
 	public Mount(int id, int color, int sexe, int amour, int endurance, int level, long exp, String name, int fatigue,
@@ -278,11 +278,11 @@ public class Mount {
             if (player.getCurMap().getMountPark().hasEtableFull(player.getId()))
 				player.send("Im1105");
 			if(father != null && father.getSavage() == 1) {
-                Database.getStatics().getMountData().delete(father.getId());
+                Database.getDynamics().getMountData().delete(father.getId());
 				World.world.removeMount(father.getId());
 			}
 			if(this.getSavage() == 1) {
-                Database.getStatics().getMountData().delete(this.getId());
+                Database.getDynamics().getMountData().delete(this.getId());
 				World.world.removeMount(this.getId());
 				((MountPark) player.getExchangeAction().getValue()).delRaising(this.getId());
                	player.send("Im0112; " + this.getName());
@@ -501,7 +501,7 @@ public class Mount {
 		this.exp += amount;
 		while(this.exp >= World.world.getExpLevel(this.level+1).mount && this.level < 100)
 			this.addLvl();
-        Database.getStatics().getMountData().update(this);
+        Database.getDynamics().getMountData().update(this);
 	}
 
 	public void addLvl() {
@@ -521,7 +521,7 @@ public class Mount {
 	
 	public void setMaxEnergy() {
 		this.energy = this.getMaxEnergy();
-        Database.getStatics().getMountData().update(this);
+        Database.getDynamics().getMountData().update(this);
 	}
 	
 	private int getMaxEnergy() {
@@ -539,14 +539,14 @@ public class Mount {
 	public void aumFatige() {
 		this.fatigue += 1;
 		if(this.fatigue > 240) this.fatigue = 240;
-        Database.getStatics().getMountData().update(this);
+        Database.getDynamics().getMountData().update(this);
 	}
 	
 	public void aumEndurance(int endurance) {
 		this.endurance += (endurance / 100) * this.getBonusFatigue() * Generation.getLearningRate(Constant.getGeneration(this.color));
 		if(this.capacitys.contains(5)) this.endurance += 1;
 		if(this.endurance > 10000) this.endurance = 10000;
-        Database.getStatics().getMountData().update(this);
+        Database.getDynamics().getMountData().update(this);
 	}
 	
 	public void aumMaturity(int Resist) {

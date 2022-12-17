@@ -13,7 +13,6 @@ import org.starloco.locos.kernel.Constant;
 import org.starloco.locos.object.entity.SoulStone;
 import org.starloco.locos.other.Dopeul;
 
-import java.lang.*;
 import java.util.*;
 
 public class ObjectTemplate {
@@ -260,7 +259,7 @@ public class ObjectTemplate {
     }
 
     public GameObject createNewCertificat(GameObject obj) {
-        int id = Database.getStatics().getObjectData().getNextId();
+        int id = Database.getDynamics().getWorldEntityData().getNextObjectId();
         GameObject item = null;
         if (getType() == Constant.ITEM_TYPE_CERTIFICAT_CHANIL) {
             PetEntry myPets = World.world.getPetsEntry(obj.getGuid());
@@ -280,13 +279,13 @@ public class ObjectTemplate {
                 txtStat.put(Constant.STATS_PETS_REPAS, actualStat.get(Constant.STATS_PETS_REPAS));
             item = new GameObject(id, getId(), 1, Constant.ITEM_POS_NO_EQUIPED, obj.getStats(), new ArrayList<SpellEffect>(), new HashMap<Integer, Integer>(), txtStat, 0);
             World.world.removePetsEntry(obj.getGuid());
-            Database.getStatics().getPetData().delete(obj.getGuid());
+            Database.getDynamics().getPetData().delete(obj.getGuid());
         }
         return item;
     }
 
     public GameObject createNewFamilier(GameObject obj) {
-        int id = Database.getStatics().getObjectData().getNextId();
+        int id = Database.getDynamics().getWorldEntityData().getNextObjectId();
         Map<Integer, String> stats = new HashMap<>();
         stats.putAll(obj.getTxtStat());
 
@@ -294,12 +293,12 @@ public class ObjectTemplate {
 
         long time = System.currentTimeMillis();
         World.world.addPetsEntry(new PetEntry(id, getId(), time, 0, Integer.parseInt(stats.get(Constant.STATS_PETS_PDV), 16), Integer.parseInt(stats.get(Constant.STATS_PETS_POIDS), 16), !stats.containsKey(Constant.STATS_PETS_EPO)));
-        Database.getStatics().getPetData().add(id, time, getId());
+        Database.getDynamics().getPetData().add(id, time, getId());
         return object;
     }
 
     public GameObject createNewBenediction(int turn) {
-        int id = Database.getStatics().getObjectData().getNextId();
+        int id = Database.getDynamics().getWorldEntityData().getNextObjectId();
         GameObject item = null;
         Stats stats = generateNewStatsFromTemplate(getStrTemplate(), true);
         stats.addOneStat(Constant.STATS_TURN, turn);
@@ -308,21 +307,21 @@ public class ObjectTemplate {
     }
 
     public GameObject createNewMalediction() {
-        int id = Database.getStatics().getObjectData().getNextId();
+        int id = Database.getDynamics().getWorldEntityData().getNextObjectId();
         Stats stats = generateNewStatsFromTemplate(getStrTemplate(), true);
         stats.addOneStat(Constant.STATS_TURN, 1);
         return new GameObject(id, getId(), 1, Constant.ITEM_POS_MALEDICTION, stats, new ArrayList<>(), new HashMap<>(), new HashMap<>(), 0);
     }
 
     public GameObject createNewRoleplayBuff() {
-        int id = Database.getStatics().getObjectData().getNextId();
+        int id = Database.getDynamics().getWorldEntityData().getNextObjectId();
         Stats stats = generateNewStatsFromTemplate(getStrTemplate(), true);
         stats.addOneStat(Constant.STATS_TURN, 1);
         return new GameObject(id, getId(), 1, Constant.ITEM_POS_ROLEPLAY_BUFF, stats, new ArrayList<>(), new HashMap<>(), new HashMap<>(), 0);
     }
 
     public GameObject createNewCandy(int turn) {
-        int id = Database.getStatics().getObjectData().getNextId();
+        int id = Database.getDynamics().getWorldEntityData().getNextObjectId();
         GameObject item = null;
         Stats stats = generateNewStatsFromTemplate(getStrTemplate(), true);
         stats.addOneStat(Constant.STATS_TURN, turn);
@@ -331,7 +330,7 @@ public class ObjectTemplate {
     }
 
     public GameObject createNewFollowPnj(int turn) {
-        int id = Database.getStatics().getObjectData().getNextId();
+        int id = Database.getDynamics().getWorldEntityData().getNextObjectId();
         GameObject item = null;
         Stats stats = generateNewStatsFromTemplate(getStrTemplate(), true);
         stats.addOneStat(Constant.STATS_TURN, turn);
@@ -341,7 +340,7 @@ public class ObjectTemplate {
     }
 
     public GameObject createNewItem(int qua, boolean useMax) {
-        int id = Database.getStatics().getObjectData().getNextId();
+        int id = Database.getDynamics().getWorldEntityData().getNextObjectId();
         GameObject item;
         if (getType() == Constant.ITEM_TYPE_QUETES && (Constant.isCertificatDopeuls(getId()) || getId() == 6653)) {
             Map<Integer, String> txtStat = new HashMap<Integer, String>();
@@ -354,7 +353,7 @@ public class ObjectTemplate {
             //Ajouter du Pets_data SQL et World
             long time = System.currentTimeMillis();
             World.world.addPetsEntry(new PetEntry(id, getId(), time, 0, 10, 0, false));
-            Database.getStatics().getPetData().add(id, time, getId());
+            Database.getDynamics().getPetData().add(id, time, getId());
         } else if(getType() == Constant.ITEM_TYPE_CERTIF_MONTURE) {
             item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, generateNewStatsFromTemplate(getStrTemplate(), useMax), getEffectTemplate(getStrTemplate()), new HashMap<>(), new HashMap<>(), 0);
         } else {
@@ -407,7 +406,7 @@ public class ObjectTemplate {
             //Ajouter du Pets_data SQL et World
             long time = System.currentTimeMillis();
             World.world.addPetsEntry(new PetEntry(id, getId(), time, 0, 10, 0, false));
-            Database.getStatics().getPetData().add(id, time, getId());
+            Database.getDynamics().getPetData().add(id, time, getId());
         } else if(getType() == Constant.ITEM_TYPE_CERTIF_MONTURE) {
             item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, generateNewStatsFromTemplate(getStrTemplate(), useMax), getEffectTemplate(getStrTemplate()), new HashMap<>(), new HashMap<>(), 0);
         } else {

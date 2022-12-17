@@ -17,24 +17,27 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Nouvelle config.txt.
 - Possibilités de donner des items/pano lors de la création d'un personnage via la config.txt
 - Commande joueur giveItem ( numéro 6 ) avec arguments exemple : idTemplate,idTemplate,idTemplate,idTemplate;true (true veut dire jetMax)
+- Nouveau système de stockage des items équipés.
 
 ## DEBUG :
 
 - Commande joueur FM cac fonctionne a 100%
 - Ne peut plus équiper plusieurs items. ( exemple 20 anneaux )
 - Enleve bien la morph des armes qui transforme lorsque on déséquipe l'arme.
+- Ne peut plus drop un item équipé
 
 ## AUTRES :
 
 - Refactoring du code en masse afin de le rendre plus lisible et professionel.
 - Refonte système de parchotage et reset stats.
-- Refactoring mouvement des objects dans l'inventaire. Grosse optimisation + un nouveau système de stockage des items équipés.
+- Refactoring mouvement des objects dans l'inventaire. Grosse optimisation
 - N'envoie plus les packets de Stats lorsque on positionne un consomable dans la barre des raccourcis items.
 - Refactoring des actions des objets + optimisation
 
 
 ## TELECHARGEMENT :
 - GameCompiled.rar contient le game compilé avec le .bat pour le lancer.
+- Ne pas oublier d'executer les SQL
 
 ## AIDE :
 

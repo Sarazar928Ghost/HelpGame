@@ -231,12 +231,12 @@ public class PlayerData extends AbstractDAO<Player> {
 
             if (!perso.getItemsIDSplitByChar(",").equals(""))
                 for(String id : perso.getItemsIDSplitByChar(",").split(","))
-                    Database.getStatics().getObjectData().delete(Integer.parseInt(id));
+                    Database.getDynamics().getObjectData().delete(Integer.parseInt(id));
             if (!perso.getStoreItemsIDSplitByChar(",").equals(""))
                 for(String id : perso.getStoreItemsIDSplitByChar(",").split(","))
-                    Database.getStatics().getObjectData().delete(Integer.parseInt(id));
+                    Database.getDynamics().getObjectData().delete(Integer.parseInt(id));
             if (perso.getMount() != null)
-                Database.getStatics().getMountData().update(perso.getMount());
+                Database.getDynamics().getMountData().update(perso.getMount());
             return true;
         } catch (SQLException e) {
             super.sendError("PlayerData delete", e);
@@ -318,7 +318,7 @@ public class PlayerData extends AbstractDAO<Player> {
             if (player.getGuildMember() != null)
                 Database.getDynamics().getGuildMemberData().update(player);
             if (player.getMount() != null)
-                Database.getStatics().getMountData().update(player.getMount());
+                Database.getDynamics().getMountData().update(player.getMount());
         } catch (Exception e) {
             super.sendError("PlayerData update", e);
         } finally {

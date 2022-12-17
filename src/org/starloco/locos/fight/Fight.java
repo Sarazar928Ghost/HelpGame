@@ -4142,7 +4142,7 @@ public class Fight {
                         maxLvl = fighter.getLvl();
                 }
 
-                setFullSoul(new SoulStone(Database.getStatics().getObjectData().getNextId(), 1, 7010, Constant.ITEM_POS_NO_EQUIPED, pierreStats)); // Cre la pierre d'me
+                setFullSoul(new SoulStone(Database.getDynamics().getWorldEntityData().getNextObjectId(), 1, 7010, Constant.ITEM_POS_NO_EQUIPED, pierreStats)); // Cre la pierre d'me
                 winners.stream().filter(F -> !F.isInvocation() && F.haveState(Constant.ETAT_CAPT_AME)).forEach(F -> getCapturer().add(F));
 
                 if (getCapturer().size() > 0 && !SoulStone.isInArenaMap(this.getMapOld().getId())) // S'il y a des captureurs

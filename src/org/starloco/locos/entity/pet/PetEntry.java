@@ -172,7 +172,7 @@ public class PetEntry {
             SocketManager.GAME_SEND_Im_PACKET(player, "154");
         }
         SocketManager.GAME_SEND_UPDATE_OBJECT_DISPLAY_PACKET(player, obj);
-        Database.getStatics().getPetData().update(this);
+        Database.getDynamics().getPetData().update(this);
     }
 
     public void eat(Player p, int min, int max, int statsID, GameObject feed) {
@@ -299,8 +299,8 @@ public class PetEntry {
             obj.getTxtStat().put(Constant.STATS_PETS_REPAS, Integer.toHexString(feed.getTemplate().getId()));
         }
         SocketManager.GAME_SEND_UPDATE_OBJECT_DISPLAY_PACKET(p, obj);
-        Database.getStatics().getObjectData().update(obj);
-        Database.getStatics().getPetData().update(this);
+        Database.getDynamics().getObjectData().update(obj);
+        Database.getDynamics().getPetData().update(this);
     }
 
     public void eatSouls(Player p, Map<Integer, Integer> souls) {
@@ -356,8 +356,8 @@ public class PetEntry {
             System.out.println("Error : " + e.getMessage());
         }
         SocketManager.GAME_SEND_UPDATE_OBJECT_DISPLAY_PACKET(p, obj);
-        Database.getStatics().getObjectData().update(obj);
-        Database.getStatics().getPetData().update(this);
+        Database.getDynamics().getObjectData().update(obj);
+        Database.getDynamics().getPetData().update(this);
     }
 
     public void updatePets(Player p, int max) {
@@ -414,8 +414,8 @@ public class PetEntry {
             SocketManager.GAME_SEND_Im_PACKET(p, "154");
         }
         SocketManager.GAME_SEND_UPDATE_OBJECT_DISPLAY_PACKET(p, obj);
-        Database.getStatics().getObjectData().update(obj);
-        Database.getStatics().getPetData().update(this);
+        Database.getDynamics().getObjectData().update(obj);
+        Database.getDynamics().getPetData().update(this);
     }
 
     public void resurrection() {
@@ -432,8 +432,8 @@ public class PetEntry {
 
         obj.getTxtStat().remove(Constant.STATS_PETS_PDV);
         obj.getTxtStat().put(Constant.STATS_PETS_PDV, Integer.toHexString(this.pdv));
-        Database.getStatics().getObjectData().update(obj);
-        Database.getStatics().getPetData().update(this);
+        Database.getDynamics().getObjectData().update(obj);
+        Database.getDynamics().getPetData().update(this);
     }
 
     public void restoreLife(Player p) {
@@ -458,8 +458,8 @@ public class PetEntry {
         } else {
             return;
         }
-        Database.getStatics().getObjectData().update(obj);
-        Database.getStatics().getPetData().update(this);
+        Database.getDynamics().getObjectData().update(obj);
+        Database.getDynamics().getPetData().update(this);
     }
 
     public void giveEpo(Player p) {
@@ -474,6 +474,6 @@ public class PetEntry {
         obj.getTxtStat().put(Constant.STATS_PETS_EPO, Integer.toHexString(1));
         SocketManager.GAME_SEND_Im_PACKET(p, "032");
         SocketManager.GAME_SEND_UPDATE_OBJECT_DISPLAY_PACKET(p, obj);
-        Database.getStatics().getPetData().update(this);
+        Database.getDynamics().getPetData().update(this);
     }
 }

@@ -200,7 +200,8 @@ public class World {
     public void removeGameObject(int id) {
         if(objects.containsKey(id))
             objects.remove(id);
-        Database.getStatics().getObjectData().delete(id);
+        
+        Database.getDynamics().getObjectData().delete(id);
     }
     
     public void addPlayerCommand(final PlayerCommand pc)
@@ -330,7 +331,7 @@ public class World {
         Database.getDynamics().getObjectTemplateData().load();
         logger.debug("The template objects were loaded successfully.");
 
-        Database.getStatics().getObjectData().load();
+        Database.getDynamics().getObjectData().load();
         logger.debug("The objects were loaded successfully.");
 
         Database.getDynamics().getNpcTemplateData().load();
@@ -420,7 +421,7 @@ public class World {
         Database.getDynamics().getGuildMemberData().load();
         logger.debug("The guilds and guild members were loaded successfully.");
 
-        Database.getStatics().getPetData().load();
+        Database.getDynamics().getPetData().load();
         logger.debug("The pets were loaded successfully.");
 
         Database.getDynamics().getPetTemplateData().load();
@@ -860,7 +861,7 @@ public class World {
 
         Mount mount = Dragodindes.get(id);
         if(mount == null) {
-            Database.getStatics().getMountData().load(id);
+            Database.getDynamics().getMountData().load(id);
             mount = Dragodindes.get(id);
         }
         return mount;

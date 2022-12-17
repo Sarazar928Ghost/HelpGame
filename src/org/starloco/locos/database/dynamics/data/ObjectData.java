@@ -1,15 +1,15 @@
-package org.starloco.locos.database.statics.data;
+package org.starloco.locos.database.dynamics.data;
 
 import com.zaxxer.hikari.HikariDataSource;
-import org.starloco.locos.database.statics.AbstractDAO;
-import org.starloco.locos.exchange.transfer.DataQueue;
-import org.starloco.locos.game.world.World;
-import org.starloco.locos.kernel.Main;
-import org.starloco.locos.object.GameObject;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.starloco.locos.database.dynamics.AbstractDAO;
+import org.starloco.locos.game.world.World;
+import org.starloco.locos.kernel.Main;
+import org.starloco.locos.object.GameObject;
 
 public class ObjectData extends AbstractDAO<GameObject> {
 
@@ -21,7 +21,7 @@ public class ObjectData extends AbstractDAO<GameObject> {
     public void load(Object obj) {
         Result result = null;
         try {
-            result = getData("SELECT * FROM `world.entity.objects` WHERE `id` IN (" + obj + ");");
+            result = getData("SELECT * FROM `objects` WHERE `id` IN (" + obj + ");");
             ResultSet RS = result.resultSet;
             while (RS.next()) {
                 int id = RS.getInt("id");
@@ -45,7 +45,7 @@ public class ObjectData extends AbstractDAO<GameObject> {
     public void load() {
         Result result = null;
         try {
-            result = getData("SELECT * FROM `world.entity.objects`;");
+            result = getData("SELECT * FROM `objects`;");
             ResultSet RS = result.resultSet;
             while (RS.next()) {
                 int id = RS.getInt("id");
@@ -75,7 +75,7 @@ public class ObjectData extends AbstractDAO<GameObject> {
 
         PreparedStatement p = null;
         try {
-            p = getPreparedStatement("UPDATE `world.entity.objects` SET `template` = ?, `quantity` = ?, `position` = ?, `puit` = ?, `stats` = ? WHERE `id` = ?;");
+            p = getPreparedStatement("UPDATE `objects` SET `template` = ?, `quantity` = ?, `position` = ?, `puit` = ?, `stats` = ? WHERE `id` = ?;");
             p.setInt(1, object.getTemplate().getId());
             p.setInt(2, object.getQuantity());
             p.setInt(3, object.getPosition());
@@ -102,7 +102,7 @@ public class ObjectData extends AbstractDAO<GameObject> {
         }
         PreparedStatement p = null;
         try {
-            p = getPreparedStatement("REPLACE INTO `world.entity.objects` VALUES (?, ?, ?, ?, ?, ?);");
+            p = getPreparedStatement("REPLACE INTO `objects` VALUES (?, ?, ?, ?, ?, ?);");
             p.setInt(1, object.getGuid());
             p.setInt(2, object.getTemplate().getId());
             p.setInt(3, object.getQuantity());
@@ -120,7 +120,7 @@ public class ObjectData extends AbstractDAO<GameObject> {
     public void delete(int id) {
         PreparedStatement p = null;
         try {
-            p = getPreparedStatement("DELETE FROM `world.entity.objects` WHERE id = ?;");
+            p = getPreparedStatement("DELETE FROM `objects` WHERE id = ?;");
             p.setInt(1, id);
             execute(p);
         } catch (SQLException e) {
@@ -128,20 +128,5 @@ public class ObjectData extends AbstractDAO<GameObject> {
         } finally {
             close(p);
         }
-    }
-
-    public int getNextId() {
-        final DataQueue.Queue<Integer> queue = new DataQueue.Queue<>((byte) 2);
-        try {
-            synchronized(queue) {
-                long count = DataQueue.count();
-                DataQueue.queues.put(count, queue);
-                Main.exchangeClient.send("DI" + queue.getType() + count);
-                queue.wait();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return queue.getValue();
     }
 }
