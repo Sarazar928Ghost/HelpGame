@@ -767,7 +767,6 @@ public class Player {
         World.world.addGameObject(obj, true);
         this.equipItem(obj);
         SocketManager.GAME_SEND_ALTER_GM_PACKET(this.getCurMap(), this);
-        SocketManager.GAME_SEND_Ow_PACKET(this);
         SocketManager.GAME_SEND_STATS_PACKET(this);
         Database.getStatics().getPlayerData().update(this);
     }
@@ -829,7 +828,6 @@ public class Player {
         this.equipItem(obj);
         if (this.getFight() != null) {
             SocketManager.GAME_SEND_ALTER_GM_PACKET(this.getCurMap(), this);
-            SocketManager.GAME_SEND_Ow_PACKET(this);
             SocketManager.GAME_SEND_STATS_PACKET(this);
             Database.getStatics().getPlayerData().update(this);
         }
@@ -854,7 +852,6 @@ public class Player {
             	this.equipItem(obj);
             }
         SocketManager.GAME_SEND_ALTER_GM_PACKET(this.getCurMap(), this);
-        SocketManager.GAME_SEND_Ow_PACKET(this);
         SocketManager.GAME_SEND_STATS_PACKET(this);
         Database.getStatics().getPlayerData().update(this);
     }
@@ -890,7 +887,6 @@ public class Player {
         this.addObjet(obj, false);
         this.equipItem(obj);
         World.world.addGameObject(obj, true);
-        SocketManager.GAME_SEND_Ow_PACKET(this);
         SocketManager.GAME_SEND_STATS_PACKET(this);
         Database.getStatics().getPlayerData().update(this);
     }
@@ -3741,6 +3737,7 @@ public class Player {
         GameObject obj = getObjetByPos(Constant.ITEM_POS_FAMILIER);
 
         if (_onMount && obj != null) {
+        	this.unEquipItem(obj.getPosition());
             obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
             SocketManager.GAME_SEND_OBJET_MOVE_PACKET(this, obj);
         }

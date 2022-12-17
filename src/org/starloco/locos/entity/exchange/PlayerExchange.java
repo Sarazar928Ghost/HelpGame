@@ -224,8 +224,6 @@ public class PlayerExchange extends Exchange {
         //Fin
         this.player1.setExchangeAction(null);
         this.player2.setExchangeAction(null);
-        SocketManager.GAME_SEND_Ow_PACKET(this.player1);
-        SocketManager.GAME_SEND_Ow_PACKET(this.player2);
         SocketManager.GAME_SEND_STATS_PACKET(this.player1);
         SocketManager.GAME_SEND_STATS_PACKET(this.player2);
         SocketManager.GAME_SEND_EXCHANGE_VALID(this.player1.getGameClient(), 'a');

@@ -5855,7 +5855,6 @@ public class GameClient {
             MyPets.eat(this.player, min, max, p.statsIdByEat(object.getTemplate().getId(), object.getTemplate().getType(), -1), object);
 
         SocketManager.GAME_SEND_UPDATE_OBJECT_DISPLAY_PACKET(this.player, pets);
-        SocketManager.GAME_SEND_Ow_PACKET(this.player);
         this.player.refreshStats();
         SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player);
         SocketManager.GAME_SEND_STATS_PACKET(this.player);

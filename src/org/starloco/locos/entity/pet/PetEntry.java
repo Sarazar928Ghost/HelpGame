@@ -164,6 +164,7 @@ public class PetEntry {
             } else {
                 obj.setTemplate(pets.getDeadTemplate());
                 if (obj.getPosition() == Constant.ITEM_POS_FAMILIER) {
+                	player.unEquipItem(obj.getPosition());
                     obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
                     SocketManager.GAME_SEND_OBJET_MOVE_PACKET(player, obj);
                 }
@@ -284,6 +285,7 @@ public class PetEntry {
                 obj.setTemplate(pets.getDeadTemplate());
 
                 if (obj.getPosition() == Constant.ITEM_POS_FAMILIER) {
+                	p.unEquipItem(obj.getPosition());
                     obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
                     SocketManager.GAME_SEND_OBJET_MOVE_PACKET(p, obj);
                 }
@@ -404,6 +406,7 @@ public class PetEntry {
             } else {
                 obj.setTemplate(pets.getDeadTemplate());
                 if (obj.getPosition() == Constant.ITEM_POS_FAMILIER) {
+                	p.unEquipItem(obj.getPosition());
                     obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
                     SocketManager.GAME_SEND_OBJET_MOVE_PACKET(p, obj);
                 }
