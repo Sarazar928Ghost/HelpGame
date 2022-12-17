@@ -21,12 +21,17 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 ## DEBUG :
 
 - Commande joueur FM cac fonctionne a 100%
+- Ne peut plus équiper plusieurs items. ( exemple 20 anneaux )
+- Enleve bien la morph des armes qui transforme lorsque on déséquipe l'arme.
 
 ## AUTRES :
 
 - Refactoring du code en masse afin de le rendre plus lisible et professionel.
 - Refonte système de parchotage et reset stats.
 - Refactoring mouvement des objects dans l'inventaire. Grosse optimisation + un nouveau système de stockage des items équipés.
+- N'envoie plus les packets de Stats lorsque on positionne un consomable dans la barre des raccourcis items.
+- Refactoring des actions des objets + optimisation
+
 
 ## TELECHARGEMENT :
 - GameCompiled.rar contient le game compilé avec le .bat pour le lancer.

@@ -2594,8 +2594,9 @@ public class Player {
 		{
 			final GameObject obj = this.getObjetByPos(n);
 			if(obj != null)
-				this.getGameClient().onMovementEquipUnequipItem(obj, Constant.ITEM_POS_NO_EQUIPED, 1);
-		}		
+				this.getGameClient().onMovementEquipUnequipItem(obj, Constant.ITEM_POS_NO_EQUIPED, 1, false);
+		}
+		SocketManager.GAME_SEND_STATS_PACKET(this);
 	}
 
 
@@ -2779,18 +2780,18 @@ public class Player {
         GameObject bouclier = this.getObjetByPos(Constant.ITEM_POS_BOUCLIER);
         if (arme != null) {
             if (arme.getTemplate().isTwoHanded() && bouclier != null) {
-            	this.getGameClient().onMovementEquipUnequipItem(bouclier, Constant.ITEM_POS_NO_EQUIPED, 1);
+            	this.getGameClient().onMovementEquipUnequipItem(bouclier, Constant.ITEM_POS_NO_EQUIPED, 1, true);
                 SocketManager.GAME_SEND_Im_PACKET(this, "119|44");
             } else if (!arme.getTemplate().getConditions().equalsIgnoreCase("")
                     && !ConditionParser.validConditions(this, arme.getTemplate().getConditions())) {
-            	this.getGameClient().onMovementEquipUnequipItem(arme, Constant.ITEM_POS_NO_EQUIPED, 1);
+            	this.getGameClient().onMovementEquipUnequipItem(arme, Constant.ITEM_POS_NO_EQUIPED, 1, true);
                 SocketManager.GAME_SEND_Im_PACKET(this, "119|44");
             }
         }
         if (bouclier != null) {
             if (!bouclier.getTemplate().getConditions().equalsIgnoreCase("")
                     && !ConditionParser.validConditions(this, bouclier.getTemplate().getConditions())) {
-            	this.getGameClient().onMovementEquipUnequipItem(bouclier, Constant.ITEM_POS_NO_EQUIPED, 1);
+            	this.getGameClient().onMovementEquipUnequipItem(bouclier, Constant.ITEM_POS_NO_EQUIPED, 1, true);
                 SocketManager.GAME_SEND_Im_PACKET(this, "119|44");
             }
         }

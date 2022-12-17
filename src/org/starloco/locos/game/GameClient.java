@@ -5730,7 +5730,6 @@ public class GameClient {
                 obj.setQuantity(newQua);
                 SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, obj);
             }
-            SocketManager.GAME_SEND_STATS_PACKET(this.player);
             SocketManager.GAME_SEND_Ow_PACKET(this.player);
         } catch (Exception e) {
             e.printStackTrace();
@@ -5762,26 +5761,15 @@ public class GameClient {
             SocketManager.GAME_SEND_Im_PACKET(this.player, "1145");
             return;
         }
-        if (obj.getPosition() != Constant.ITEM_POS_NO_EQUIPED) {
-            obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
-            SocketManager.GAME_SEND_OBJET_MOVE_PACKET(this.player, obj);
-            if (obj.getPosition() == Constant.ITEM_POS_ARME
-                    || obj.getPosition() == Constant.ITEM_POS_COIFFE
-                    || obj.getPosition() == Constant.ITEM_POS_FAMILIER
-                    || obj.getPosition() == Constant.ITEM_POS_CAPE
-                    || obj.getPosition() == Constant.ITEM_POS_BOUCLIER
-                    || obj.getPosition() == Constant.ITEM_POS_NO_EQUIPED)
-                SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player);
-        }
+        if (obj.getPosition() != Constant.ITEM_POS_NO_EQUIPED)
+        	return;
         if (qua >= obj.getQuantity()) {
             this.player.removeItem(guid);
             this.player.getCurMap().getCase(cellPosition).addDroppedItem(obj);
-            obj.setPosition(Constant.ITEM_POS_NO_EQUIPED);
             SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, guid);
         } else {
             obj.setQuantity(obj.getQuantity() - qua);
             GameObject obj2 = GameObject.getCloneObjet(obj, qua);
-            obj2.setPosition(Constant.ITEM_POS_NO_EQUIPED);
             this.player.getCurMap().getCase(cellPosition).addDroppedItem(obj2);
             SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this.player, obj);
         }
@@ -6051,7 +6039,7 @@ public class GameClient {
         
     }
     
-    public synchronized void onMovementEquipUnequipItem(GameObject object, final int position, final int quantity) {
+    public synchronized void onMovementEquipUnequipItem(GameObject object, final int position, final int quantity, final boolean sendStats) {
     	final GameObject exObj = this.player.getObjetByPos(position);//Objet a l'ancienne position
         if(this.onMovementItemObvi(object, exObj, quantity, position)) return;
         
@@ -6128,7 +6116,8 @@ public class GameClient {
         }
 
         this.player.refreshStats();
-        SocketManager.GAME_SEND_STATS_PACKET(this.player);
+        if(sendStats)
+        	SocketManager.GAME_SEND_STATS_PACKET(this.player);
 
         if (this.player.getParty() != null)
             SocketManager.GAME_SEND_PM_MOD_PACKET_TO_GROUP(this.player.getParty(), this.player);
@@ -6145,18 +6134,15 @@ public class GameClient {
         if (position == Constant.ITEM_POS_NO_EQUIPED && oldPosition == Constant.ITEM_POS_ARME)
             SocketManager.GAME_SEND_OT_PACKET(this, -1);
         
-        if (position == Constant.ITEM_POS_ARME) 
+        else if (position == Constant.ITEM_POS_ARME) 
         	for(final Entry<Integer, JobStat> entry : this.player.getMetiers().entrySet()) 
         		if(entry.getValue().getTemplate().isValidTool(object.getTemplate().getId())) 
         			SocketManager.GAME_SEND_OT_PACKET(this, entry.getValue().getTemplate().getId());
         
-        if (this.player.getFight() != null)
-            SocketManager.GAME_SEND_ON_EQUIP_ITEM_FIGHT(this.player, this.player.getFight().getFighterByPerso(this.player), this.player.getFight());
-    
-
         onMovementSecureCraft(object, position, oldPosition);
         
         if(this.player.getFight() != null) {
+        	SocketManager.GAME_SEND_ON_EQUIP_ITEM_FIGHT(this.player, this.player.getFight().getFighterByPerso(this.player), this.player.getFight());
             Fighter target = this.player.getFight().getFighterByPerso(this.player);
             this.player.getFight().getFighters(7).stream().filter(fighter -> fighter != null && fighter.getPersonnage() != null).forEach(fighter -> fighter.getPersonnage().send(this.player.getCurMap().getFighterGMPacket(this.player)));
             target.setPdv(this.player.getCurPdv());
@@ -6219,7 +6205,7 @@ public class GameClient {
             if (position != Constant.ITEM_POS_NO_EQUIPED && (object.getTemplate().getPanoId() != -1 || object.getTemplate().getType() == Constant.ITEM_TYPE_DOFUS) && this.player.hasEquiped(object.getTemplate().getId()))
                 return;
 
-            this.onMovementEquipUnequipItem(object, position, quantity);
+            this.onMovementEquipUnequipItem(object, position, quantity, true);
 
             
         } catch (Exception e) {

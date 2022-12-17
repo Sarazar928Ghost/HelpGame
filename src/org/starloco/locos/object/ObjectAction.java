@@ -707,11 +707,10 @@ public class ObjectAction {
             if (send)
                 SocketManager.GAME_SEND_Im_PACKET(player, "022;" + 1 + "~" + gameObject.getTemplate().getId());
             if (sureIsOk || (isOk && effect && gameObject.getTemplate().getId() != 7799)) {
-                if (gameObject != null) {
-                	if(gameObject.getPosition() != Constant.ITEM_POS_NO_EQUIPED)
-                		player0.unEquipItem(gameObject.getPosition());
-                    player0.removeItem(objet, 1, true, true);
-                }
+            	if(gameObject.getPosition() != Constant.ITEM_POS_NO_EQUIPED)
+            		player0.unEquipItem(gameObject.getPosition());
+                player0.removeItem(objet, 1, true, true);
+                
             }
         }
     }
