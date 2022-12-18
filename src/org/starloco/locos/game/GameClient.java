@@ -5762,7 +5762,7 @@ public class GameClient {
             return;
         }
         if (obj.getPosition() != Constant.ITEM_POS_NO_EQUIPED)
-        	return;
+        	this.onMovementEquipUnequipItem(obj, Constant.ITEM_POS_NO_EQUIPED, obj.getQuantity(), true);
         if (qua >= obj.getQuantity()) {
             this.player.removeItem(guid);
             this.player.getCurMap().getCase(cellPosition).addDroppedItem(obj);
