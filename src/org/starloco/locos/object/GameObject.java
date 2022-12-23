@@ -31,6 +31,7 @@ public class GameObject {
     protected int obvijevanPos;
     protected int obvijevanLook;
     protected int puit;
+    private int mimibioteApparence = 0;
     private Stats Stats = new Stats();
     private ArrayList<SpellEffect> Effects = new ArrayList<>();
     private ArrayList<String> SortStats = new ArrayList<>();
@@ -48,6 +49,9 @@ public class GameObject {
 
         Stats = new Stats();
         this.parseStringToStats(strStats, false);
+        
+        if(getTxtStat().get(Constant.STATS_MIMIBIOTE) != null)
+        	this.setMimibioteApparence(Integer.parseInt(getTxtStat().get(Constant.STATS_MIMIBIOTE).split(";")[1], 16));
     }
 
     public GameObject(int Guid) {
@@ -79,6 +83,8 @@ public class GameObject {
 
         GameObject ob = new GameObject(Database.getDynamics().getWorldEntityData().getNextObjectId(), obj.getTemplate().getId(), qua, Constant.ITEM_POS_NO_EQUIPED, newStats, obj.getEffects(), obj.getSoulStat(), obj.getTxtStat(), obj.getPuit());
         ob.modification = 0;
+        if(obj.isMimibiote())
+        	ob.setMimibioteApparence(obj.getOATemplateApparence());
         return ob;
     }
 
@@ -142,6 +148,14 @@ public class GameObject {
                     String[] stats = split.split("#");
                     int id = Integer.parseInt(stats[0], 16);
 
+                    
+                    if(id == Constant.STATS_MIMIBIOTE) {
+                    	final String[] datas = split.split("#");
+                    	// 2 == Apparat
+                    	// 3 == Id Template
+                    	txtStats.put(id, datas[2]+";"+datas[3]);
+                    	continue;
+                    }
                     if (id == Constant.STATS_PETS_DATE
                             && this.getTemplate().getType() == Constant.ITEM_TYPE_CERTIFICAT_CHANIL) {
                         txtStats.put(id, split.substring(3));
@@ -234,8 +248,15 @@ public class GameObject {
             this.setModification();
     }
 
+    
+    
     public void addTxtStat(int i, String s) {
         txtStats.put(i, s);
+        this.setModification();
+    }
+    
+    public void addOneStats(int i, int val) {
+        Stats.addOneStat(i, val);
         this.setModification();
     }
 
@@ -415,7 +436,12 @@ public class GameObject {
                     else
                         stats.append(Integer.toHexString(entry.getKey())).append(Formulas.convertToDate(Long.parseLong(entry.getValue())));
                 }
-            } else if (entry.getKey() == Constant.STATS_CHANGE_BY || entry.getKey() == Constant.STATS_NAME_TRAQUE || entry.getKey() == Constant.STATS_OWNER_1) {
+            } else if(entry.getKey() == Constant.STATS_MIMIBIOTE) {
+            	final String[] datas = entry.getValue().split(";");
+            	stats.append(Integer.toHexString(Constant.STATS_MIMIBIOTE)).append("#0#").append(datas[0]).append("#").append(datas[1]);
+            }
+            
+            else if (entry.getKey() == Constant.STATS_CHANGE_BY || entry.getKey() == Constant.STATS_NAME_TRAQUE || entry.getKey() == Constant.STATS_OWNER_1) {
                 stats.append(Integer.toHexString(entry.getKey())).append("#0#0#0#").append(entry.getValue());
             } else if (entry.getKey() == Constant.STATS_GRADE_TRAQUE || entry.getKey() == Constant.STATS_ALIGNEMENT_TRAQUE || entry.getKey() == Constant.STATS_NIVEAU_TRAQUE) {
                 stats.append(Integer.toHexString(entry.getKey())).append("#0#0#").append(entry.getValue()).append("#0");
@@ -525,7 +551,8 @@ public class GameObject {
                 String jet = "0d0+" + entry.getValue();
                 stats.append(Integer.toHexString(statID)).append("#");
                 stats.append("0#0#").append(Integer.toHexString(entry.getValue())).append("#").append(jet);
-            } else {
+            }
+            else {
                 String jet = "0d0+" + entry.getValue();
                 stats.append(Integer.toHexString(statID)).append("#");
                 stats.append(Integer.toHexString(entry.getValue().intValue())).append("#0#0#").append(jet);
@@ -601,7 +628,12 @@ public class GameObject {
                             && entry.getKey() == Constant.STATS_PETS_EPO)
                         stats.append(Integer.toHexString(entry.getKey())).append("#").append(Integer.toHexString(p.getIsEupeoh() ? 1 : 0)).append("#0#").append(Integer.toHexString(p.getIsEupeoh() ? 1 : 0));
                 }
-            } else {
+            }else if(entry.getKey() == Constant.STATS_MIMIBIOTE) {
+            	final String[] datas = entry.getValue().split(";");
+            	stats.append(Integer.toHexString(Constant.STATS_MIMIBIOTE)).append("#0#").append(datas[0]).append("#").append(datas[1]);
+            }
+            
+            else {
                 stats.append(Integer.toHexString(entry.getKey())).append("#0#0#0#").append(entry.getValue());
             }
             isFirst = false;
@@ -1280,6 +1312,21 @@ public class GameObject {
             }
         }
 	 this.setModification();
+    }
+    
+    
+    public int getOATemplateApparence() {
+    	if(this.isMimibiote())
+    		return this.mimibioteApparence;
+    	return this.getTemplate().getId();
+    }
+    
+    public boolean isMimibiote() {
+    	return this.mimibioteApparence != 0;
+    }
+    
+    public void setMimibioteApparence(final int idTemplate) {
+    	this.mimibioteApparence = idTemplate;
     }
     
     

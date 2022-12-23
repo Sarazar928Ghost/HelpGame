@@ -12,7 +12,7 @@ import com.zaxxer.hikari.HikariDataSource;
  */
 public class WorldEntityData extends AbstractDAO<Object> {
 
-    private int nextMountId, nextObjectId, nextPetId;
+    private int nextMountId, nextObjectId;
 
     public WorldEntityData(HikariDataSource dataSource) {
         super(dataSource);
@@ -44,17 +44,6 @@ public class WorldEntityData extends AbstractDAO<Object> {
         } finally {
             close(result);
         }
-        try {
-            result = getData("SELECT MAX(id) AS max FROM `petsOwner`;");
-            ResultSet RS = result.resultSet;
-            boolean found = RS.first();
-            if (found) this.nextPetId = RS.getInt("max");
-            else this.nextPetId = 1;
-        } catch (SQLException e) {
-            logger.error("WorldEntityData load", e);
-        } finally {
-            close(result);
-        }
     }
 
     @Override
@@ -68,9 +57,5 @@ public class WorldEntityData extends AbstractDAO<Object> {
 
     public synchronized int getNextObjectId() {
         return ++nextObjectId;
-    }
-
-    public synchronized int getNextPetId() {
-        return ++nextPetId;
     }
 }

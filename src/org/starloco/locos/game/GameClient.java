@@ -253,9 +253,113 @@ public class GameClient {
                                         Formulas.getRandomValue(1, 5)));
                 SocketManager.send(this, "APK" + name);
                 break;
+            case 'E':
+            	mimibiote(packet);
+            	break;
         }
     }
     
+    private void mimibiote(String packet) {
+    	switch (packet.charAt(2)) {
+    		case 'i':
+    			if(packet.charAt(3) == '1') {
+    				createMimibiote(packet);
+    				return;
+    			}
+    			if(packet.charAt(3) == '0') {
+    				dissociateMimibiote(packet);
+    				return;
+    			}    			
+    			break;
+    	}
+    }
+    
+    
+    private void createMimibiote(String packet)
+    {
+    	final String[] datas = packet.split("\\|");
+    	if(datas.length < 3) return;
+    	
+    	int idItemToKeep;
+    	int idItemToDelete;
+    	
+    	try {
+    		idItemToKeep = Integer.parseInt(datas[1]);
+    		idItemToDelete = Integer.parseInt(datas[2]);
+    	}catch(NumberFormatException e) {
+    		return;
+    	}
+    	
+    	final GameObject mimibiote = this.player.getItemTemplate(Constant.ID_TEMPLATE_MIMIBIOTE);
+    	if(mimibiote == null) return;
+    	
+    	final GameObject itemToKeep = World.world.getGameObject(idItemToKeep);
+    	final GameObject itemToDelete = World.world.getGameObject(idItemToDelete);
+    	
+    	if(itemToKeep == null || itemToDelete == null) return;
+    	if(!this.player.hasItemGuid(idItemToKeep) || !this.player.hasItemGuid(idItemToDelete)) return;
+    	if(itemToDelete.getPosition() != Constant.ITEM_POS_NO_EQUIPED || itemToKeep.getPosition() != Constant.ITEM_POS_NO_EQUIPED) return;
+    	if(itemToKeep.isMimibiote() || itemToDelete.isMimibiote()) return;
+    	if(itemToKeep.getTemplate().getLevel() < itemToDelete.getTemplate().getLevel()) return;
+    	if(itemToKeep.getTemplate().getType() != itemToDelete.getTemplate().getType()) return;
+    	if(!Constant.isTypeForMimibiote(itemToKeep.getTemplate().getType())) return;
+    	
+    	
+    	// OK
+    	final String guid = Integer.toHexString(itemToDelete.getGuid());
+    	final String id = Integer.toHexString(itemToDelete.getTemplate().getId());
+    	itemToKeep.addTxtStat(Constant.STATS_MIMIBIOTE, guid+";"+id);
+    	itemToKeep.setMimibioteApparence(itemToDelete.getTemplate().getId());
+    	this.player.removeItem(idItemToDelete, 1, true, false);
+    	this.player.removeItem(mimibiote.getGuid(), 1, true, true);
+		SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, itemToKeep.getGuid());
+		SocketManager.GAME_SEND_OAKO_PACKET(this.player, itemToKeep);
+		SocketManager.GAME_SEND_Im_PACKET(this.player, "022;" + 1 + "~" + itemToDelete.getTemplate().getId());
+		SocketManager.GAME_SEND_Im_PACKET(this.player, "022;" + 1 + "~" + mimibiote.getTemplate().getId());
+    	
+    }
+    
+    private void dissociateMimibiote(String packet)
+    {
+    	final String[] datas = packet.split("\\|");
+    	if(datas.length < 2) return;
+    	
+    	int idItem;
+    	
+    	try {
+    		idItem = Integer.parseInt(datas[1]);
+    	}catch(NumberFormatException e) {
+    		return;
+    	}
+    	
+    	final GameObject item = World.world.getGameObject(idItem);
+    	if(item == null) return;
+    	if(!this.player.hasItemGuid(idItem)) return;
+    	if(!item.isMimibiote()) return;
+    	
+    	final GameObject mimibiote = World.world.getObjTemplate(Constant.ID_TEMPLATE_MIMIBIOTE).createNewItem(1, false);
+    	final int idApparat = Integer.parseInt(item.getTxtStat().get(Constant.STATS_MIMIBIOTE).split(";")[0], 16);
+    	final GameObject apparat = World.world.getGameObject(idApparat);
+    	
+    	if(apparat == null)
+    	{
+    		this.player.sendErrorMessage("Merci de contacter un administrateur. L'objet avec comme ID " + idApparat + " a disparu ...");
+    		return;
+    	}
+    	
+    	this.player.addObjet(mimibiote, true);
+    	this.player.addObjet(apparat, true);
+    	item.getTxtStat().remove(Constant.STATS_MIMIBIOTE);
+    	item.setMimibioteApparence(0);
+    	SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, item.getGuid());
+		SocketManager.GAME_SEND_OAKO_PACKET(this.player, item);
+		if(item.getPosition() != Constant.ITEM_POS_NO_EQUIPED)
+			SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player);
+		
+
+		SocketManager.GAME_SEND_Im_PACKET(this.player, "021;" + 1 + "~" + apparat.getTemplate().getId());
+		SocketManager.GAME_SEND_Im_PACKET(this.player, "021;" + 1 + "~" + mimibiote.getTemplate().getId());
+    }
 
     private void addCharacter(String packet) {
         String[] infos = packet.substring(2).split("\\|");

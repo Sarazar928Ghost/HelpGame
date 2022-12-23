@@ -363,6 +363,8 @@ public class Constant {
     public static final int STATS_GRADE_TRAQUE = 961;
     public static final int STATS_ALIGNEMENT_TRAQUE = 960;
     public static final int STATS_NIVEAU_TRAQUE = 962;
+    public static final int STATS_MIMIBIOTE = 969; // 3C9
+    public static final byte ID_TEMPLATE_MIMIBIOTE = 4;
 
     public static final int STATS_DATE = 805;
     public static final int STATS_NIVEAU = 962;
@@ -2944,7 +2946,27 @@ public class Constant {
     	return false;
     }
 
+    public static boolean isTypeWeapon(final int type) {
+    	switch(type) {
+	    	case 114: // tourmenteurs
+	        case ITEM_TYPE_ARC:
+	        case ITEM_TYPE_BAGUETTE:
+	        case ITEM_TYPE_BATON:
+	        case ITEM_TYPE_DAGUES:
+	        case ITEM_TYPE_EPEE:
+	        case ITEM_TYPE_MARTEAU:
+	        case ITEM_TYPE_PELLE:
+	        case ITEM_TYPE_HACHE:
+	        case ITEM_TYPE_OUTIL:
+	        case ITEM_TYPE_PIOCHE:
+	        case ITEM_TYPE_FAUX:
+	        	return true;
+    	}
+    	return false;
+    }
+    
     public static boolean isValidPlaceForItem(final ObjectTemplate template, final int place) {
+        if(isTypeWeapon(template.getType()) && place == ITEM_POS_ARME) return true;
         switch (template.getType()) {
             case ITEM_TYPE_AMULETTE:
                 if (place == ITEM_POS_AMULETTE)
@@ -2960,18 +2982,6 @@ public class Constant {
                 if ((template.getId() == 9256) && (place == Constant.ITEM_POS_ANNEAU1 || place == Constant.ITEM_POS_ANNEAU1))
                     return true;
                 break;
-            case 114: // tourmenteurs
-            case ITEM_TYPE_ARC:
-            case ITEM_TYPE_BAGUETTE:
-            case ITEM_TYPE_BATON:
-            case ITEM_TYPE_DAGUES:
-            case ITEM_TYPE_EPEE:
-            case ITEM_TYPE_MARTEAU:
-            case ITEM_TYPE_PELLE:
-            case ITEM_TYPE_HACHE:
-            case ITEM_TYPE_OUTIL:
-            case ITEM_TYPE_PIOCHE:
-            case ITEM_TYPE_FAUX:
             case ITEM_TYPE_PIERRE_AME:
             case ITEM_TYPE_FILET_CAPTURE:
                 if (place == ITEM_POS_ARME)
@@ -4285,6 +4295,15 @@ public class Constant {
     public static boolean isPanoIdClass(final int ObjPanoID) {
     	if(ObjPanoID >= 81 && ObjPanoID <= 92) return true;
     	else if(ObjPanoID >= 201 && ObjPanoID <= 212) return true;
+    	return false;
+    }
+    
+    public static boolean isTypeForMimibiote(final int type) {
+    	if(type == Constant.ITEM_TYPE_COIFFE) return true;
+    	else if(type == Constant.ITEM_TYPE_CAPE) return true;
+    	else if(type == Constant.ITEM_TYPE_BOUCLIER) return true;
+    	else if(type == Constant.ITEM_TYPE_SAC_DOS) return true;
+    	else if(isTypeWeapon(type)) return true;
     	return false;
     }
 }

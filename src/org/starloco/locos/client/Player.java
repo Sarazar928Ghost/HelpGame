@@ -1979,7 +1979,7 @@ public class Player {
         GameObject object = getObjetByPos(Constant.ITEM_POS_ARME);
 
         if (object != null)
-            str.append(Integer.toHexString(object.getTemplate().getId()));
+            str.append(Integer.toHexString(object.getOATemplateApparence()));
 
         str.append(",");
 
@@ -1990,7 +1990,7 @@ public class Player {
 
             Integer obvi = object.getStats().getMap().get(970);
             if (obvi == null) {
-                str.append(Integer.toHexString(object.getTemplate().getId()));
+                str.append(Integer.toHexString(object.getOATemplateApparence()));
             } else {
                 str.append(Integer.toHexString(obvi)).append("~16~").append(object.getObvijevanLook());
             }
@@ -2005,7 +2005,7 @@ public class Player {
 
             Integer obvi = object.getStats().getMap().get(970);
             if (obvi == null) {
-                str.append(Integer.toHexString(object.getTemplate().getId()));
+                str.append(Integer.toHexString(object.getOATemplateApparence()));
             } else {
                 str.append(Integer.toHexString(obvi)).append("~17~").append(object.getObvijevanLook());
             }
@@ -2016,14 +2016,14 @@ public class Player {
         object = getObjetByPos(Constant.ITEM_POS_FAMILIER);
 
         if (object != null)
-            str.append(Integer.toHexString(object.getTemplate().getId()));
+            str.append(Integer.toHexString(object.getOATemplateApparence()));
 
         str.append(",");
 
         object = getObjetByPos(Constant.ITEM_POS_BOUCLIER);
 
         if (object != null)
-            str.append(Integer.toHexString(object.getTemplate().getId()));
+            str.append(Integer.toHexString(object.getOATemplateApparence()));
 
         return str.toString();
     }

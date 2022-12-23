@@ -778,20 +778,7 @@ public class ExecuteCommandPlayer {
 		    return false;
 		}
 		// Ajout de l'exo
-		 
-        final byte statsAdd = 1;
-        final boolean negative = false;
-		
-		final String statsStr = obj.parseFMStatsString(statsToAdd, obj, statsAdd, negative)
-		       + ","
-		       + statsToAdd
-		       + "#"
-		       + Integer.toHexString(statsAdd)
-		       + "#0#0#0d0+"
-		       + statsAdd;
-		obj.clearStats();
-		obj.refreshStatsObjet(statsStr);
-		
+		obj.addOneStats(Integer.parseInt(statsToAdd, 16), 1);
 		SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, obj.getGuid());
 		SocketManager.GAME_SEND_OAKO_PACKET(player, obj);
 		SocketManager.GAME_SEND_STATS_PACKET(player);

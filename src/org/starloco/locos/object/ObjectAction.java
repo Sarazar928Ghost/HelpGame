@@ -672,6 +672,12 @@ public class ObjectAction {
                             send = false;
                         }
                         break;
+                    // Mimibiote
+                    case 35:
+                    	SocketManager.GAME_SEND_UI_MIMIBIOTE(player);
+                    	isOk = false;
+                    	send = false;
+                    	break;
                         
                     // By Coding Mestre -  [FIX] Professions runes are now properly working Close #35
                     case 90: // profession rune

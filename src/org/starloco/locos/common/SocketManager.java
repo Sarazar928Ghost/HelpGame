@@ -1326,12 +1326,6 @@ public class SocketManager {
         send(out, packet);
     }
 
-    public static void SEND_OAKO_PACKET(GameClient out, GameObject obj) {
-        String packet = "OAKO" + obj.parseItem();
-        send(out, packet);
-
-    }
-
     public static void GAME_SEND_ESK_PACKEt(Player out) {
         String packet = "ESK";
         send(out, packet);
@@ -2677,5 +2671,10 @@ public class SocketManager {
     {
       send(out,"bfF");
     }
+
+	public static void GAME_SEND_UI_MIMIBIOTE(Player player) {
+		send(player.getGameClient(), "AEi");
+		
+	}
 
 }
