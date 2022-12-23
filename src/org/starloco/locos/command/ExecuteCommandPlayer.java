@@ -1175,6 +1175,8 @@ public class ExecuteCommandPlayer {
             }
         } 
         
+        obj.setModification();
+        
         SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, obj.getGuid());
         SocketManager.GAME_SEND_OAKO_PACKET(player, obj);
         SocketManager.GAME_SEND_STATS_PACKET(player);
