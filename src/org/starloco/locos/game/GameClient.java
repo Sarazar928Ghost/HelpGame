@@ -308,7 +308,7 @@ public class GameClient {
     	// OK
     	final String guid = Integer.toHexString(itemToDelete.getGuid());
     	final String id = Integer.toHexString(itemToDelete.getTemplate().getId());
-    	itemToKeep.addTxtStat(Constant.STATS_MIMIBIOTE, guid+";"+id);
+    	itemToKeep.addTxtStat(Constant.STATS_MIMIBIOTE, guid+";"+id); // setModification est dedans
     	itemToKeep.setMimibioteApparence(itemToDelete.getTemplate().getId());
     	this.player.removeItem(idItemToDelete, 1, true, false);
     	this.player.removeItem(mimibiote.getGuid(), 1, true, true);
@@ -349,7 +349,7 @@ public class GameClient {
     	
     	this.player.addObjet(mimibiote, true);
     	this.player.addObjet(apparat, true);
-    	item.removeTxtStat(Constant.STATS_MIMIBIOTE);
+    	item.removeTxtStat(Constant.STATS_MIMIBIOTE); // setModification est dedans
     	item.setMimibioteApparence(0);
     	SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, item.getGuid());
 		SocketManager.GAME_SEND_OAKO_PACKET(this.player, item);
