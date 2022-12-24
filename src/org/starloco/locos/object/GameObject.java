@@ -255,6 +255,11 @@ public class GameObject {
         this.setModification();
     }
     
+    public void removeTxtStat(int i) {
+        txtStats.remove(i);
+        this.setModification();
+    }
+    
     public void addOneStats(int i, int val) {
         Stats.addOneStat(i, val);
         this.setModification();

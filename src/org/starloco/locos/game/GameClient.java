@@ -349,7 +349,7 @@ public class GameClient {
     	
     	this.player.addObjet(mimibiote, true);
     	this.player.addObjet(apparat, true);
-    	item.getTxtStat().remove(Constant.STATS_MIMIBIOTE);
+    	item.removeTxtStat(Constant.STATS_MIMIBIOTE);
     	item.setMimibioteApparence(0);
     	SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, item.getGuid());
 		SocketManager.GAME_SEND_OAKO_PACKET(this.player, item);

@@ -20,7 +20,7 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Nouveau système de stockage des items équipés.
 - Le serveur game n'envoie plus de packet au client pour créer un item/pet/mount
 - Refonte système de parchotage et reset stats.
-- Mimibiote
+- Mimibiote ( Objet action 35 ) ( Item Template mimibiote : 4 )
 
 ## DEBUG :
 
