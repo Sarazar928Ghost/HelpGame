@@ -752,7 +752,7 @@ public class ObjectAction {
 
                     if (newGameObject == null)
                         continue;
-                    if(player.addObjet(gameObject, true))
+                    if(player.addObjet(newGameObject, true))
                     	World.world.addGameObject(newGameObject, true);
                 }
                 send = true;
