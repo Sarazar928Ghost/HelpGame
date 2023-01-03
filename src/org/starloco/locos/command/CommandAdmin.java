@@ -58,7 +58,6 @@ public class CommandAdmin extends AdminUser {
 
         if (infos.length == 0) return;
         String command = infos[0];
-
         try {
             Group groupe = this.getPlayer().getGroupe();
             if (groupe == null) {

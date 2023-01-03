@@ -2,7 +2,6 @@ package org.starloco.locos.fight.ia;
 
 import org.starloco.locos.fight.Fight;
 import org.starloco.locos.fight.Fighter;
-import org.starloco.locos.util.TimerWaiter;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -71,6 +70,10 @@ public abstract class AbstractIA implements IA {
     }
 
     public void addNext(Runnable runnable, Integer time) {
+    	while(this.fight.isCurAction() || this.fight.isTraped())
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {}
         executor.schedule(runnable,time,TimeUnit.MILLISECONDS);
     }
 }

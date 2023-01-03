@@ -489,11 +489,9 @@ public class Account {
         this.hdvsItems.get(hdvID).remove(entry);//Retire l'item de la liste des objets a vendre du compte
         GameObject obj = entry.getGameObject();
 
-        if (this.currentPlayer.addObjetSimiler(obj, true, -1)) {
+        if (!this.currentPlayer.addObjet(obj, true))
             World.world.removeGameObject(obj.getGuid());
-        } else {
-            this.currentPlayer.addObjet(obj);
-        }
+        
         Database.getDynamics().getHdvObjectData().delete(entry.getGameObject().getGuid());
         World.world.getHdv(hdvID).delEntry(entry);//Retire l'item de l'HDV
 

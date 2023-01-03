@@ -9,6 +9,7 @@ import org.starloco.locos.fight.traps.Trap;
 import org.starloco.locos.game.GameServer;
 import org.starloco.locos.game.world.World;
 import org.starloco.locos.kernel.Constant;
+
 import org.starloco.locos.area.map.GameCase;
 import org.starloco.locos.fight.spells.Spell;
 
@@ -18,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class PathFinding {
 
-    private static Integer nSteps = new Integer(0);
+    private static Integer nSteps = 0;
 
     public static int isValidPath(GameMap map, int cellID,
                                   AtomicReference<String> pathRef, Fight fight, Player perso,
@@ -401,8 +402,8 @@ public class PathFinding {
       return null;
     }
 
-    public static int newCaseAfterPush(Fight fight, GameCase CCase, GameCase TCase, int value) {
-        GameMap map = fight.getMap();
+    public static int newCaseAfterPush(final Fight fight, final GameCase CCase, final GameCase TCase, int value) {
+    	final GameMap map = fight.getMap();
         if (CCase.getId() == TCase.getId())
             return 0;
 
@@ -416,57 +417,19 @@ public class PathFinding {
         boolean b = false;
         for (int a = 0; a < value; a++) {
             int nextCase = GetCaseIDFromDirrection(id, c, map, true);
-            for (Trap p : fight.getAllTraps()) {
-                if (distBetweenTwoCase(map, p.getCell(), map.getCase(nextCase)) <= p.getSize()) {
-                    id = nextCase;
+            for (final Trap trap : fight.getAllTraps()) {
+            	final GameCase nextCell = map.getCase(nextCase);
+                if (PathFinding.getDistanceBetween(fight.getMap(), trap.getCell().getId(), nextCell.getId()) <= trap.getSize())
                     b = true;
-                }
             }
-            if (b) break;
-            if (map.getCase(nextCase) != null && map.getCase(nextCase).isWalkable(true) && map.getCase(nextCase).getFirstFighter() == null)
-                id = nextCase;
+            if (map.getCase(nextCase) != null && map.getCase(nextCase).isWalkable(true) && map.getCase(nextCase).getFirstFighter() == null) {
+            	id = nextCase;
+            	if(b) break;
+            }
             else return -(value - a);
         }
 
         if (id == TCase.getId()) id = 0;
-        return id;
-    }
-
-
-    public static int newCaseAfterPush(Fight fight, GameCase currentCell, GameCase targetCell, int value, boolean piege) {
-        GameMap map = fight.getMap();
-
-        if (currentCell.getId() == targetCell.getId())
-            return 0;
-        char dir = getDirBetweenTwoCase(currentCell.getId(), targetCell.getId(), map, true);
-        int id = targetCell.getId();
-
-        if (value < 0) {
-            dir = getOpositeDirection(dir);
-            value = -value;
-        }
-
-        boolean b = false;
-        for (int a = 0; a < value; a++) {
-            int nextCase = GetCaseIDFromDirrection(id, dir, map, true);
-
-            for (Trap trap : fight.getAllTraps()) {
-                if (distBetweenTwoCase(map, trap.getCell(), map.getCase(nextCase)) <= trap.getSize()) {
-                    id = nextCase;
-                    b = true;
-                }
-            }
-
-            if (b) break;
-
-            if (map.getCase(nextCase) != null && map.getCase(nextCase).isWalkable(false) && map.getCase(nextCase).getFighters().isEmpty())
-                id = nextCase;
-            else
-                return -(value - a);
-        }
-
-        if (id == targetCell.getId())
-            return 0;
         return id;
     }
 
@@ -1332,18 +1295,8 @@ public class PathFinding {
                 c1 = GetCaseIDFromDirrection(c1, dir, map, true);
             }
         } else
-        //Si on doit chercher dans toutes les directions
-        {
-            char[] dirs = {'b', 'd', 'f', 'h'};
-            for (char d : dirs) {
-                int c = c1;
-                for (int a = 0; a < max; a++) {
-                    if (GetCaseIDFromDirrection(c, d, map, true) == c2)
-                        return true;
-                    c = GetCaseIDFromDirrection(c, d, map, true);
-                }
-            }
-        }
+        	return PathFinding.getDirBetweenTwoCase(c1, c2, map, true) != '\0';
+        
         return false;
     }
 
@@ -1421,7 +1374,7 @@ public class PathFinding {
 
     public static char getDirBetweenTwoCase(int cell1ID, int cell2ID, GameMap map,
                                             boolean Combat) {
-        ArrayList<Character> dirs = new ArrayList<Character>();
+    	final ArrayList<Character> dirs = new ArrayList<Character>();
         dirs.add('b');
         dirs.add('d');
         dirs.add('f');
@@ -1432,9 +1385,17 @@ public class PathFinding {
             dirs.add('c');
             dirs.add('d');
         }
-        for (char c : dirs) {
-            int cell = cell1ID;
-            for (int i = 0; i <= 64; i++) {
+        final boolean cell2Greater = cell2ID > cell1ID;
+        for (final char c : dirs) {
+        	int cell = cell1ID;
+        	// Si on va dans la mauvaise direction on ne va pas dans la boucle
+        	if (GetCaseIDFromDirrection(cell, c, map, Combat) == cell2ID)
+                return c;
+            cell = GetCaseIDFromDirrection(cell, c, map, Combat);
+            if(cell2Greater && cell < cell1ID) continue;
+            else if(!cell2Greater && cell > cell1ID) continue;
+            // Si c'est la bonne direction on check : )
+            for (byte i = 0; i <= 63; ++i) {
                 if (GetCaseIDFromDirrection(cell, c, map, Combat) == cell2ID)
                     return c;
                 cell = GetCaseIDFromDirrection(cell, c, map, Combat);

@@ -342,7 +342,6 @@ public class Spell {
                 effets = CCeffects;
             else
                 effets = effects;
-            GameServer.a();
             int jetChance = 0;
             if (this.getSpell().getSpellID() == 101) // Si c'est roulette
             {

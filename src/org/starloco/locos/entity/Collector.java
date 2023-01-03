@@ -12,6 +12,7 @@ import org.starloco.locos.other.Guild;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 public class Collector {
     private int id;
@@ -398,8 +399,19 @@ public class Collector {
         return str.toString();
     }
 
-    public java.util.Map<Integer, GameObject> getOjects() {
-        return this.objects;
+    public boolean addObjet(GameObject newObj, boolean stackIfSimilar) {
+    	if(stackIfSimilar)
+	        for (Entry<Integer, GameObject> entry : objects.entrySet()) {
+	            GameObject obj = entry.getValue();
+	            if (ConditionParser.stackIfSimilar(obj, newObj)) {
+	                obj.setQuantity(obj.getQuantity() + newObj.getQuantity());//On ajoute QUA item a la quantitê de l'objet existant
+	                return false;
+	            }
+	        }
+        if(newObj.getGuid() == -1) 
+        	newObj.setId();
+        objects.put(newObj.getGuid(), newObj);
+        return true;
     }
 
     public boolean haveObjects(int id) {
@@ -416,18 +428,6 @@ public class Collector {
 
     public int getMaxPod() {
         return World.world.getGuild(this.getGuildId()).getStats(Constant.STATS_ADD_PODS);
-    }
-
-    public boolean addObjet(GameObject newObj) {
-        for (java.util.Map.Entry<Integer, GameObject> entry : this.objects.entrySet()) {
-            GameObject obj = entry.getValue();
-            if (ConditionParser.stackIfSimilar(obj, newObj, true)) {
-                obj.setQuantity(obj.getQuantity() + newObj.getQuantity());//On ajoute QUA item a la quantitï¿½ de l'objet existant
-                return false;
-            }
-        }
-        this.objects.put(newObj.getGuid(), newObj);
-        return true;
     }
 
     public void removeObjet(int id) {
@@ -470,7 +470,7 @@ public class Collector {
                 //On retire l'item
                 removeObjet(id);
                 //On l'ajoute au joueur
-                P.addObjet(CollectorObj);
+                P.addObjet(CollectorObj, false);
                 //On envoie les packets
                 String str = "O-" + id;
                 SocketManager.GAME_SEND_EsK_PACKET(P, str);
@@ -484,8 +484,7 @@ public class Collector {
                 //On retire X objet
                 CollectorObj.setQuantity(newQua);
                 //On l'ajoute au joueur
-                P.addObjet(PersoObj);
-
+                P.addObjet(PersoObj, false);
                 //On envoie les packets
                 String str = "O+" + CollectorObj.getGuid() + "|"
                         + CollectorObj.getQuantity() + "|"

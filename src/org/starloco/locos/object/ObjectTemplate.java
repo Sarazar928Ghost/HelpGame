@@ -2,7 +2,6 @@ package org.starloco.locos.object;
 
 import org.starloco.locos.client.Player;
 import org.starloco.locos.client.other.Stats;
-import org.starloco.locos.common.ConditionParser;
 import org.starloco.locos.common.Formulas;
 import org.starloco.locos.common.SocketManager;
 import org.starloco.locos.database.Database;
@@ -338,9 +337,9 @@ public class ObjectTemplate {
         item = new GameObject(id, getId(), 1, Constant.ITEM_POS_PNJ_SUIVEUR, stats, new ArrayList<SpellEffect>(), new HashMap<Integer, Integer>(), new HashMap<Integer, String>(), 0);
         return item;
     }
-
+    
     public GameObject createNewItem(int qua, boolean useMax) {
-        int id = Database.getDynamics().getWorldEntityData().getNextObjectId();
+    	int id = -1;
         GameObject item;
         if (getType() == Constant.ITEM_TYPE_QUETES && (Constant.isCertificatDopeuls(getId()) || getId() == 6653)) {
             Map<Integer, String> txtStat = new HashMap<Integer, String>();
@@ -389,63 +388,6 @@ public class ObjectTemplate {
                 item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, generateNewStatsFromTemplate(getStrTemplate(), useMax), getEffectTemplate(getStrTemplate()), new HashMap<Integer, Integer>(), Stat, 0);
             }
         }
-        return item;
-    }
-
-    public GameObject createNewItemWithoutDuplication(Collection<GameObject> objects, int qua, boolean useMax) {
-        int id = -1;
-        GameObject item;
-        if (getType() == Constant.ITEM_TYPE_QUETES && (Constant.isCertificatDopeuls(getId()) || getId() == 6653)) {
-            Map<Integer, String> txtStat = new HashMap<>();
-            txtStat.put(Constant.STATS_DATE, System.currentTimeMillis() + "");
-            item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(false, null), new ArrayList<>(), new HashMap<>(), txtStat, 0);
-        } else if (this.getId() == 10207) {
-            item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(false, null), new ArrayList<>(), new HashMap<>(), Dopeul.generateStatsTrousseau(), 0);
-        } else if (getType() == Constant.ITEM_TYPE_FAMILIER) {
-            item = new GameObject(id, getId(), 1, Constant.ITEM_POS_NO_EQUIPED, (useMax ? generateNewStatsFromTemplate(World.world.getPets(this.getId()).getJet(), false) : new Stats(false, null)), new ArrayList<>(), new HashMap<>(), World.world.getPets(getId()).generateNewtxtStatsForPets(), 0);
-            //Ajouter du Pets_data SQL et World
-            long time = System.currentTimeMillis();
-            World.world.addPetsEntry(new PetEntry(id, getId(), time, 0, 10, 0, false));
-            Database.getDynamics().getPetData().add(id, time, getId());
-        } else if(getType() == Constant.ITEM_TYPE_CERTIF_MONTURE) {
-            item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, generateNewStatsFromTemplate(getStrTemplate(), useMax), getEffectTemplate(getStrTemplate()), new HashMap<>(), new HashMap<>(), 0);
-        } else {
-            if (getType() == Constant.ITEM_TYPE_OBJET_ELEVAGE) {
-                item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(false, null), new ArrayList<>(), new HashMap<>(), getStringResistance(getStrTemplate()), 0);
-            } else if (Constant.isIncarnationWeapon(getId())) {
-                Map<Integer, Integer> Stats = new HashMap<>();
-                Stats.put(Constant.ERR_STATS_XP, 0);
-                Stats.put(Constant.STATS_NIVEAU, 1);
-                item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, generateNewStatsFromTemplate(getStrTemplate(), useMax), getEffectTemplate(getStrTemplate()), Stats, new HashMap<>(), 0);
-            } else {
-                Map<Integer, String> Stat = new HashMap<>();
-                switch (getType()) {
-                    case 1:
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 5:
-                    case 6:
-                    case 7:
-                    case 8:
-                        String[] splitted = getStrTemplate().split(",");
-                        for (String s : splitted) {
-                            String[] stats = s.split("#");
-                            int statID = Integer.parseInt(stats[0], 16);
-                            if (statID == Constant.STATS_RESIST) {
-                                String ResistanceIni = stats[1];
-                                Stat.put(statID, ResistanceIni);
-                            }
-                        }
-                        break;
-                }
-                item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, generateNewStatsFromTemplate(getStrTemplate(), useMax), getEffectTemplate(getStrTemplate()), new HashMap<Integer, Integer>(), Stat, 0);
-            }
-        }
-
-        for(GameObject object : objects)
-            if(ConditionParser.stackIfSimilar(object, item, true))
-                return object;
         return item;
     }
 

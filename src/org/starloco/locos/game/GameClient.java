@@ -75,7 +75,6 @@ public class GameClient {
     private AdminUser adminUser;
     private final Map<Integer, GameAction> actions = new HashMap<>();
     public long timeLastTradeMsg = 0, timeLastRecrutmentMsg = 0, timeLastAlignMsg = 0, timeLastChatMsg = 0, timeLastIncarnamMsg = 0, timeLastTaverne, timeLastTP, lastPacketTime = 0, action = 0;
-
     private byte language = Lang.ENGLISH;
 
     public GameClient(IoSession session) {
@@ -277,6 +276,7 @@ public class GameClient {
     
     private void createMimibiote(String packet)
     {
+    	if(this.player.getFight() != null) return;
     	final String[] datas = packet.split("\\|");
     	if(datas.length < 3) return;
     	
@@ -312,8 +312,7 @@ public class GameClient {
     	itemToKeep.setMimibioteApparence(itemToDelete.getTemplate().getId());
     	this.player.removeItem(idItemToDelete, 1, true, false);
     	this.player.removeItem(mimibiote.getGuid(), 1, true, true);
-		SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, itemToKeep.getGuid());
-		SocketManager.GAME_SEND_OAKO_PACKET(this.player, itemToKeep);
+    	SocketManager.GAME_SEND_UPDATE_ITEM(player, itemToKeep);
 		SocketManager.GAME_SEND_Im_PACKET(this.player, "022;" + 1 + "~" + itemToDelete.getTemplate().getId());
 		SocketManager.GAME_SEND_Im_PACKET(this.player, "022;" + 1 + "~" + mimibiote.getTemplate().getId());
     	
@@ -321,6 +320,7 @@ public class GameClient {
     
     private void dissociateMimibiote(String packet)
     {
+    	if(this.player.getFight() != null) return;
     	final String[] datas = packet.split("\\|");
     	if(datas.length < 2) return;
     	
@@ -347,16 +347,15 @@ public class GameClient {
     		return;
     	}
     	
-    	this.player.addObjet(mimibiote, true);
+    	if(this.player.addObjet(mimibiote, true))
+    		World.world.addGameObject(mimibiote, true);
     	this.player.addObjet(apparat, true);
     	item.removeTxtStat(Constant.STATS_MIMIBIOTE); // setModification est dedans
     	item.setMimibioteApparence(0);
-    	SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(this.player, item.getGuid());
-		SocketManager.GAME_SEND_OAKO_PACKET(this.player, item);
+    	SocketManager.GAME_SEND_UPDATE_ITEM(player, item);
 		if(item.getPosition() != Constant.ITEM_POS_NO_EQUIPED)
 			SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player);
 		
-
 		SocketManager.GAME_SEND_Im_PACKET(this.player, "021;" + 1 + "~" + apparat.getTemplate().getId());
 		SocketManager.GAME_SEND_Im_PACKET(this.player, "021;" + 1 + "~" + mimibiote.getTemplate().getId());
     }
@@ -2021,7 +2020,7 @@ public class GameClient {
             }
 
             World.world.addGameObject(fragment, true);
-            this.player.addObjet(fragment);
+            this.player.addObjet(fragment, false);
             SocketManager.GAME_SEND_Ec_PACKET(this.player, "K;8378");
             SocketManager.GAME_SEND_Ow_PACKET(this.player);
             SocketManager.GAME_SEND_IO_PACKET_TO_MAP(this.player.getCurMap(), this.player.getId(), "+8378");
@@ -3006,7 +3005,7 @@ public class GameClient {
                     object.setMountStats(this.player, mount);
 
                     World.world.addGameObject(object, true);
-                    this.player.addObjet(object);
+                    this.player.addObjet(object, false);
 
                     SocketManager.GAME_SEND_Ee_PACKET(this.player, '-', mount.getId() + "");
                     Database.getDynamics().getMountData().update(mount);
@@ -4319,7 +4318,7 @@ public class GameClient {
                 Spell.SortStats SS = this.player.getSortStatBySortIfHas(id);
 
                 if (SS != null)
-                    if(this.player.getFight().getCurAction().isEmpty())
+                    if(!this.player.getFight().isCurAction() && !this.player.getFight().isTraped())
                         this.player.getFight().cast(this.player.getFight().getFighterByPerso(this.player), () -> this.player.getFight().tryCastSpell(this.player.getFight().getFighterByPerso(this.player), SS, cellId));
             }
         } catch (NumberFormatException e) {
@@ -4331,7 +4330,7 @@ public class GameClient {
         try {
             if(packet.contains("undefined")) return;
             final int cell = Integer.parseInt(packet.substring(5));
-            if (this.player.getFight() != null && this.player.getFight().getCurAction().isEmpty())
+            if (this.player.getFight() != null && !this.player.getFight().isCurAction() && !this.player.getFight().isTraped())
                 this.player.getFight().cast(this.player.getFight().getFighterByPerso(this.player), () -> this.player.getFight().tryCaC(this.player, cell));
         } catch (Exception e) {
             e.printStackTrace();
@@ -6416,8 +6415,8 @@ public class GameClient {
         }
         obV.clearStats();
         obV.refreshStatsObjet(obviStats);
-        if (this.player.addObjet(obV, true))
-            World.world.addGameObject(obV, true);
+        this.player.addObjet(obV, false);
+        World.world.addGameObject(obV, true);
         obj.removeAllObvijevanStats();
         SocketManager.send(this.player, obj.obvijevanOCO_Packet(pos));
         SocketManager.GAME_SEND_ON_EQUIP_ITEM(this.player.getCurMap(), this.player);

@@ -64,8 +64,8 @@ public class Fighter implements Comparable<Fighter> {
     public int lastInvisMP=-1;
     public World.Couple<Byte, Long> killedBy;
     private boolean hadSober=false;
-    private boolean justTrapped=false;
 	private boolean alreadyPlayed;
+	
 
     public Fighter(Fight f, Monster.MobGrade mob) {
         this.fight = f;
@@ -113,6 +113,10 @@ public class Fighter implements Comparable<Fighter> {
         this.pdv = Prisme.getLevel() * 10000;
         this.gfxId = Prisme.getAlignement() == 1 ? 8101 : 8100;
         Prisme.refreshStats();
+    }
+    
+    public Player getPlayer() {
+    	return this.perso;
     }
 
     public int getId() {
@@ -1154,15 +1158,5 @@ public class Fighter implements Comparable<Fighter> {
     public boolean getHadSober()
     {
       return hadSober;
-    }
-    
-    public boolean getJustTrapped()
-    {
-      return justTrapped;
-    }
-
-    public void setJustTrapped(boolean justTrapped)
-    {
-      this.justTrapped=justTrapped;
     }
 }

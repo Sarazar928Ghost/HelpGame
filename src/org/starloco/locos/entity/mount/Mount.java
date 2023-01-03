@@ -2,7 +2,7 @@ package org.starloco.locos.entity.mount;
 
 import java.util.ArrayList;
 import java.util.List;
-//import java.util.Set;
+import java.util.Map;
 import java.util.HashMap;
 
 import org.starloco.locos.area.map.GameMap;
@@ -13,11 +13,9 @@ import org.starloco.locos.common.Formulas;
 import org.starloco.locos.common.PathFinding;
 import org.starloco.locos.common.SocketManager;
 import org.starloco.locos.database.Database;
-//import org.starloco.locos.game.GameServer;
 import org.starloco.locos.game.scheduler.Updatable;
 import org.starloco.locos.game.world.World;
 import org.starloco.locos.kernel.Constant;
-//import org.starloco.locos.kernel.Main;
 import org.starloco.locos.area.map.entity.MountPark;
 import org.starloco.locos.object.GameObject;
 import org.starloco.locos.util.TimerWaiter;
@@ -72,7 +70,7 @@ public class Mount {
     private int couple;
 	
 	public Stats stats = new Stats();
-	private java.util.Map<Integer, GameObject> objects = new HashMap<>();
+	private Map<Integer, GameObject> objects = new HashMap<>();
 	private List<Integer> capacitys = new ArrayList<>(2);
 
 	public Mount(int color, int owner, boolean savage) {
@@ -448,7 +446,7 @@ public class Mount {
 	}
 	//endregion getter/setter
 	
-	public java.util.Map<Integer, GameObject> getObjects() {
+	public Map<Integer, GameObject> getObjects() {
 		return objects;
 	}
 	
@@ -1103,7 +1101,7 @@ public class Mount {
 	
 	private String convertStatsToString() {
 		StringBuilder stats = new StringBuilder();
-		for(java.util.Map.Entry<Integer, Integer> entry : this.stats.getMap().entrySet()) {
+		for(Map.Entry<Integer, Integer> entry : this.stats.getMap().entrySet()) {
 			if(entry.getValue() <= 0)
 				continue;
 			if(stats.length() > 0)

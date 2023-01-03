@@ -551,14 +551,14 @@ public class ConditionParser {
         return copyCond;
     }
 
-    public static boolean stackIfSimilar(GameObject obj, GameObject newObj, boolean stackIfSimilar) {
+    public static boolean stackIfSimilar(GameObject obj, GameObject newObj) {
         switch(obj.getTemplate().getId()) {
             case 10275:
             case 8378:
                 if(obj.getTemplate().getId() == newObj.getTemplate().getId())
                     return false;
         }
-        return obj.getTemplate().getId() == newObj.getTemplate().getId() && stackIfSimilar && obj.getStats().isSameStats(newObj.getStats()) && !Constant.isIncarnationWeapon(newObj.getTemplate().getId())
+        return obj.getTemplate().getId() == newObj.getTemplate().getId() && obj.getStats().isSameStats(newObj.getStats()) && !Constant.isIncarnationWeapon(newObj.getTemplate().getId())
                 && newObj.getTemplate().getType() != Constant.ITEM_TYPE_CERTIFICAT_CHANIL
                 && newObj.getTemplate().getType() != Constant.ITEM_TYPE_FAMILIER
                 && newObj.getTemplate().getType() != Constant.ITEM_TYPE_PIERRE_AME_PLEINE

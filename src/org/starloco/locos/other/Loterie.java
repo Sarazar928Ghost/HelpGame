@@ -22,10 +22,8 @@ public class Loterie {
                     SocketManager.GAME_SEND_Im_PACKET(perso, "021;" + 1 + "~"
                             + objIdWin);
                     GameObject newObjAdded = World.world.getObjTemplate(objIdWin).createNewItem(1, false);
-                    if (!perso.addObjetSimiler(newObjAdded, true, -1)) {
-                        World.world.addGameObject(newObjAdded, true);
-                        perso.addObjet(newObjAdded);
-                    }
+                    if(perso.addObjet(newObjAdded, true))
+                    	World.world.addGameObject(newObjAdded, true);
                 } else {
                     SocketManager.GAME_SEND_Im_PACKET(perso, "14|43");
                 }
@@ -42,10 +40,8 @@ public class Loterie {
                     SocketManager.GAME_SEND_Im_PACKET(perso, "021;" + 1 + "~"
                             + objIdWin);
                     GameObject newObjAdded = World.world.getObjTemplate(objIdWin).createNewItem(1, false);
-                    if (!perso.addObjetSimiler(newObjAdded, true, -1)) {
-                        World.world.addGameObject(newObjAdded, true);
-                        perso.addObjet(newObjAdded);
-                    }
+                    if(perso.addObjet(newObjAdded, true))
+                    	World.world.addGameObject(newObjAdded, true);
                 } else {
                     SocketManager.GAME_SEND_Im_PACKET(perso, "14|43");
                 }
@@ -57,10 +53,8 @@ public class Loterie {
         int objIdWin = getCadeauPioute();
         SocketManager.GAME_SEND_Im_PACKET(perso, "021;" + 1 + "~" + objIdWin);
         GameObject newObjAdded = World.world.getObjTemplate(objIdWin).createNewItem(1, false);
-        if (!perso.addObjetSimiler(newObjAdded, true, -1)) {
-            World.world.addGameObject(newObjAdded, true);
-            perso.addObjet(newObjAdded);
-        }
+        if(perso.addObjet(newObjAdded, true))
+        	World.world.addGameObject(newObjAdded, true);
     }
 
     public static int getCadeau1() {

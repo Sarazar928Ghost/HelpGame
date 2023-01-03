@@ -14,13 +14,15 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Commandes joueurs lié avec la base de données.
 - Prestige lié avec la base de données.
 - Nouvelle condition : PRE , exemple : PRE>1 , prestige supérieur a 1. A mettre dans les colonnes conditions en base de données.
-- Nouvelle config.txt.
+- Nouvelle config.txt. (Se génére toute seule lors du lancement si inéxistant)
 - Possibilités de donner des items/pano lors de la création d'un personnage via la config.txt
 - Commande joueur giveItem ( numéro 6 ) avec arguments exemple : idTemplate,idTemplate,idTemplate,idTemplate;true (true veut dire jetMax)
 - Nouveau système de stockage des items équipés.
 - Le serveur game n'envoie plus de packet au client pour créer un item/pet/mount
 - Refonte système de parchotage et reset stats.
 - Mimibiote ( Objet action 35 ) ( Item Template mimibiote : 4 )
+- Cameleon DD ( Objet action action 36 ) ( Item Template Potion : 2 )
+- Piège débugé a 100% ( Normalement 🤗 )
 
 ## DEBUG :
 
@@ -28,6 +30,9 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Ne peut plus équiper plusieurs items. ( exemple 20 anneaux )
 - Enleve bien la morph des armes qui transforme lorsque on déséquipe l'arme.
 - Drop item équipé fonctionne correctement.
+- Ne génére plus d'ID object fantome.
+- IA moins bugé
+- Porter/Jeter panda débugé
 
 ## AUTRES :
 
@@ -35,11 +40,14 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Refactoring mouvement des objects dans l'inventaire. Grosse optimisation
 - N'envoie plus les packets de Stats lorsque on positionne un consomable dans la barre des raccourcis items.
 - Refactoring des actions des objets + optimisation
+- Refactoring addObjet et createNewItem
+- Optimisation getDirBetweenTwoCase
 
 
 ## TELECHARGEMENT :
 - GameCompiled.rar contient le game compilé avec le .bat pour le lancer.
 - Ne pas oublier d'executer les SQL
+- Si vous n'avez jamais lancé cette ému , il faut supprimer l'ancienne config.txt.
 
 ## AIDE :
 

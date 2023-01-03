@@ -9,6 +9,7 @@ import org.starloco.locos.database.Database;
 import org.starloco.locos.dynamic.Noel;
 import org.starloco.locos.entity.pet.PetEntry;
 import org.starloco.locos.entity.Prism;
+import org.starloco.locos.entity.mount.Mount;
 import org.starloco.locos.fight.spells.SpellEffect;
 import org.starloco.locos.game.action.ExchangeAction;
 import org.starloco.locos.game.world.World;
@@ -665,6 +666,7 @@ public class ObjectAction {
 
                             SocketManager.GAME_SEND_STATS_PACKET(player);
                             SocketManager.GAME_SEND_UPDATE_ITEM(player, weapon);
+                            weapon.setModification();
                             player.sendMessage("Votre corps-corps a été modifié avec succès.");
                         } else {
                             player.sendMessage("Votre corps-à-corps ne contient aucun dégât de type neutre.");
@@ -674,9 +676,24 @@ public class ObjectAction {
                         break;
                     // Mimibiote
                     case 35:
+                    	if(player.getFight() != null) return;
                     	SocketManager.GAME_SEND_UI_MIMIBIOTE(player);
-                    	isOk = false;
-                    	send = false;
+                    	return;
+                    // Cameleon dragodinde
+                    case 36:
+                    	if(player.getFight() != null) return;
+                    	final Mount mount = player.getMount();
+                    	if(mount == null) return;
+                    	if(mount.getCapacitys().contains(9)) 
+                    	{
+                    		player.sendInformationMessage("Votre monture est déjà caméléonne");
+                    		return;
+                    	}
+                    	mount.getCapacitys().add(9);
+                    	SocketManager.GAME_SEND_ERASE_ON_MAP_TO_MAP(player.getCurMap(), player.getId());
+                    	SocketManager.GAME_SEND_ADD_PLAYER_TO_MAP(player.getCurMap(), player);
+                    	SocketManager.GAME_SEND_Im_PACKET(player, "0105"); // Votre monture apprécie le repas.
+                    	isOk = true;
                     	break;
                         
                     // By Coding Mestre -  [FIX] Professions runes are now properly working Close #35
@@ -735,11 +752,8 @@ public class ObjectAction {
 
                     if (newGameObject == null)
                         continue;
-
-                    if (!player.addObjetSimiler(newGameObject, true, -1)) {
-                        World.world.addGameObject(newGameObject, true);
-                        player.addObjet(newGameObject);
-                    }
+                    if(player.addObjet(gameObject, true))
+                    	World.world.addGameObject(newGameObject, true);
                 }
                 send = true;
                 return true;

@@ -690,7 +690,7 @@ public class PlayerExchange extends Exchange {
 
                 if (obj1 == null)
                     continue;
-                if (this.player.addObjet(obj1, true))
+                if (this.player.addObjet(obj1, false))
                     World.world.addGameObject(obj1, true);
                 SocketManager.GAME_SEND_Im_PACKET(this.player, "021;"
                         + couple1.second + "~" + couple1.first);

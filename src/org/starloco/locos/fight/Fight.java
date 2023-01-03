@@ -77,7 +77,9 @@ public class Fight {
     private boolean checkTimer = false;
     private boolean finish = false;
     private boolean collectorProtect = false;
-    private String curAction = "";
+    private boolean curAction = false;
+    private boolean traped = false;
+    private String walkingPacket = "";
     private Monster.MobGroup mobGroup;
     private Collector collector;
     private Prism prism;
@@ -797,12 +799,27 @@ public class Fight {
         this.checkTimer = checkTimer;
     }
 
-    public String getCurAction() {
+    public boolean isCurAction() {
         return curAction;
     }
+    
+    public boolean isTraped() {
+    	return this.traped;
+    }
+    
+    public void setTraped(boolean traped) {
+    	this.traped = traped;
+    }
+    
+    public void removeTraped() {
+    	if(this.isTraped())
+    		TimerWaiter.addNext(() -> {
+    			this.setTraped(false);
+    	        },1000, TimerWaiter.DataType.FIGHT);
+    }
 
-    public void setCurAction(String curAction) {
-        this.curAction = curAction;
+    public void setCurAction(boolean action) {
+        this.curAction = action;
     }
 
     Monster.MobGroup getMobGroup() {
@@ -1501,7 +1518,7 @@ public class Fight {
         return;
 
       setCurPlayer(getCurPlayer()+1);
-      setCurAction("");
+      setCurAction(false);
 
       if(getCurPlayer()>=this.getOrderPlayingSize())
         setCurPlayer(0);
@@ -1680,7 +1697,7 @@ public class Fight {
                 return;
             }
 
-            if (!this.getCurAction().equals("")) {
+            if (this.isCurAction() || this.isTraped()) {
                 TimerWaiter.addNext(() -> this.endTurn(onAction, current), 100, TimerWaiter.DataType.FIGHT);
                 return;
             }
@@ -1691,7 +1708,7 @@ public class Fight {
 
             SocketManager.GAME_SEND_GAMETURNSTOP_PACKET_TO_FIGHT(this, 7, current.getId());
             current.setCanPlay(false);
-            setCurAction("");
+            setCurAction(false);
 
             if(onAction)
                 TimerWaiter.addNext(() -> this.newTurn(current), 2100, TimerWaiter.DataType.FIGHT);
@@ -1799,7 +1816,7 @@ public class Fight {
     public void playerPass(Player player) {
         final Fighter fighter = getFighterByPerso(player);
         if (fighter != null)
-            if (fighter.canPlay() && this.getCurAction().isEmpty())
+            if (fighter.canPlay() && !this.isCurAction() && !this.isTraped())
                 this.endTurn(false, fighter);
     }
 
@@ -2408,7 +2425,7 @@ public class Fight {
     {
       final Fighter current=this.getFighterByOrdreJeu();
 
-      if(current==null||spell==null||!this.getCurAction().isEmpty()||current!=fighter)
+      if(current==null||spell==null||this.isCurAction()||this.isTraped()||current!=fighter)
         return 10;
 
       //v2.8 - Carrying lockout fix
@@ -2427,7 +2444,7 @@ public class Fight {
                 if(f.getTeam()==fighter.getTeam())
                   if(f.getPersonnage()!=null)
                     SocketManager.GAME_SEND_MESSAGE(f.getPersonnage(),"<b>"+player.getName()+"</b> ne peut pas lancer <b>"+spell.getSpell().getNombre()+"</b> à cause d'un obstacle invisible !");
-              setCurAction("");
+              setCurAction(false);
               SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this,7,102,fighter.getId()+"",fighter.getId()+",-0");
               return 10;
             }
@@ -2435,7 +2452,7 @@ public class Fight {
       
       
 
-      setCurAction("casting");
+      setCurAction(true);
 
       if(canCastSpell1(fighter,spell,Cell,-1))
       {
@@ -2503,6 +2520,9 @@ public class Fight {
         if(!isEc)
           fighter.addLaunchedSort(Cell.getFirstFighter(),spell,fighter);
 
+        
+        
+        
         if((isEc&&spell.isEcEndTurn()))
         {
           try
@@ -2513,7 +2533,7 @@ public class Fight {
           {
             e.printStackTrace();
           }
-          setCurAction("");
+          setCurAction(false);
 
           if(fighter.getMob()!=null||fighter.isInvocation())
             return 5;
@@ -2534,7 +2554,7 @@ public class Fight {
         {
           e.printStackTrace();
         }
-        setCurAction("");
+        setCurAction(false);
         return 10;
       }
 
@@ -2542,7 +2562,7 @@ public class Fight {
       if(fighter.getPersonnage()!=null)
       {
     	  TimerWaiter.addNext(() -> {
-          setCurAction("");
+          setCurAction(false);
           SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this,7,102,fighter.getId()+"",fighter.getId()+",-0");
         },1000, TimerWaiter.DataType.FIGHT);
       }
@@ -2556,7 +2576,7 @@ public class Fight {
         {
           e.printStackTrace();
         }
-        setCurAction("");
+        setCurAction(false);
       }
 
       return 0;
@@ -2739,6 +2759,8 @@ public class Fight {
       final Fighter current=this.getFighterByOrdreJeu();
       if(current==null)
         return false;
+      if(this.isCurAction() || this.isTraped())
+    	  return false;
       String path=GA.args;
       if(path.equals(""))
         return false;
@@ -2747,7 +2769,7 @@ public class Fight {
       if(current.getId()!=fighter.getId()||this.getState()!=Constant.FIGHT_STATE_ACTIVE)
         return false;
       Fighter targetTacle=PathFinding.getEnemyAround(fighter.getCell().getId(),getMap(),this);
-      this.setCurAction("deplace");
+      this.setCurAction(true);
       if(targetTacle!=null&&!fighter.haveState(Constant.ETAT_ENRACINE)&&!fighter.haveState(Constant.ETAT_PORTE)&&!fighter.isHide())
       {
         int esquive=Formulas.getTacleChance(fighter,targetTacle);
@@ -2766,7 +2788,7 @@ public class Fight {
           SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this,7,GA.id,"102",fighter.getId()+"",fighter.getId()+",-"+pierdePA);
           setCurFighterPm(0);
           setCurFighterPa(getCurFighterPa()-pierdePA);
-          this.setCurAction("");
+          this.setCurAction(false);
           return false;
         }
       }
@@ -2777,11 +2799,9 @@ public class Fight {
       {
         if(fighter.getPersonnage()!=null)
           SocketManager.GAME_SEND_GA_PACKET(fighter.getPersonnage().getGameClient(),"","0","","");
-        this.setCurAction("");
+        this.setCurAction(false);
         return false;
       }
-
-      current.setJustTrapped(false);
       setCurFighterPm(getCurFighterPm()-nStep);
       this.setCurFighterUsedPm(this.getCurFighterUsedPm()+nStep);
 
@@ -2837,7 +2857,7 @@ public class Fight {
         nStep=nStep*(-1);
       }
 
-      setCurAction("GA;129;"+current.getId()+";"+current.getId()+",-"+nStep);
+      setWalkingPacket("GA;129;"+current.getId()+";"+current.getId()+",-"+nStep);
       // Si porteur
       final Fighter po2=current.getIsHolding();
 
@@ -2856,13 +2876,8 @@ public class Fight {
         catch(final Exception e)
         {
         }
-        this.setCurAction("");
-        SpellEffect.verifyTraps(this,fighter);
-        /*new TimerWaiterPlus(() -> {
-          SocketManager.GAME_SEND_GAMEACTION_TO_FIGHT(this,7,this.getCurAction());
-          this.setCurAction("");
-          new ArrayList<>(this.getAllTraps()).stream().filter(trap -> trap!=null).filter(trap -> PathFinding.getDistanceBetween(getMap(),trap.getCell().getId(),current.getCell().getId())<=trap.getSize()).forEach(trap -> trap.onTraped(current));
-        },700+150*nStep);*/
+        this.setWalkingPacket("");
+        Trap.doTraps(this, fighter);
         return true;
       }
 
@@ -2870,7 +2885,7 @@ public class Fight {
         this.getAllChallenges().entrySet().stream().filter(c -> c.getValue()!=null).forEach(c -> c.getValue().onPlayerMove(fighter));
 
       if(fighter.getPersonnage()!=null)
-        SpellEffect.verifyTraps(this,fighter);
+    	  Trap.doTraps(this, fighter);
       fighter.getPersonnage().getGameClient().addAction(GA);
       return true;
     }
@@ -2982,7 +2997,7 @@ public class Fight {
                     // pour que l'autre joue, puis on le supprime de l'index
                     // sans problmes
                     if (target.canPlay() && current.getId() == target.getId()) {
-                        this.setCurAction("");
+                        this.setCurAction(false);
                         this.endTurn(false, current);
                     }
                     if (this.getOrderPlaying() != null && !this.getOrderPlaying().isEmpty()) {
@@ -4044,28 +4059,19 @@ public class Fight {
     }
 
     public void onGK(Player player) {
-        final Fighter current = this.getFighterByOrdreJeu();
+    	final Fighter current = this.getFighterByOrdreJeu();
         if (current == null)
             return;
-        if (getCurAction().equals("") || current.getId() != player.getId() || getState() != Constant.FIGHT_STATE_ACTIVE)
+        if (this.getWalkingPacket().isEmpty() || current.getId() != player.getId() || getState() != Constant.FIGHT_STATE_ACTIVE)
             return;
 
-        SocketManager.GAME_SEND_GAMEACTION_TO_FIGHT(this, 7, this.getCurAction());
+        SocketManager.GAME_SEND_GAMEACTION_TO_FIGHT(this, 7, this.getWalkingPacket());
         SocketManager.GAME_SEND_GAF_PACKET_TO_FIGHT(this, 7, 2, current.getId());
-
-        final ArrayList<Trap> traps = new ArrayList<>(this.getAllTraps());
-        final Fighter fighter = getFighterByPerso(player);
-        final int currentCell = fighter.getCell().getId();
-
-        for (Trap trap : traps) {
-			// It doesn't make sense to check if the caster is within range of trap activation when the trap spell is being first cast...
-            //if (PathFinding.getDistanceBetween(this.getMap(), trap.getCell().getId(), currentCell) <= trap.getSize())
-            //    trap.onTraped(fighter);
-            if (this.getState() == Constant.FIGHT_STATE_FINISHED)
-                break;
-        }
-
-        this.setCurAction("");
+        
+        this.setWalkingPacket("");
+        this.setCurAction(false);
+        
+        
     }
 
     @SuppressWarnings("rawtypes")
@@ -4836,30 +4842,14 @@ public class Fight {
                                 if(objectTemplate.getType()==Constant.ITEM_TYPE_FAMILIER)
                                 {
                                   newObj=objectTemplate.createNewItem(entry.getValue(),false);
-                                  if(target.addObjet(newObj,true))
-                                    World.world.addGameObject(newObj,true);
+                                  target.addObjet(newObj, false);
+                                  World.world.addGameObject(newObj,true);
                                 }
                                 else
                                 {
-                                  newObj=objectTemplate.createNewItemWithoutDuplication(target.getItems().values(),entry.getValue(),false);
-                                  int guid=newObj.getGuid();
-                                  if(guid==-1)
-                                  { // Don't exist
-                                    guid=newObj.setId();
-                                    target.getItems().put(guid,newObj);
-                                    SocketManager.GAME_SEND_OAKO_PACKET(target,newObj);
-                                    World.world.addGameObject(newObj,true);
-                                  }
-                                  else
-                                  {
-                                    GameObject object=target.getItems().get(guid);
-
-                                    if(object!=null)
-                                    {
-                                      object.setQuantity(object.getQuantity()+entry.getValue());
-                                      SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(target,object);
-                                    }
-                                  }
+                                  newObj=objectTemplate.createNewItem(entry.getValue(),false);
+                                  if(target.addObjet(newObj, true))
+                                	  World.world.addGameObject(newObj,true);
                                 }
                               }
                         	}
@@ -4907,18 +4897,9 @@ public class Fight {
                             // FRED .ipdrop
                             
                             
-                            GameObject newObj = World.world.getObjTemplate(objectTemplate.getId()).createNewItemWithoutDuplication(target.getItems().values(), entry.getValue(), false);
-                            int guid = newObj.getGuid();//FIXME: Ne pas recréer un item pour l'empiler après
-
-                            if(guid == -1) { // Don't exist
-                                guid = newObj.setId();
-                                target.getItems().put(guid, newObj);
-                                SocketManager.GAME_SEND_OAKO_PACKET(target, newObj);
-                                World.world.addGameObject(newObj, true);
-                            } else {
-                                newObj.setQuantity(newObj.getQuantity() + entry.getValue());
-                                SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(target, newObj);
-                            }
+                            GameObject newObj = World.world.getObjTemplate(objectTemplate.getId()).createNewItem(entry.getValue(), false);
+                            if(target.addObjet(newObj, true))
+                            	World.world.addGameObject(newObj, true);
                         }
                         if (this.getType() == Constant.FIGHT_TYPE_DOPEUL) {
                             for (Fighter F : loosers) {
@@ -5495,16 +5476,9 @@ public class Fight {
 
                         drops += entry.getKey() + "~" + entry.getValue();
 
-                        GameObject newObj = World.world.getObjTemplate(objectTemplate.getId()).createNewItemWithoutDuplication(collector.getOjects().values(), entry.getValue(), false);
-                        int guid = newObj.getGuid();//FIXME: Ne pas recre un item pour l'empiler après
-
-                        if (guid == -1) { // Don't exist
-                            guid = newObj.setId();
-                            collector.getOjects().put(guid, newObj);
-                            World.world.addGameObject(newObj, true);
-                        } else {
-                            newObj.setQuantity(newObj.getQuantity() + entry.getValue());
-                        }
+                        GameObject newObj = World.world.getObjTemplate(objectTemplate.getId()).createNewItem(entry.getValue(), false);
+                        if(collector.addObjet(newObj, true))
+                        	World.world.addGameObject(newObj, true);
                     }
                 }
                 packet.append(drops).append(";");// Drop
@@ -5803,4 +5777,13 @@ public class Fight {
       }
       return sameIpPlayers;
     }
+    
+    public void setWalkingPacket(String walkingPacket) {
+    	this.setCurAction(!walkingPacket.isEmpty());
+		this.walkingPacket = walkingPacket;
+	}
+    
+    public String getWalkingPacket() {
+		return walkingPacket;
+	}
 }

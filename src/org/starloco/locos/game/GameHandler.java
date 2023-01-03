@@ -20,7 +20,6 @@ public class GameHandler implements IoHandler {
     public void messageReceived(IoSession ioSession, Object response) throws Exception {
         GameClient client = (GameClient) ioSession.getAttribute("client");
         String packet = (String) response;
-
         String[] s = packet.split("\n");
 
         int i = 0;

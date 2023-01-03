@@ -2445,24 +2445,21 @@ public class Player {
     }
 
     public boolean addObjet(GameObject newObj, boolean stackIfSimilar) {
-        for (Entry<Integer, GameObject> entry : objects.entrySet()) {
-            GameObject obj = entry.getValue();
-            if (ConditionParser.stackIfSimilar(obj, newObj, stackIfSimilar)) {
-                obj.setQuantity(obj.getQuantity() + newObj.getQuantity());//On ajoute QUA item a la quantitê de l'objet existant
-                if (isOnline)
-                    SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this, obj);
-                return false;
-            }
-        }
-        
+        if(stackIfSimilar)
+	    	for (Entry<Integer, GameObject> entry : objects.entrySet()) {
+	            GameObject obj = entry.getValue();
+	            if (ConditionParser.stackIfSimilar(obj, newObj)) {
+	                obj.setQuantity(obj.getQuantity() + newObj.getQuantity());//On ajoute QUA item a la quantitê de l'objet existant
+	                if (isOnline)
+	                    SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this, obj);
+	                return false;
+	            }
+	        }
+        if(newObj.getGuid() == -1) 
+        	newObj.setId();
         objects.put(newObj.getGuid(), newObj);
         SocketManager.GAME_SEND_OAKO_PACKET(this, newObj);
         return true;
-    }
-
-    public void addObjet(GameObject newObj) {
-        objects.put(newObj.getGuid(), newObj);
-        SocketManager.GAME_SEND_OAKO_PACKET(this, newObj);
     }
 
     public Map<Integer, GameObject> getItems() {
@@ -3297,7 +3294,7 @@ public class Player {
 
     private GameObject getSimilarBankItem(GameObject exGameObject) {
         for (GameObject gameObject : this.account.getBank())
-            if (ConditionParser.stackIfSimilar(gameObject, exGameObject, true))
+            if (ConditionParser.stackIfSimilar(gameObject, exGameObject))
                 return gameObject;
         return null;
     }
@@ -4661,7 +4658,7 @@ public class Player {
     private GameObject getSimilarStoreItem(GameObject exGameObject) {
         for (Integer id : _storeItems.keySet()) {
             GameObject gameObject = World.world.getGameObject(id);
-            if (ConditionParser.stackIfSimilar(gameObject, exGameObject, true))
+            if (ConditionParser.stackIfSimilar(gameObject, exGameObject))
                 return gameObject;
         }
 
@@ -5183,17 +5180,6 @@ public class Player {
         Database.getStatics().getPlayerData().update(this);
     }
 
-    public GameObject getItemGuid(int IDtemplate) {
-
-        for (Entry<Integer, GameObject> value : objects.entrySet()) {
-            GameObject obj2 = World.world.getGameObject(value.getKey());
-            if (obj2.getTemplate().getId() == IDtemplate)
-                return obj2;
-        }
-
-        return null;
-    }
-
     public String parsecolortomount() {
         int color1 = this.getColor1(), color2 = this.getColor2(), color3 = this.getColor3();
         if (this.getObjetByPos(Constant.ITEM_POS_MALEDICTION) != null)
@@ -5205,45 +5191,6 @@ public class Player {
         return (color1 == -1 ? "" : Integer.toHexString(color1)) + ","
                 + (color2 == -1 ? "" : Integer.toHexString(color2)) + ","
                 + (color3 == -1 ? "" : Integer.toHexString(color3));
-    }
-
-    public boolean addObjetWithOAKO(GameObject objet, boolean Similer) {
-        for (Entry<Integer, GameObject> entry : objects.entrySet()) {
-            GameObject obj = entry.getValue();
-            if (obj.getTemplate().getId() == objet.getTemplate().getId()
-                    && obj.getStats().isSameStats(objet.getStats()) && Similer
-                    && objet.getTemplate().getType() != 85
-                    && obj.getPosition() == -1) {
-                obj.setQuantity(obj.getQuantity() + objet.getQuantity());
-                if (isOnline)
-                    SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this, obj);
-                return false;
-            }
-
-            objects.put(objet.getGuid(), objet);
-            SocketManager.GAME_SEND_OAKO_PACKET(this, objet);
-        }
-        return true;
-    }
-
-    public boolean addObjetSimiler(GameObject objet, boolean hasSimiler, int oldID) {
-        ObjectTemplate objModelo = objet.getTemplate();
-        if (objModelo.getType() == 85 || objModelo.getType() == 18)
-            return false;
-        if (hasSimiler) {
-            for (Entry<Integer, GameObject> entry : objects.entrySet()) {
-                GameObject obj = entry.getValue();
-                if (obj.getPosition() == -1 && obj.getGuid() != oldID
-                        && obj.getTemplate().getId() == objModelo.getId()
-                        && obj.getStats().isSameStats(objet.getStats())
-                        && ConditionParser.stackIfSimilar(obj, objet, hasSimiler)) {
-                    obj.setQuantity(obj.getQuantity() + objet.getQuantity());
-                    SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(this, obj);
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public Map<Integer, World.Couple<Integer, Integer>> getItemClasseSpell() {
@@ -5260,14 +5207,6 @@ public class Player {
         if (!_itemClasseSpell.containsKey(spell)) {
             _itemClasseSpell.put(spell, new World.Couple<Integer, Integer>(effect, modif));
         }
-    }
-
-    public ArrayList<Integer> getItemClasse() {
-        return _itemClasse;
-    }
-
-    public void setItemClasse(ArrayList<Integer> ItemClasse) {
-        _itemClasse = ItemClasse;
     }
 
     public void addItemClasse(int item) {

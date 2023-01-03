@@ -4,9 +4,7 @@ import org.starloco.locos.client.Player;
 import org.starloco.locos.common.Formulas;
 import org.starloco.locos.common.SocketManager;
 import org.starloco.locos.database.Database;
-import org.starloco.locos.fight.Fight;
 import org.starloco.locos.fight.Fighter;
-import org.starloco.locos.fight.traps.Trap;
 import org.starloco.locos.game.action.ExchangeAction;
 import org.starloco.locos.game.action.GameAction;
 import org.starloco.locos.game.world.World;
@@ -21,11 +19,6 @@ import org.starloco.locos.area.map.entity.House;
 import org.starloco.locos.area.map.entity.Trunk;
 import org.starloco.locos.util.TimerWaiter;
 
-//import org.starloco.locos.area.map.GameMap;
-//import org.starloco.locos.fight.traps.Trap;
-
-//import java.util.ArrayList;
-//import java.util.List;
 // By Coding Mestre - [FIX] - Craftmens list now shows the appropriate jobs/professions Close #34
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,7 +41,6 @@ public class GameCase {
     private byte _slope;
     private byte _movimiento;
     private boolean _activo;
-    private Trap trap;
     
     // By Coding Mestre - [FIX] Professions runes are now properly working Close #35
     public static Map<List<Integer>, List<Integer>> craftsmenJobIds = new HashMap<>(); // keys are the map's ids and the values are the jobs/professions ids

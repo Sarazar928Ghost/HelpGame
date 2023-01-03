@@ -2203,7 +2203,7 @@ public class Constant {
         }
     }
 
-    public static int getTrapsColor(int spell) {
+    public static byte getTrapsColor(int spell) {
         switch (spell) {
             case 65://Sournois
                 return 7;
@@ -2225,6 +2225,19 @@ public class Constant {
             default:
                 return 7;
         }
+    }
+    
+    public static short getTrapsAnimation(int spell) {
+    	switch(spell) {
+    		case 73: // Repulsif
+    			return 409;
+    		case 79: // Masse
+    			return 410;
+    		case 77: // Silence
+    			return 411;
+    		default:
+    			return 407;
+    	}
     }
 
     public static Stats getMountStats(int color, int lvl) {

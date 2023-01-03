@@ -1,29 +1,35 @@
+/*
+ * Decompiled with CFR 0_123.
+ */
 package org.starloco.locos.fight.traps;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.starloco.locos.area.map.GameCase;
 import org.starloco.locos.common.PathFinding;
 import org.starloco.locos.common.SocketManager;
 import org.starloco.locos.fight.Fight;
 import org.starloco.locos.fight.Fighter;
-import org.starloco.locos.fight.spells.Spell.SortStats;
+import org.starloco.locos.fight.spells.Spell;
+import org.starloco.locos.fight.spells.SpellEffect;
 import org.starloco.locos.kernel.Constant;
-import org.starloco.locos.area.map.GameCase;
-
-import java.util.ArrayList;
 
 public class Trap {
-
-    private Fighter caster;
-    private GameCase cell;
-    private byte size;
-    private int spell;
-    private SortStats trapSpell;
-    private Fight fight;
-    private int color;
+    private final Fighter caster;
+    private final GameCase cell;
+    private final byte size;
+    private final int spell;
+    private final Spell.SortStats trapSpell;
+    private final Fight fight;
+    private final byte color;
     private boolean isUnHide = true;
     private int teamUnHide = -1;
+    private boolean isPushing = false;
+    private final  byte level;
+    private final short animationSpell;
 
-    public Trap(Fight fight, Fighter caster, GameCase cell, byte size,
-                SortStats trapSpell, int spell) {
+    public Trap(Fight fight, Fighter caster, GameCase cell, byte size, Spell.SortStats trapSpell, int spell, byte level) {
         this.fight = fight;
         this.caster = caster;
         this.cell = cell;
@@ -31,6 +37,18 @@ public class Trap {
         this.size = size;
         this.trapSpell = trapSpell;
         this.color = Constant.getTrapsColor(spell);
+        this.level = level;
+        this.animationSpell = Constant.getTrapsAnimation(spell);
+        for(final SpellEffect se : trapSpell.getEffects())
+        	if(se.getEffectID() == 5)
+        	{
+        		this.isPushing = true;
+        		break;
+        	}
+    }
+
+    public int getSpell() {
+        return this.spell;
     }
 
     public GameCase getCell() {
@@ -45,86 +63,100 @@ public class Trap {
         return this.caster;
     }
 
-    public void setIsUnHide(Fighter f) {
+    public void setIsUnHide(final Fighter f) {
         this.isUnHide = true;
         this.teamUnHide = f.getTeam();
     }
 
-    public int getColor() {
+    public byte getColor() {
         return this.color;
     }
 
     public void desappear() {
-        StringBuilder str = new StringBuilder();
-        StringBuilder str2 = new StringBuilder();
-        StringBuilder str3 = new StringBuilder();
-        StringBuilder str4 = new StringBuilder();
-
-        int team = this.caster.getTeam() + 1;
+        final StringBuilder str = new StringBuilder();
+        final StringBuilder str2 = new StringBuilder();
+        final StringBuilder str3 = new StringBuilder();
+        final StringBuilder str4 = new StringBuilder();
+        final int team = this.caster.getTeam() + 1;
         str.append("GDZ-").append(this.cell.getId()).append(";").append(this.size).append(";").append(this.color);
-        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, this.caster.getId()
-                + "", str.toString());
+        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str.toString());
         str2.append("GDC").append(this.cell.getId());
-        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, this.caster.getId()
-                + "", str2.toString());
+        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str2.toString());
         if (this.isUnHide) {
-            int team2 = this.teamUnHide + 1;
+            final int team2 = this.teamUnHide + 1;
             str3.append("GDZ-").append(this.cell.getId()).append(";").append(this.size).append(";").append(this.color);
-            SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team2, 999, this.caster.getId()
-                    + "", str3.toString());
+            SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team2, 999, "" + this.caster.getId() + "", str3.toString());
             str4.append("GDC").append(this.cell.getId());
-            SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team2, 999, this.caster.getId()
-                    + "", str4.toString());
+            SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team2, 999, "" + this.caster.getId() + "", str4.toString());
         }
     }
 
-    public void appear(Fighter f) {
-        StringBuilder str = new StringBuilder();
-        StringBuilder str2 = new StringBuilder();
-
-        int team = f.getTeam() + 1;
+    public void appear(final Fighter f) {
+        final StringBuilder str = new StringBuilder();
+        final StringBuilder str2 = new StringBuilder();
+        final int team = f.getTeam() + 1;
         str.append("GDZ+").append(this.cell.getId()).append(";").append(this.size).append(";").append(this.color);
-        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, this.caster.getId()
-                + "", str.toString());
+        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str.toString());
         str2.append("GDC").append(this.cell.getId()).append(";Haaaaaaaaz3005;");
-        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, this.caster.getId()
-                + "", str2.toString());
+        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str2.toString());
     }
 
-    public void onTraped(Fighter target) {
-        System.out.println("OnTrapped : " + target);
-        if (target.isDead())
-            return;
-        this.fight.getAllTraps().remove(this);//On efface le pieges
-        desappear();//On déclenche ses effets
-        String str = this.spell + "," + this.cell.getId() + ",0,1,1," + this.caster.getId();
-        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, 7, 307, target.getId() + "", str);
+    public void refresh(final Fighter f) {
+        final StringBuilder str2 = new StringBuilder();
+        SocketManager.GAME_SEND_GA_PACKET(this.fight, f.getPlayer(), 999, "" + this.caster.getId() + "", "GDZ+" + this.cell.getId() + ";" + this.size + ";" + this.color);
+        str2.append("GDC").append(this.cell.getId()).append(";Haaaaaaaaz3005;");
+        SocketManager.GAME_SEND_GA_PACKET(this.fight, f.getPlayer(), 999, "" + this.caster.getId() + "", str2.toString());
+    }
 
-        ArrayList<GameCase> cells = new ArrayList<GameCase>();
-        cells.add(this.cell);
-        //on ajoute les cases
-        for (int a = 0; a < this.size; a++) {
-            char[] dirs = {'b', 'd', 'f', 'h'};
-            ArrayList<GameCase> cases2 = new ArrayList<GameCase>();//on évite les modifications concurrentes
-            cases2.addAll(cells);
-            for (GameCase aCell : cases2) {
-                if(aCell == null) continue;
-                for (char d : dirs) {
-                    GameCase cell = this.fight.getMap().getCase(PathFinding.GetCaseIDFromDirrection(aCell.getId(), d, this.fight.getMap(), true));
-                    if (cell == null)
-                        continue;
-                    if (!cells.contains(cell))
-                        cells.add(cell);
-                }
-            }
-        }
-        Fighter fakeCaster;
-        if (this.caster.getPersonnage() == null)
-            fakeCaster = new Fighter(this.fight, this.caster.getMob());
-        else
-            fakeCaster = new Fighter(this.fight, this.caster.getPersonnage());
+    private  void onTraped(final Fighter target) {    	
+        this.fight.getAllTraps().remove(this);
+        this.desappear();
+        final String str = "" + this.spell + "," + this.cell.getId() + "," + this.animationSpell + "," + this.level + ",1," + this.caster.getId();
+        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, 7, 306, "" + target.getId() + "", str);
+        final Fighter fakeCaster = this.caster.getPlayer() == null ? new Fighter(this.fight, this.caster.getMob()) : new Fighter(this.fight, this.caster.getPlayer());
         fakeCaster.setCell(this.cell);
-        this.trapSpell.applySpellEffectToFight(this.fight, fakeCaster, target.getCell(), cells, false);
+        final GameCase gc = this.getSize() > 0 ? this.cell : target.getCell();
+        this.trapSpell.applySpellEffectToFight(this.fight, fakeCaster, gc, false, true);
         this.fight.verifIfTeamAllDead();
     }
+
+	public boolean isPushing() {
+		return isPushing;
+	}
+	
+	public static void doTraps(final Fight fight, final Fighter fighter) {
+		if(fighter.isDead()) return;
+		final List<Trap> traps = new ArrayList<>(fight.getAllTraps());
+		final short currentCell = (short) fighter.getCell().getId();
+		short idTrapPushing = -1;
+		for (short i = 0; i < traps.size(); ++i) {
+			final Trap trap = traps.get(i);
+			if(trap.isPushing())
+			{
+				if(PathFinding.getDistanceBetween(fight.getMap(), trap.getCell().getId(), currentCell) <= trap.getSize())
+					idTrapPushing = i;
+				continue;
+			}
+            if (PathFinding.getDistanceBetween(fight.getMap(), trap.getCell().getId(), currentCell) <= trap.getSize())
+                trap.onTraped(fighter);
+            if (fighter.isDead() || fight.getState() == Constant.FIGHT_STATE_FINISHED)
+                return;
+        }
+		if(idTrapPushing != -1)
+			traps.get(idTrapPushing).onTraped(fighter);
+		
+	}
+	
+	public static boolean checkPushingTraps(final Fight fight, final Fighter fighter) {
+		if(fighter.isDead()) return false;
+		final List<Trap> traps = new ArrayList<>(fight.getAllTraps());
+		final short currentCell = (short) fighter.getCell().getId();
+		for (short i = 0; i < traps.size(); ++i) {
+			final Trap trap = traps.get(i);
+            if (trap.isPushing() && PathFinding.getDistanceBetween(fight.getMap(), trap.getCell().getId(), currentCell) <= trap.getSize())
+                return true;
+        }
+		return false;
+	}
 }
+

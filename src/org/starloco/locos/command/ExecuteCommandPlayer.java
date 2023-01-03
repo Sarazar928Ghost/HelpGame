@@ -779,8 +779,7 @@ public class ExecuteCommandPlayer {
 		}
 		// Ajout de l'exo
 		obj.addOneStats(Integer.parseInt(statsToAdd, 16), 1);
-		SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, obj.getGuid());
-		SocketManager.GAME_SEND_OAKO_PACKET(player, obj);
+		SocketManager.GAME_SEND_UPDATE_ITEM(player, obj);
 		SocketManager.GAME_SEND_STATS_PACKET(player);
 		
 		player.sendMessage("Votre item : <b>" + obj.getTemplate().getName() + "</b> a été exo avec succès !");
@@ -840,8 +839,7 @@ public class ExecuteCommandPlayer {
             return false;
         }
         obj.setStats(obj.generateNewStatsFromTemplate(obj.getTemplate().getStrTemplate(), true));
-        SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, obj.getGuid());
-        SocketManager.GAME_SEND_OAKO_PACKET(player, obj);
+        SocketManager.GAME_SEND_UPDATE_ITEM(player, obj);
         SocketManager.GAME_SEND_STATS_PACKET(player);
 
         if(sendMessage) player.sendMessage("Votre item : <b>" + obj.getTemplate().getName() + "</b> a été modifié avec les caractéristiques maximales !");
@@ -901,6 +899,7 @@ public class ExecuteCommandPlayer {
     		return false;
     	}
 		player.setPdv(player.getMaxPdv());
+		player.setEnergy(10000);
 		SocketManager.GAME_SEND_STATS_PACKET(player);
 		player.sendMessage("Vous avez récupéré tout vos points de vies.");
 		return true;
@@ -1177,8 +1176,7 @@ public class ExecuteCommandPlayer {
         
         obj.setModification();
         
-        SocketManager.GAME_SEND_REMOVE_ITEM_PACKET(player, obj.getGuid());
-        SocketManager.GAME_SEND_OAKO_PACKET(player, obj);
+        SocketManager.GAME_SEND_UPDATE_ITEM(player, obj);
         SocketManager.GAME_SEND_STATS_PACKET(player);
 
         player.sendMessage("Votre item : <b>" + obj.getTemplate().getName() + "</b> a été FM avec succès en <b>" + element + "</b> !");

@@ -2711,7 +2711,7 @@ public class Function {
         if(PathFinding.casesAreInSameLine(fight.getMap(),fighter.getCell().getId(),f.getCell().getId(),'z',70))
         {
 
-          cell=PathFinding.newCaseAfterPush(fight,fighter.getCell(),f.getCell(),-1,false);
+          cell=PathFinding.newCaseAfterPush(fight,fighter.getCell(),f.getCell(),-1);
           if(fight.canCastSpell1(fighter,S,fight.getMap().getCase(cell),-1))
           {
             SS2=S;
