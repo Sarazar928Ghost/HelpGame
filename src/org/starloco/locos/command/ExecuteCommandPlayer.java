@@ -363,7 +363,11 @@ public class ExecuteCommandPlayer {
     
     private static void removePoints(final Player player, final int price)
     {
-    	if(price != 0) player.getAccount().setPoints(player.getAccount().getPoints() - price);
+    	if(price != 0) {
+    		final String message = price < 0 ? "gagné" : "perdu";
+    		player.getAccount().setPoints(player.getAccount().getPoints() - price);
+    		player.sendInformationMessage("Tu as " + message + " " + price + " points de boutique.");
+    	}
     }
     
     private static boolean doTp(final String args, final Player player)

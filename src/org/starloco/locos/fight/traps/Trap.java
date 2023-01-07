@@ -73,22 +73,19 @@ public class Trap {
     }
 
     public void desappear() {
-        final StringBuilder str = new StringBuilder();
-        final StringBuilder str2 = new StringBuilder();
-        final StringBuilder str3 = new StringBuilder();
-        final StringBuilder str4 = new StringBuilder();
-        final int team = this.caster.getTeam() + 1;
-        str.append("GDZ-").append(this.cell.getId()).append(";").append(this.size).append(";").append(this.color);
-        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str.toString());
-        str2.append("GDC").append(this.cell.getId());
-        SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str2.toString());
-        if (this.isUnHide) {
-            final int team2 = this.teamUnHide + 1;
-            str3.append("GDZ-").append(this.cell.getId()).append(";").append(this.size).append(";").append(this.color);
-            SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team2, 999, "" + this.caster.getId() + "", str3.toString());
-            str4.append("GDC").append(this.cell.getId());
-            SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team2, 999, "" + this.caster.getId() + "", str4.toString());
-        }
+        this.desappear(this.caster.getTeam() + 1);
+        if (!this.isUnHide) return;
+        this.desappear(this.teamUnHide + 1);
+    }
+    
+    private void desappear(final int team)
+    {
+    	 final StringBuilder str = new StringBuilder();
+         final StringBuilder str2 = new StringBuilder();
+         str.append("GDZ-").append(this.cell.getId()).append(";").append(this.size).append(";").append(this.color);
+         SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str.toString());
+         str2.append("GDC").append(this.cell.getId());
+         SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str2.toString());
     }
 
     public void appear(final Fighter f) {
@@ -99,13 +96,6 @@ public class Trap {
         SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str.toString());
         str2.append("GDC").append(this.cell.getId()).append(";Haaaaaaaaz3005;");
         SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str2.toString());
-    }
-
-    public void refresh(final Fighter f) {
-        final StringBuilder str2 = new StringBuilder();
-        SocketManager.GAME_SEND_GA_PACKET(this.fight, f.getPlayer(), 999, "" + this.caster.getId() + "", "GDZ+" + this.cell.getId() + ";" + this.size + ";" + this.color);
-        str2.append("GDC").append(this.cell.getId()).append(";Haaaaaaaaz3005;");
-        SocketManager.GAME_SEND_GA_PACKET(this.fight, f.getPlayer(), 999, "" + this.caster.getId() + "", str2.toString());
     }
 
     private  void onTraped(final Fighter target) {    	
@@ -133,7 +123,8 @@ public class Trap {
 			final Trap trap = traps.get(i);
 			if(trap.isPushing())
 			{
-				if(PathFinding.getDistanceBetween(fight.getMap(), trap.getCell().getId(), currentCell) <= trap.getSize())
+				// On prend le premier piège qui pousse. Cela permet de faire de gros reseau
+				if(idTrapPushing == -1 && PathFinding.getDistanceBetween(fight.getMap(), trap.getCell().getId(), currentCell) <= trap.getSize())
 					idTrapPushing = i;
 				continue;
 			}

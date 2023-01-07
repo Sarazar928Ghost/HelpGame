@@ -70,10 +70,13 @@ public abstract class AbstractIA implements IA {
     }
 
     public void addNext(Runnable runnable, Integer time) {
+    	int sleepTime = 0;
     	while(this.fight.isCurAction() || this.fight.isTraped())
 			try {
+				sleepTime += 20;
 				Thread.sleep(20);
 			} catch (InterruptedException e) {}
-        executor.schedule(runnable,time,TimeUnit.MILLISECONDS);
+    	time -= sleepTime;
+        executor.schedule(runnable,time < 0 ? 0 : time,TimeUnit.MILLISECONDS);
     }
 }

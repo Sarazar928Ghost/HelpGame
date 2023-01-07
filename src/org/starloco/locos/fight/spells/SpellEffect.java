@@ -1059,12 +1059,13 @@ public class SpellEffect {
 		//on ajoute les fighters aux cases
 		target.getCell().addFighter(target);
 		caster.getCell().addFighter(caster);
-		Trap.doTraps(caster.getFight(), caster);
-		Trap.doTraps(target.getFight(), target);
 		SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(fight, 7, 4, caster.getId()
 				+ "", target.getId() + "," + exCaster.getId());
 		SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(fight, 7, 4, caster.getId()
 				+ "", caster.getId() + "," + exTarget.getId());
+		
+		this.checkTraps(fight, target, (short) 1200);
+		this.checkTraps(fight, caster, (short) 1200);
 
 	}
 
@@ -5331,7 +5332,7 @@ public class SpellEffect {
 	
 	/**
 	 * Cette fonction doit etre utilise <b>uniquement lorsque</b> il faut attendre la fin d'une animation niveau client.<br>
-	 * Exemple une <b>teleportation , attirance ou bien le fait d'etre jete par un panda.</b><br>
+	 * Exemple une <b>teleportation , attirance , invocation ou bien le fait d'etre jete par un panda.</b><br>
 	 * Lorsque quelqu'un est pousse il n'est pas necessaire d'appeler cette fonction car le client prend en charge la possibilite de pousser a plusieurs repprises.
 	 * 
 	 * @param fight L'instance de la class Fight

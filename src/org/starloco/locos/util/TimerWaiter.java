@@ -11,7 +11,9 @@ public class TimerWaiter {
     private static final ScheduledThreadPoolExecutor clientScheduler = new ScheduledThreadPoolExecutor(30, mainFactory);
     private static final ScheduledThreadPoolExecutor fightScheduler = new ScheduledThreadPoolExecutor(40, mainFactory);
 
-    private final static Map<DataType,ScheduledThreadPoolExecutor> schedulerPools = new HashMap() {{
+    private final static Map<DataType,ScheduledThreadPoolExecutor> schedulerPools = new HashMap<DataType,ScheduledThreadPoolExecutor>() {
+		private static final long serialVersionUID = 1L;
+	{
         put(DataType.MAP, mapScheduler);
         put(DataType.CLIENT, clientScheduler);
         put(DataType.FIGHT, fightScheduler);
