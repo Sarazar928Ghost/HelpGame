@@ -434,7 +434,9 @@ public class Spell {
                     		{
                     			if(trap.isUnHide()) continue;
                     			if(PathFinding.getDistanceBetween(fight.getMap(), trap.getCell().getId(), gameCase.getId()) > trap.getSize()) continue;
-                    			trap.setIsUnHide(perso);
+                    			if(perso.getTeam() == trap.getCaster().getTeam()) continue;
+                    			
+                    			trap.setIsUnHide(perso.getTeam());
                     			final Fighter trapToUnhide = new Fighter(fight, trap.getCaster().getPlayer());
                     			trapToUnhide.setId(-999);
                     			trapToUnhide.setCell(trap.getCell());

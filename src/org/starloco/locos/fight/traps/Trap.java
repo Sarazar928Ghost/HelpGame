@@ -67,9 +67,9 @@ public class Trap {
     	return this.isUnHide;
     }
 
-    public void setIsUnHide(final Fighter f) {
+    public void setIsUnHide(final int team) {
         this.isUnHide = true;
-        this.teamUnHide = f.getTeam();
+        this.teamUnHide = team;
     }
 
     public byte getColor() {
