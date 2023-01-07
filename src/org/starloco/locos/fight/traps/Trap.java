@@ -23,7 +23,7 @@ public class Trap {
     private final Spell.SortStats trapSpell;
     private final Fight fight;
     private final byte color;
-    private boolean isUnHide = true;
+    private boolean isUnHide = false;
     private int teamUnHide = -1;
     private boolean isPushing = false;
     private final  byte level;
@@ -61,6 +61,10 @@ public class Trap {
 
     public Fighter getCaster() {
         return this.caster;
+    }
+    
+    public boolean isUnHide() {
+    	return this.isUnHide;
     }
 
     public void setIsUnHide(final Fighter f) {

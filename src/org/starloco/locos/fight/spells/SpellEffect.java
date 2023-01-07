@@ -4227,17 +4227,20 @@ public class SpellEffect {
 
 	private void applyEffect_202(Fight fight, ArrayList<Fighter> cibles) {
 		if (spell == 113 || spell == 64) {
-			// unhide des personnages
-			for (Fighter target : cibles) {
+			for (final Fighter target : cibles) {
+				// -999 est un piege
+				if(target.getId() == -999) {
+					for (final Trap p : fight.getAllTraps()) {
+						if(p.getCell().getId() != target.getCell().getId()) continue;
+						p.appear(caster);
+						break;
+					}
+					continue;
+				}
 				if (target.isHide()) {
 					if (target != caster)
 						target.unHide(spell);
 				}
-			}
-			// unhide des pi�ges
-			for (Trap p : fight.getAllTraps()) {
-				p.setIsUnHide(caster);
-				p.appear(caster);
 			}
 		}
 	}

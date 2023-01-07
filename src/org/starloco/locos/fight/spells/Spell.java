@@ -5,6 +5,7 @@ import org.starloco.locos.common.PathFinding;
 import org.starloco.locos.fight.Challenge;
 import org.starloco.locos.fight.Fight;
 import org.starloco.locos.fight.Fighter;
+import org.starloco.locos.fight.traps.Trap;
 import org.starloco.locos.game.GameServer;
 import org.starloco.locos.game.world.World;
 import org.starloco.locos.kernel.Constant;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.HashMap;
+import java.util.List;
 
 public class Spell {
 
@@ -335,8 +337,8 @@ public class Spell {
             }
         }
 
-        public void applySpellEffectToFight(Fight fight, Fighter perso,
-                                            GameCase cell, boolean isCC, boolean isTrap) {
+        public void applySpellEffectToFight(final Fight fight, final Fighter perso,
+                                            final GameCase cell, final boolean isCC, final boolean isTrap) {
             ArrayList<SpellEffect> effets;
             if (isCC)
                 effets = CCeffects;
@@ -356,7 +358,7 @@ public class Spell {
                 jetChance = Formulas.getRandomValue(0, 99);
             int curMin = 0;
             int num = 0;
-            for (SpellEffect SE : effets) {
+            for (final SpellEffect SE : effets) {
                 try {
                     if (fight.getState() >= Constant.FIGHT_STATE_FINISHED)
                         return;
@@ -374,18 +376,18 @@ public class Spell {
                     if (isCC) {
                         POnum += effects.size() * 2;// On zaap la partie du String des effets hors CC
                     }
-                    ArrayList<GameCase> cells = PathFinding.getCellListFromAreaString(fight.getMap(), cell.getId(), perso.getCell().getId(), porteeType, POnum, isCC);
-                    ArrayList<GameCase> finalCells = new ArrayList<GameCase>();
+                    final ArrayList<GameCase> cells = PathFinding.getCellListFromAreaString(fight.getMap(), cell.getId(), perso.getCell().getId(), porteeType, POnum, isCC);
+                    final ArrayList<GameCase> finalCells = new ArrayList<GameCase>();
                     int TE = 0;
-                    Spell S = World.world.getSort(spellID);
+                    final Spell S = World.world.getSort(spellID);
                     // on prend le targetFlag corespondant au num de l'effet
                     if (S != null && S.getEffectTargets().size() > num)
                         TE = S.getEffectTargets().get(num);
 
-                    for (GameCase C : cells) {
+                    for (final GameCase C : cells) {
                         if (C == null)
                             continue;
-                        Fighter F = C.getFirstFighter();
+                        final Fighter F = C.getFirstFighter();
                         if (F == null)
                             continue;
                         // Ne touches pas les alli�s : 1
@@ -421,11 +423,29 @@ public class Spell {
                     if (((TE >> 5) & 1) == 1)
                         if (!finalCells.contains(perso.getCell()))
                             finalCells.add(perso.getCell());
-                    ArrayList<Fighter> cibles = SpellEffect.getTargets(SE, fight, finalCells);
+                    final ArrayList<Fighter> cibles = SpellEffect.getTargets(SE, fight, finalCells);
 
+                    if(SE.getEffectID() == 202)
+                    {
+                    	final List<Trap> traps = fight.getAllTraps();
+                    	for(final GameCase gameCase : cells) {
+                    		if(gameCase == null) continue;
+                    		for(final Trap trap : traps)
+                    		{
+                    			if(trap.isUnHide()) continue;
+                    			if(PathFinding.getDistanceBetween(fight.getMap(), trap.getCell().getId(), gameCase.getId()) > trap.getSize()) continue;
+                    			trap.setIsUnHide(perso);
+                    			final Fighter trapToUnhide = new Fighter(fight, trap.getCaster().getPlayer());
+                    			trapToUnhide.setId(-999);
+                    			trapToUnhide.setCell(trap.getCell());
+                    			cibles.add(trapToUnhide);
+                    		}
+                    	}
+                    }
+                    
                     if ((fight.getType() != Constant.FIGHT_TYPE_CHALLENGE)
                             && (fight.getAllChallenges().size() > 0)) {
-                        for (Entry<Integer, Challenge> c : fight.getAllChallenges().entrySet()) {
+                        for (final Entry<Integer, Challenge> c : fight.getAllChallenges().entrySet()) {
                             if (c.getValue() == null)
                                 continue;
                             c.getValue().onFightersAttacked(cibles, perso, SE, this.getSpellID(), isTrap);
