@@ -24,7 +24,7 @@ public class Trap {
     private final Fight fight;
     private final byte color;
     private boolean isUnHide = false;
-    private int teamUnHide = -1;
+    private byte teamUnHide = -1;
     private boolean isPushing = false;
     private final  byte level;
     private final short animationSpell;
@@ -67,7 +67,7 @@ public class Trap {
     	return this.isUnHide;
     }
 
-    public void setIsUnHide(final int team) {
+    public void setIsUnHide(final byte team) {
         this.isUnHide = true;
         this.teamUnHide = team;
     }
@@ -92,10 +92,10 @@ public class Trap {
          SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str2.toString());
     }
 
-    public void appear(final Fighter f) {
+    public void appear(byte team) {
         final StringBuilder str = new StringBuilder();
         final StringBuilder str2 = new StringBuilder();
-        final int team = f.getTeam() + 1;
+        team += 1;
         str.append("GDZ+").append(this.cell.getId()).append(";").append(this.size).append(";").append(this.color);
         SocketManager.GAME_SEND_GA_PACKET_TO_FIGHT(this.fight, team, 999, "" + this.caster.getId() + "", str.toString());
         str2.append("GDC").append(this.cell.getId()).append(";Haaaaaaaaz3005;");

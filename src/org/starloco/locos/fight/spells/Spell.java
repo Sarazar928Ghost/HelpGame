@@ -427,6 +427,7 @@ public class Spell {
 
                     if(SE.getEffectID() == 202)
                     {
+                    	// UnHide Traps
                     	final List<Trap> traps = fight.getAllTraps();
                     	for(final GameCase gameCase : cells) {
                     		if(gameCase == null) continue;
@@ -435,12 +436,8 @@ public class Spell {
                     			if(trap.isUnHide()) continue;
                     			if(PathFinding.getDistanceBetween(fight.getMap(), trap.getCell().getId(), gameCase.getId()) > trap.getSize()) continue;
                     			if(perso.getTeam() == trap.getCaster().getTeam()) continue;
-                    			
-                    			trap.setIsUnHide(perso.getTeam());
-                    			final Fighter trapToUnhide = new Fighter(fight, trap.getCaster().getPlayer());
-                    			trapToUnhide.setId(-999);
-                    			trapToUnhide.setCell(trap.getCell());
-                    			cibles.add(trapToUnhide);
+                    			trap.setIsUnHide((byte) perso.getTeam());
+                    			trap.appear((byte) perso.getTeam());
                     		}
                     	}
                     }
