@@ -2,7 +2,6 @@ package org.starloco.locos.client.other;
 
 import java.util.ArrayList;
 
-import org.starloco.locos.area.map.GameMap;
 import org.starloco.locos.client.Player;
 
 public class Maitre
@@ -18,14 +17,14 @@ public class Maitre
 	
 	public void refreh()
 	{
-		for(Player p: new ArrayList<Player>(_esclaves))
+		/*for(Player p: new ArrayList<Player>(_esclaves))
 		{
-			/*if(!p.isOnline()
+			if(!p.isOnline()
 			|| p.getCurMap().getId() != _maitre.getCurMap().getId()  )
 			{
 				_esclaves.remove(p);
-			}*/
-		}
+			}
+		}*/
 		if(_esclaves.size() < 1)
 			_maitre.set_maitre(null);
 	}

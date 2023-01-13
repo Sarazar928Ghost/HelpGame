@@ -6,6 +6,7 @@ import org.starloco.locos.client.Player;
 import org.starloco.locos.command.administration.Group;
 import org.starloco.locos.database.Database;
 import org.starloco.locos.database.statics.AbstractDAO;
+import org.starloco.locos.exchange.transfer.DataQueue;
 import org.starloco.locos.game.world.World;
 import org.starloco.locos.kernel.Config;
 import org.starloco.locos.kernel.Constant;
@@ -21,24 +22,20 @@ public class PlayerData extends AbstractDAO<Player> {
     public PlayerData(HikariDataSource dataSource) {
         super(dataSource);
     }
-
+    
     public int getNextId() {
-        Result result = null;
-        int guid = 0;
+        final DataQueue.Queue<Integer> queue = new DataQueue.Queue<>((byte) 1);
         try {
-            result = getData("SELECT id FROM players ORDER BY id DESC LIMIT 1");
-            ResultSet RS = result.resultSet;
-
-            if (!RS.first())
-                guid = 1;
-            else
-                guid = RS.getInt("id") + 1;
-        } catch (SQLException e) {
-            super.sendError("PlayerData getNextId", e);
-        } finally {
-            close(result);
+            synchronized(queue) {
+                long count = DataQueue.count();
+                DataQueue.queues.put(count, queue);
+                Main.exchangeClient.send("DI" + queue.getType() + count);
+                queue.wait();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        return guid;
+        return queue.getValue();
     }
 
     public void load() {
@@ -326,7 +323,7 @@ public class PlayerData extends AbstractDAO<Player> {
         }
 
         if (player.getQuestPerso() != null && !player.getQuestPerso().isEmpty())
-            player.getQuestPerso().values().stream().filter(QP -> QP != null).forEach(QP -> Database.getStatics().getQuestPlayerData().update(QP, player));
+            player.getQuestPerso().values().stream().filter(QP -> QP != null).forEach(QP -> Database.getDynamics().getQuestPlayerData().update(QP, player));
 
         return true;
     }

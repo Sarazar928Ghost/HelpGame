@@ -62,7 +62,7 @@ public class WorldSave extends Updatable {
                     Database.getDynamics().getPrismData().update(prism);
 
             World.world.logger.info("-> of guilds.");
-            World.world.getGuilds().values().stream().forEach(guild -> Database.getStatics().getGuildData().update(guild));
+            World.world.getGuilds().values().stream().forEach(guild -> Database.getDynamics().getGuildData().update(guild));
 
             World.world.logger.info("-> of collectors.");
             World.world.getCollectors().values().stream().filter(collector -> collector.getInFight() <= 0).forEach(collector -> Database.getDynamics().getCollectorData().update(collector));

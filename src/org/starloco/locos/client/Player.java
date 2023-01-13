@@ -288,7 +288,7 @@ public class Player {
         this._savePos = savePos;
         this.isNew = isNew;
         this.regenTime = System.currentTimeMillis();
-        Database.getStatics().getQuestPlayerData().loadPerso(this);
+        Database.getDynamics().getQuestPlayerData().loadPerso(this);
         this.restriction = Restriction.get(this.id);
         this.timeTaverne = timeDeblo;
         try {

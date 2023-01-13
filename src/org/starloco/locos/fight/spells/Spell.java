@@ -159,7 +159,7 @@ public class Spell {
         private ArrayList<SpellEffect> effects;
         private ArrayList<SpellEffect> CCeffects;
         private String porteeType;
-	 private boolean trap;
+	    private boolean trap;
 
         public SortStats(int AspellID, int Alevel, int cost, int minPO,
                          int maxPO, int tauxCC, int tauxEC, boolean isLineLaunch,
@@ -434,8 +434,8 @@ public class Spell {
                     		for(final Trap trap : traps)
                     		{
                     			if(trap.isUnHide()) continue;
-                    			if(PathFinding.getDistanceBetween(fight.getMap(), trap.getCell().getId(), gameCase.getId()) > trap.getSize()) continue;
                     			if(perso.getTeam() == trap.getCaster().getTeam()) continue;
+                    			if(PathFinding.getDistanceBetween(fight.getMap(), trap.getCell().getId(), gameCase.getId()) > trap.getSize()) continue;
                     			trap.setIsUnHide((byte) perso.getTeam());
                     			trap.appear((byte) perso.getTeam());
                     		}

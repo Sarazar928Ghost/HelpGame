@@ -68,6 +68,8 @@ public class DynamicsDatabase {
     private PetData petData;
     private WorldEntityData worldEntityData;
     private PlayerCommandData playerCommandData;
+    private GuildData guildData;
+    private QuestPlayerData questPlayerData;
 
     public void initializeData() {
         this.areaData = new AreaData(dataSource);
@@ -127,6 +129,8 @@ public class DynamicsDatabase {
         this.petData = new PetData(this.dataSource);
         this.worldEntityData = new WorldEntityData(this.dataSource);
         this.playerCommandData = new PlayerCommandData(this.dataSource);
+        this.guildData = new GuildData(this.dataSource);
+        this.questPlayerData = new QuestPlayerData(this.dataSource);
     }
 
     public boolean initializeConnection() {
@@ -360,5 +364,13 @@ public class DynamicsDatabase {
 
 	public WorldEntityData getWorldEntityData() {
 		return worldEntityData;
+	}
+
+	public GuildData getGuildData() {
+		return guildData;
+	}
+
+	public QuestPlayerData getQuestPlayerData() {
+		return questPlayerData;
 	}
 }

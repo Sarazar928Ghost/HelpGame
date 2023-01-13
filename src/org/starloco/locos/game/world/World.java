@@ -487,7 +487,8 @@ public class World {
         logger.info("All data was loaded successfully at "
         + new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss", Locale.FRANCE).format(new Date()) + " in "
                 + new SimpleDateFormat("mm", Locale.FRANCE).format((System.currentTimeMillis() - time)) + " min "
-                + new SimpleDateFormat("ss", Locale.FRANCE).format((System.currentTimeMillis() - time)) + " s.");
+                + new SimpleDateFormat("ss", Locale.FRANCE).format((System.currentTimeMillis() - time)) + " s"
+        		+ new SimpleDateFormat("SS", Locale.FRANCE).format((System.currentTimeMillis() - time)) + " m.");
         logger.setLevel(Level.ALL);
     }
 
@@ -987,7 +988,7 @@ public class World {
     public void addGuild(Guild g, boolean save) {
         Guildes.put(g.getId(), g);
         if (save)
-            Database.getStatics().getGuildData().add(g);
+        	Database.getDynamics().getGuildData().add(g);
     }
 
     public boolean guildNameIsUsed(String name) {
@@ -1008,7 +1009,7 @@ public class World {
     public Guild getGuild(int i) {
         Guild guild = Guildes.get(i);
         if(guild == null) {
-            Database.getStatics().getGuildData().load(i);
+        	Database.getDynamics().getGuildData().load(i);
             guild = Guildes.get(i);
         }
         return guild;
@@ -1060,7 +1061,7 @@ public class World {
         Collector.removeCollector(id);
         Guildes.remove(id);
         Database.getDynamics().getGuildMemberData().deleteAll(id);
-        Database.getStatics().getGuildData().delete(id);
+        Database.getDynamics().getGuildData().delete(id);
     }
 
     public void unloadPerso(int g) {

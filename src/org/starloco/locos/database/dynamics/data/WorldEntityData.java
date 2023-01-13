@@ -12,7 +12,7 @@ import com.zaxxer.hikari.HikariDataSource;
  */
 public class WorldEntityData extends AbstractDAO<Object> {
 
-    private int nextMountId, nextObjectId;
+    private int nextMountId, nextObjectId, nextGuidId, nextQuestId;
 
     public WorldEntityData(HikariDataSource dataSource) {
         super(dataSource);
@@ -44,6 +44,28 @@ public class WorldEntityData extends AbstractDAO<Object> {
         } finally {
             close(result);
         }
+        try {
+            result = getData("SELECT MAX(id) AS max FROM `guilds`;");
+            ResultSet RS = result.resultSet;
+            boolean found = RS.first();
+            if (found) this.nextGuidId = RS.getInt("max");
+            else this.nextGuidId = 1;
+        } catch (SQLException e) {
+            logger.error("WorldEntityData load", e);
+        } finally {
+            close(result);
+        }
+        try {
+            result = getData("SELECT MAX(id) AS max FROM `quests_players`;");
+            ResultSet RS = result.resultSet;
+            boolean found = RS.first();
+            if (found) this.nextQuestId = RS.getInt("max");
+            else this.nextQuestId = 1;
+        } catch (SQLException e) {
+            logger.error("WorldEntityData load", e);
+        } finally {
+            close(result);
+        }
     }
 
     @Override
@@ -57,5 +79,13 @@ public class WorldEntityData extends AbstractDAO<Object> {
 
     public synchronized int getNextObjectId() {
         return ++nextObjectId;
+    }
+
+	public synchronized int getNextGuidId() {
+        return ++nextGuidId;
+    }
+
+	public synchronized int getNextQuestId() {
+        return ++nextQuestId;
     }
 }

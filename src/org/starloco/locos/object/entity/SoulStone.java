@@ -6,9 +6,6 @@ import org.starloco.locos.object.GameObject;
 import java.util.ArrayList;
 // By Coding Mestre : [FIX] - Fixed a bug that was causing some fights to have two challenges instead of one Close #37
 import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 
 public class SoulStone extends GameObject {

@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-//import java.util.HashMap;
 
 public class Quest {
 
@@ -254,10 +253,10 @@ public class Quest {
                     break;
             }
         }
-        QuestPlayer qPerso = new QuestPlayer(Database.getStatics().getQuestPlayerData().getNextId(), id, false, perso.getId(), "");
+        QuestPlayer qPerso = new QuestPlayer(Database.getDynamics().getWorldEntityData().getNextQuestId(), id, false, perso.getId(), "");
         perso.addQuestPerso(qPerso);
         SocketManager.GAME_SEND_Im_PACKET(perso, "054;" + id);
-        Database.getStatics().getQuestPlayerData().add(qPerso);
+        Database.getDynamics().getQuestPlayerData().add(qPerso);
         //SocketManager.GAME_SEND_MAP_NPCS_GMS_PACKETS(perso.getGameClient(), perso.getCurMap());
         // By Coding Mestre - [FIX] - Fixed a bug that was causing quest's update to kick the player if the quest has no npc assigned
         SocketManager.GAME_SEND_MAP_NPCS_QUEST_UPDATE_SPRITE_PACKETS(perso.getGameClient(), perso.getCurMap(), npc != null ? npc.getId() : -1);
@@ -509,7 +508,7 @@ public class Quest {
         }
 
         public boolean deleteQuestPerso() {
-            return Database.getStatics().getQuestPlayerData().delete(this.id);
+            return Database.getDynamics().getQuestPlayerData().delete(this.id);
         }
     }
 

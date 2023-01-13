@@ -2158,7 +2158,7 @@ public class GameClient {
                         }
                         break;
                 }
-                Database.getStatics().getGuildData().update(this.player.get_guild());
+                Database.getDynamics().getGuildData().update(this.player.get_guild());
                 break;
             case ExchangeAction.BREAKING_OBJECTS:
                 final BreakingObject breakingObject = ((BreakingObject) this.player.getExchangeAction().getValue());
@@ -4994,7 +4994,7 @@ public class GameClient {
                 G.setNbrPerco(G.getNbrPerco() + 1);
                 break;
         }
-        Database.getStatics().getGuildData().update(G);
+        Database.getDynamics().getGuildData().update(G);
         SocketManager.GAME_SEND_gIB_PACKET(this.player, this.player.get_guild().parseCollectorToGuild());
     }
 
@@ -5010,7 +5010,7 @@ public class GameClient {
                 return;
             G2.setCapital(G2.getCapital() - 5);
             G2.boostSpell(spellID);
-            Database.getStatics().getGuildData().update(G2);
+            Database.getDynamics().getGuildData().update(G2);
             SocketManager.GAME_SEND_gIB_PACKET(this.player, this.player.get_guild().parseCollectorToGuild());
         } else {
             GameServer.a();

@@ -34,7 +34,7 @@ public class Guild {
     private long date;
 
     public Guild(String name, String emblem) {
-        this.id = Database.getStatics().getGuildData().getNextId();
+        this.id = Database.getDynamics().getWorldEntityData().getNextGuidId();
         this.name = name;
         this.emblem = emblem;
         this.lvl = 1;

@@ -25,7 +25,6 @@ import org.starloco.locos.object.GameObject;
 import org.starloco.locos.object.ObjectTemplate;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -947,38 +946,38 @@ public class ExecuteCommandPlayer {
     {
     	player.sendMessage("<b>Porte Kralamour Fermée !</b>");
         //player.teleport((short) 11939, 256);
-    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "328;aaGaaaaaaa801;1");
-    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 328, false);
-
-    player.getCurMap().getCases().get(286).setWalkable(false);
-    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "286;aaaaaaaaaa801;1");
-    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 286, false);
-    player.getCurMap().getCases().get(300).setWalkable(false);
-    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "300;aaaaaaaaaa801;1");
-    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 300, false);
-    player.getCurMap().getCases().get(315).setWalkable(false);
-    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "315;aaaaaaaaaa801;1");
-    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 315, false);
-    return true;
+	    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "328;aaGaaaaaaa801;1");
+	    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 328, false);
+	
+	    player.getCurMap().getCases().get(286).setWalkable(false);
+	    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "286;aaaaaaaaaa801;1");
+	    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 286, false);
+	    player.getCurMap().getCases().get(300).setWalkable(false);
+	    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "300;aaaaaaaaaa801;1");
+	    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 300, false);
+	    player.getCurMap().getCases().get(315).setWalkable(false);
+	    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "315;aaaaaaaaaa801;1");
+	    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 315, false);
+	    return true;
     }
     
     private static boolean doKralaOpen(final String msg, final Player player)
     {
     	player.sendMessage("<b>Porte Kralamour Ouverte !</b>");
         //player.teleport((short) 11939, 256);
-    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "328;aaaaaaaaaa801;1");
-    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 328, true);
-
-    player.getCurMap().getCases().get(286).setWalkable(true);
-    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "286;aaGaaaaaaa801;1");
-    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 286, true);
-    player.getCurMap().getCases().get(300).setWalkable(true);
-    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "300;aaGaaaaaaa801;1");
-    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 300, true);
-    player.getCurMap().getCases().get(315).setWalkable(true);
-    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "315;aaGaaaaaaa801;1");
-    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 315, true);
-    return true;
+	    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "328;aaaaaaaaaa801;1");
+	    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 328, true);
+	
+	    player.getCurMap().getCases().get(286).setWalkable(true);
+	    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "286;aaGaaaaaaa801;1");
+	    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 286, true);
+	    player.getCurMap().getCases().get(300).setWalkable(true);
+	    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "300;aaGaaaaaaa801;1");
+	    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 300, true);
+	    player.getCurMap().getCases().get(315).setWalkable(true);
+	    SocketManager.GAME_UPDATE_CELL(player.getCurMap(), "315;aaGaaaaaaa801;1");
+	    SocketManager.GAME_SEND_ACTION_TO_DOOR(player.getCurMap(), 315, true);
+	    return true;
     }
     
    
@@ -1056,7 +1055,7 @@ public class ExecuteCommandPlayer {
         player.sendMessage("Veuillez patienter quelques instants..");
         int count = 0;
 
-        for (GameObject object : new ArrayList<>(player.getItems().values())) {
+        for (final GameObject object : player.getItems().values()) {
             if (object == null || object.getTemplate() == null || !object.getTemplate().getStrTemplate().isEmpty())
                 continue;
             switch (object.getTemplate().getType()) {
@@ -1076,7 +1075,7 @@ public class ExecuteCommandPlayer {
                 case Constant.ITEM_TYPE_QUETES:
                     break;
                 default:
-                    count++;
+                    ++count;
                     player.addInBank(object.getGuid(), object.getQuantity());
                     break;
             }

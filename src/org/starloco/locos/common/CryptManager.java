@@ -3,11 +3,8 @@ package org.starloco.locos.common;
 import org.starloco.locos.area.map.GameCase;
 import org.starloco.locos.area.map.GameMap;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
 
 public class CryptManager {
 

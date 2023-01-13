@@ -105,11 +105,7 @@ public class ExchangePacketHandler {
                                     Queue<?> queue = DataQueue.queues.get(count);
 
                                     switch (Byte.parseByte(String.valueOf(data.charAt(0)))) {
-                                        case 1: // Mount
-                                        case 2: // Object
-                                        case 3: // QuestPlayer
-                                        case 4: // Guild
-                                        case 5: // Pet
+                                        case 1: // Player
                                             if (split.length > 1)
                                                 ((Queue<Integer>) queue).setValue(Integer.parseInt(split[1]));
                                             break;

@@ -1,14 +1,11 @@
 package org.starloco.locos.client.other;
 
 import org.starloco.locos.area.map.GameCase;
-import org.starloco.locos.area.map.GameMap;
 import org.starloco.locos.client.Player;
 import org.starloco.locos.common.PathFinding;
 import org.starloco.locos.common.SocketManager;
-import org.starloco.locos.util.TimerWaiter;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 public class Party {
 

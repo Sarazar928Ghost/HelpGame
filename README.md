@@ -1,3 +1,7 @@
+```diff
+- ATTENTION ! A partir de cette  version il faut avoir le Login qui va avec !
+```
+Cliquez sur ce lien pour voir le Github du login : [HelpLogin](https://github.com/Sarazar928Ghost/HelpLogin) 
 ## HelpGame
 
 Cette émulateur est open source pour toute personne.  
@@ -18,11 +22,12 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Possibilités de donner des items/pano lors de la création d'un personnage via la config.txt
 - Commande joueur giveItem ( numéro 6 ) avec arguments exemple : idTemplate,idTemplate,idTemplate,idTemplate;true (true veut dire jetMax)
 - Nouveau système de stockage des items équipés.
-- Le serveur game n'envoie plus de packet au client pour créer un item/pet/mount
+- Le serveur game n'envoie plus de packet au client pour créer un item/pet/mount/quest/guild
 - Refonte système de parchotage et reset stats.
 - Mimibiote ( Objet action 35 ) ( Item Template mimibiote : 4 )
 - Cameleon DD ( Objet action action 36 ) ( Item Template Potion : 2 )
 - Piège débugé a 100% ( Normalement 🤗 )
+- Demande désormais au Login l'ID pour le futur player crée.
 
 ## DEBUG :
 

@@ -4226,8 +4226,6 @@ public class SpellEffect {
 	}
 
 	private void applyEffect_202(Fight fight, ArrayList<Fighter> cibles) {
-		if (spell != 113 && spell != 64) return;
-		
 		for (final Fighter target : cibles) 
 			if (target.isHide() && target != caster)
 					target.unHide(spell);		
