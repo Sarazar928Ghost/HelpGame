@@ -1330,60 +1330,24 @@ public class Action {
                 if (!player.hasItemTemplate(10563, 1)) {
                     player.sendMessage("Tu ne posséde pas l'orbe reconstituant.");
                     return true;
-                } else {
-                    player.removeByTemplateID(10563, 1);
-                    SocketManager.GAME_SEND_Im_PACKET(player, "022;" + 10563 + "~" + 1);
                 }
+                
+                final Stats statsParcho = player.getStatsParcho();
 
-                if (player.getStatsParcho().getEffect(125) != 0
-                        || player.getStatsParcho().getEffect(124) != 0
-                        || player.getStatsParcho().getEffect(118) != 0
-                        || player.getStatsParcho().getEffect(119) != 0
-                        || player.getStatsParcho().getEffect(126) != 0
-                        || player.getStats().getEffect(123) != 0) {
-                    player.getStats().addOneStat(125, -player.getStats().getEffect(125)
-                            + player.getStatsParcho().getEffect(125));
-                    player.getStats().addOneStat(124, -player.getStats().getEffect(124)
-                            + player.getStatsParcho().getEffect(124));
-                    player.getStats().addOneStat(118, -player.getStats().getEffect(118)
-                            + player.getStatsParcho().getEffect(118));
-                    player.getStats().addOneStat(123, -player.getStats().getEffect(123)
-                            + player.getStatsParcho().getEffect(123));
-                    player.getStats().addOneStat(119, -player.getStats().getEffect(119)
-                            + player.getStatsParcho().getEffect(119));
-                    player.getStats().addOneStat(126, -player.getStats().getEffect(126)
-                            + player.getStatsParcho().getEffect(126));
-                    player.addCapital((player.getLevel() - 1) * 5
-                            - player.get_capital());
-                } else if (player.getStats().getEffect(125) == 101
-                        && player.getStats().getEffect(124) == 101
-                        && player.getStats().getEffect(118) == 101
-                        && player.getStats().getEffect(123) == 101
-                        && player.getStats().getEffect(119) == 101
-                        && player.getStats().getEffect(126) == 101) {
-                    player.getStats().addOneStat(125, -player.getStats().getEffect(125) + 101);
-                    player.getStats().addOneStat(124, -player.getStats().getEffect(124) + 101);
-                    player.getStats().addOneStat(118, -player.getStats().getEffect(118) + 101);
-                    player.getStats().addOneStat(123, -player.getStats().getEffect(123) + 101);
-                    player.getStats().addOneStat(119, -player.getStats().getEffect(119) + 101);
-                    player.getStats().addOneStat(126, -player.getStats().getEffect(126) + 101);
-
-                    player.getStatsParcho().addOneStat(125, 101);
-                    player.getStatsParcho().addOneStat(124, 101);
-                    player.getStatsParcho().addOneStat(118, 101);
-                    player.getStatsParcho().addOneStat(123, 101);
-                    player.getStatsParcho().addOneStat(119, 101);
-                    player.getStatsParcho().addOneStat(126, 101);
-
-                    player.addCapital((player.getLevel() - 1) * 5
-                            - player.get_capital());
-                } else {
-                    player.sendMessage("Tu ne peux pas restaurer t'es caractéristiques avec ce pouvoir. Tu ne posséde pas de parchotage.");
-                    return true;
+                if (statsParcho.getEffect(Constant.STATS_ADD_VITA) == 0
+                        && statsParcho.getEffect(Constant.STATS_ADD_SAGE) == 0
+                        && statsParcho.getEffect(Constant.STATS_ADD_FORC) == 0
+                        && statsParcho.getEffect(Constant.STATS_ADD_AGIL) == 0
+                        && statsParcho.getEffect(Constant.STATS_ADD_INTE) == 0
+                        && statsParcho.getEffect(Constant.STATS_ADD_CHAN) == 0) {
+                	player.sendMessage("Tu ne peux pas restaurer tes caractéristiques avec ce pouvoir car tu ne possédes pas de parchotage.");
+                	return true;
                 }
-
+                player.restatKeepParcho();
                 SocketManager.GAME_SEND_STATS_PACKET(player);
-                player.sendMessage("Tu viens de restaurer tes caractéristiques.");
+                player.sendMessage("Tu viens de restaurer tes caractéristiques en conservant tes parchotages.");
+                player.removeByTemplateID(10563, 1);
+                SocketManager.GAME_SEND_Im_PACKET(player, "022;" + 10563 + "~" + 1);
                 break;
 
             case 106:
@@ -1391,6 +1355,7 @@ public class Action {
                     case "1"://Remove spell
                         if(player.hasItemTemplate(15004, 1)) {
                             player.removeByTemplateID(15004, 1);
+                            SocketManager.GAME_SEND_Im_PACKET(player, "022;" + 15004 + "~" + 1);
                             player.setExchangeAction(new ExchangeAction<>(ExchangeAction.FORGETTING_SPELL, 0));
                             SocketManager.GAME_SEND_FORGETSPELL_INTERFACE('+', player);
                         }
@@ -1398,6 +1363,7 @@ public class Action {
                     case "2"://Restat without
                         if(player.hasItemTemplate(15006, 1)) {
                             player.removeByTemplateID(15006, 1);
+                            SocketManager.GAME_SEND_Im_PACKET(player, "022;" + 15006 + "~" + 1);
                             player.restatAll(0);
                             SocketManager.GAME_SEND_STATS_PACKET(player);
                         }
@@ -1405,45 +1371,9 @@ public class Action {
                     case "3"://Restat with
                         if(player.hasItemTemplate(15005, 1)) {
                             player.removeByTemplateID(15005, 1);
-                            if (player.getStatsParcho().getEffect(125) != 0 || player.getStatsParcho().getEffect(124) != 0 || player.getStatsParcho().getEffect(118) != 0
-                                    || player.getStatsParcho().getEffect(119) != 0 || player.getStatsParcho().getEffect(126) != 0 || player.getStatsParcho().getEffect(123) != 0) {
-                                player.getStats().addOneStat(125, -player.getStats().getEffect(125) + player.getStatsParcho().getEffect(125));
-                                player.getStats().addOneStat(124, -player.getStats().getEffect(124) + player.getStatsParcho().getEffect(124));
-                                player.getStats().addOneStat(118, -player.getStats().getEffect(118) + player.getStatsParcho().getEffect(118));
-                                player.getStats().addOneStat(123, -player.getStats().getEffect(123) + player.getStatsParcho().getEffect(123));
-                                player.getStats().addOneStat(119, -player.getStats().getEffect(119) + player.getStatsParcho().getEffect(119));
-                                player.getStats().addOneStat(126, -player.getStats().getEffect(126) + player.getStatsParcho().getEffect(126));
-                                player.addCapital((player.getLevel() - 1) * 5 - player.get_capital());
-                                SocketManager.GAME_SEND_STATS_PACKET(player);
-                            } else if (player.getStats().getEffect(125) == 101 && player.getStats().getEffect(124) == 101 && player.getStats().getEffect(118) == 101
-                                    && player.getStats().getEffect(123) == 101 && player.getStats().getEffect(119) == 101 && player.getStats().getEffect(126) == 101) {
-                                player.getStats().addOneStat(125, -player.getStats().getEffect(125) + 101);
-                                player.getStats().addOneStat(124, -player.getStats().getEffect(124) + 101);
-                                player.getStats().addOneStat(118, -player.getStats().getEffect(118) + 101);
-                                player.getStats().addOneStat(123, -player.getStats().getEffect(123) + 101);
-                                player.getStats().addOneStat(119, -player.getStats().getEffect(119) + 101);
-                                player.getStats().addOneStat(126, -player.getStats().getEffect(126) + 101);
-                                player.getStatsParcho().getMap().clear();
-                                player.getStatsParcho().addOneStat(125, 101);
-                                player.getStatsParcho().addOneStat(124, 101);
-                                player.getStatsParcho().addOneStat(118, 101);
-                                player.getStatsParcho().addOneStat(123, 101);
-                                player.getStatsParcho().addOneStat(119, 101);
-                                player.getStatsParcho().addOneStat(126, 101);
-                                player.addCapital((player.getLevel() - 1) * 5 - player.get_capital());
-                                SocketManager.GAME_SEND_STATS_PACKET(player);
-                            } else {
-                                player.removeByTemplateID(15000, 500);
-                                player.getStats().addOneStat(125, -player.getStats().getEffect(125));
-                                player.getStats().addOneStat(124, -player.getStats().getEffect(124));
-                                player.getStats().addOneStat(118, -player.getStats().getEffect(118));
-                                player.getStats().addOneStat(123, -player.getStats().getEffect(123));
-                                player.getStats().addOneStat(119, -player.getStats().getEffect(119));
-                                player.getStats().addOneStat(126, -player.getStats().getEffect(126));
-                                player.addCapital((player.getLevel() - 1) * 5 - player.get_capital());
-                                player.getStatsParcho().getMap().clear();
-                                SocketManager.GAME_SEND_STATS_PACKET(player);
-                            }
+                            player.restatKeepParcho();
+                            SocketManager.GAME_SEND_Im_PACKET(player, "022;" + 15005 + "~" + 1);
+                            SocketManager.GAME_SEND_STATS_PACKET(player);
                         }
                         break;
                 }

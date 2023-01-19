@@ -7,6 +7,7 @@ import org.starloco.locos.client.Player;
 import org.starloco.locos.client.Prestige;
 import org.starloco.locos.client.other.Maitre;
 import org.starloco.locos.client.other.Party;
+import org.starloco.locos.client.other.Stats;
 import org.starloco.locos.common.ConditionParser;
 import org.starloco.locos.common.PathFinding;
 import org.starloco.locos.common.SocketManager;
@@ -250,23 +251,24 @@ public class ExecuteCommandPlayer {
 		boolean parcho = false;
 		
 		final Prestige prestige = World.world.getPrestigeById(player.getPrestige());
+		final Stats statsParcho = player.getStatsParcho();
 		
 		final int statsParchoMax;
 		
 		if(prestige != null) statsParchoMax = prestige.getPrestigeBonus().getParcho();
 		else statsParchoMax = 101;
 		
-		if(player.getStatsParcho().getEffect(Constant.STATS_ADD_VITA) < statsParchoMax)
+		if(statsParcho.getEffect(Constant.STATS_ADD_VITA) < statsParchoMax)
 			parcho = true;
-		else if(player.getStatsParcho().getEffect(Constant.STATS_ADD_SAGE) < statsParchoMax)
+		else if(statsParcho.getEffect(Constant.STATS_ADD_SAGE) < statsParchoMax)
 			parcho = true;
-		else if(player.getStatsParcho().getEffect(Constant.STATS_ADD_FORC) < statsParchoMax)
+		else if(statsParcho.getEffect(Constant.STATS_ADD_FORC) < statsParchoMax)
 			parcho = true;
-		else if(player.getStatsParcho().getEffect(Constant.STATS_ADD_INTE) < statsParchoMax)
+		else if(statsParcho.getEffect(Constant.STATS_ADD_INTE) < statsParchoMax)
 			parcho = true;
-		else if(player.getStatsParcho().getEffect(Constant.STATS_ADD_AGIL) < statsParchoMax)
+		else if(statsParcho.getEffect(Constant.STATS_ADD_AGIL) < statsParchoMax)
 			parcho = true;
-		else if(player.getStatsParcho().getEffect(Constant.STATS_ADD_CHAN) < statsParchoMax)
+		else if(statsParcho.getEffect(Constant.STATS_ADD_CHAN) < statsParchoMax)
 			parcho = true;
 		
 		if(parcho) {
