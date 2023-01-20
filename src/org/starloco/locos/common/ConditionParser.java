@@ -552,6 +552,10 @@ public class ConditionParser {
     }
 
     public static boolean stackIfSimilar(GameObject obj, GameObject newObj) {
+    	
+    	if(obj.getTxtStat().get(Constant.STATS_MIMIBIOTE) != null) return false;
+    	if(newObj.getTxtStat().get(Constant.STATS_MIMIBIOTE) != null) return false;
+    	
         switch(obj.getTemplate().getId()) {
             case 10275:
             case 8378:

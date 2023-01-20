@@ -8,6 +8,7 @@ import java.util.HashMap;
 import org.starloco.locos.area.map.GameMap;
 import org.starloco.locos.client.Player;
 import org.starloco.locos.client.other.Stats;
+import org.starloco.locos.common.ConditionParser;
 import org.starloco.locos.common.CryptManager;
 import org.starloco.locos.common.Formulas;
 import org.starloco.locos.common.PathFinding;
@@ -1093,9 +1094,8 @@ public class Mount {
 	
 	private GameObject getSimilarObject(GameObject obj) {
 		for(GameObject gameObject : this.objects.values())
-			if(gameObject.getTemplate().getType() != 85)
-				if(gameObject.getTemplate().getId() == obj.getTemplate().getId() && gameObject.getStats().isSameStats(obj.getStats()))
-					return gameObject;
+			if(ConditionParser.stackIfSimilar(gameObject, obj))
+				return gameObject;
 		return null;
 	}
 	

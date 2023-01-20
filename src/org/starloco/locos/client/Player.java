@@ -2704,11 +2704,8 @@ public class Player {
     }
 
     public GameObject getSimilarItem(GameObject exGameObject) {
-        if (exGameObject.getTemplate().getId() == 8378)
-            return null;
-
         for (GameObject gameObject : this.objects.values())
-            if (gameObject.getTemplate().getId() == exGameObject.getTemplate().getId() && gameObject.getStats().isSameStats(exGameObject.getStats()) && gameObject.getGuid() != exGameObject.getGuid() && !Constant.isIncarnationWeapon(exGameObject.getTemplate().getId()) && exGameObject.getTemplate().getType() != Constant.ITEM_TYPE_CERTIFICAT_CHANIL && exGameObject.getTemplate().getType() != Constant.ITEM_TYPE_PIERRE_AME_PLEINE && gameObject.getTemplate().getType() != Constant.ITEM_TYPE_OBJET_ELEVAGE && gameObject.getTemplate().getType() != Constant.ITEM_TYPE_CERTIF_MONTURE && (exGameObject.getTemplate().getType() != Constant.ITEM_TYPE_QUETES || Constant.isFlacGelee(gameObject.getTemplate().getId())) && !Constant.isCertificatDopeuls(gameObject.getTemplate().getId()) && gameObject.getTemplate().getType() != Constant.ITEM_TYPE_FAMILIER && gameObject.getTemplate().getType() != Constant.ITEM_TYPE_OBJET_VIVANT && gameObject.getPosition() == Constant.ITEM_POS_NO_EQUIPED)
+            if (ConditionParser.stackIfSimilar(gameObject, exGameObject))
                 return gameObject;
 
         return null;
