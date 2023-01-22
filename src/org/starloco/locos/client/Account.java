@@ -10,7 +10,6 @@ import org.starloco.locos.kernel.Main;
 import org.starloco.locos.object.GameObject;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Account {
     private int id;
@@ -35,6 +34,7 @@ public class Account {
     private List<Integer> friends = new ArrayList<>();
     private List<Integer> enemys = new ArrayList<>();
     private Map<Integer, ArrayList<HdvEntry>> hdvsItems;
+    private final Map<Integer, Player> players = new HashMap<>();
     private boolean vip;
     
     private String clientVersion; // Coding Mestre
@@ -240,16 +240,13 @@ public class Account {
     public void setGameClient(GameClient t) {
         this.gameClient = t;
     }
+    
+    public void addPlayer(Player player) {
+    	this.players.put(player.getId(), player);
+    }
 
     public Map<Integer, Player> getPlayers() {
-        Map<Integer, Player> players = new HashMap<>();
-        new CopyOnWriteArrayList<>(World.world.getPlayers()).stream().filter(player -> player != null).filter(player -> player.getAccount() != null)
-                .filter(player -> player.getAccount().getId() == this.getId()).forEach(player -> {
-            if (player.getGameClient() == null)
-                player.setAccount(this);
-            players.put(player.getId(), player);
-        });
-        return players;
+        return this.players;
     }
 
     public Player getCurrentPlayer() {
@@ -306,8 +303,10 @@ public class Account {
     }
 
     public void deletePlayer(int guid) {
-        if (this.getPlayers().containsKey(guid))
-            World.world.removePlayer(this.getPlayers().get(guid));
+        if (this.getPlayers().containsKey(guid)) {
+        	World.world.removePlayer(this.getPlayers().get(guid));
+        	this.getPlayers().remove(guid);
+        }
     }
 
     public void sendOnline() {

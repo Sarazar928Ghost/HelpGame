@@ -275,6 +275,8 @@ public class Player {
         this.stats = new Stats(stats, true, this);
         this._accID = account;
         this.account = World.world.getAccount(account);
+        if(this.account != null)
+        	this.account.addPlayer(this);
         this._showFriendConnection = seeFriend == 1;
         this.wife = wifeGuid;
         this._metierPublic = false;
@@ -536,6 +538,11 @@ public class Player {
 
         SocketManager.GAME_SEND_WELCOME(perso);
         
+        if (!Database.getStatics().getPlayerData().add(perso))
+        	return null;
+        
+        World.world.addPlayer(perso);
+        
         for(final int id : Config.START_PANO)
         {
         	for (final ObjectTemplate t : World.world.getItemSet(id).getItemTemplates()) 
@@ -554,9 +561,6 @@ public class Player {
                 World.world.addGameObject(obj, true);
         }
 
-        if (!Database.getStatics().getPlayerData().add(perso))
-            return null;
-        World.world.addPlayer(perso);
         return perso;
     }
 
@@ -5222,17 +5226,16 @@ public class Player {
         for (int j = 2; j < 8; j++) {
             if (getObjetByPos(j) == null)
                 continue;
-            GameObject obj = getObjetByPos(j);
-            int template = obj.getTemplate().getId();
-            int pano = obj.getTemplate().getPanoId();
+            final GameObject obj = getObjetByPos(j);
+            final int template = obj.getTemplate().getId();
+            final int pano = obj.getTemplate().getPanoId();
             if ((pano >= 81 && pano <= 92) || (pano >= 201 && pano <= 212)) {
-                String[] stats = obj.getTemplate().getStrTemplate().split(",");
-                for (String stat : stats) {
-                    String[] val = stat.split("#");
-                    int effect = Integer.parseInt(val[0], 16);
-                    int spell = Integer.parseInt(val[1], 16);
-                    int modif = Integer.parseInt(val[3], 16);
-                    String modifi = effect + ";" + spell + ";" + modif;
+                for (final String stat : obj.getSortStats()) {
+                    final String[] val = stat.split("#");
+                    final int effect = Integer.parseInt(val[0], 16);
+                    final int spell = Integer.parseInt(val[1], 16);
+                    final int modif = Integer.parseInt(val[3], 16);
+                    final String modifi = effect + ";" + spell + ";" + modif;
                     SocketManager.SEND_SB_SPELL_BOOST(this, modifi);
                     addItemClasseSpell(spell, effect, modif);
                 }

@@ -30,7 +30,6 @@ public class AccountData extends AbstractDAO<Account> {
 
                 Account C = new Account(RS.getInt("guid"), RS.getString("account").toLowerCase(), RS.getString("pseudo"), RS.getString("reponse"), (RS.getInt("banned") == 1), RS.getString("lastIP"), RS.getString("lastConnectionDate"), RS.getString("friends"), RS.getString("enemy"), RS.getInt("points"), RS.getLong("subscribe"), RS.getLong("muteTime"), RS.getString("mutePseudo"), RS.getString("lastVoteIP"), RS.getString("heurevote"), RS.getBoolean("vip"));
                 World.world.addAccount(C);
-                World.world.ReassignAccountToChar(C);
             }
         } catch (Exception e) {
             super.sendError("AccountData load id", e);

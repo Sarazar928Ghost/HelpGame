@@ -1031,11 +1031,6 @@ public class World {
         return experiences.get(_lvl + 1).guilde;
     }
 
-    public void ReassignAccountToChar(Account account) {
-        Database.getStatics().getPlayerData().loadByAccountId(account.getId());
-        players.values().stream().filter(player -> player.getAccID() == account.getId()).forEach(player -> player.setAccount(account));
-    }
-
     public int getZaapCellIdByMapId(short i) {
         for (Entry<Integer, Integer> zaap : Constant.ZAAPS.entrySet()) {
             if (zaap.getKey() == i)

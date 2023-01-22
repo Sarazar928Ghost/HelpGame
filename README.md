@@ -38,6 +38,7 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Ne génére plus d'ID object fantome.
 - IA moins bugé
 - Porter/Jeter panda débugé
+- Les items de class gardent leur effets lors d'un reboot
 
 ## AUTRES :
 

@@ -5975,23 +5975,21 @@ public class GameClient {
     	
     	
     	if (position == 2 || position == 3 || position == 4 || position == 5 || position == 6 || position == 7 || position == 0) {
-            String[] stats = objTemplate.getStrTemplate().split(",");
-            for (String stat : stats) {
-                String[] val = stat.split("#");
-                int effect = Integer.parseInt(val[0], 16);
-                int spell = Integer.parseInt(val[1], 16);
-                int modif = Integer.parseInt(val[3], 16);
-                String modifi = effect + ";" + spell + ";" + modif;
+            for (final String stat : object.getSortStats()) {
+                final String[] val = stat.split("#");
+                final int effect = Integer.parseInt(val[0], 16);
+                final int spell = Integer.parseInt(val[1], 16);
+                final int modif = Integer.parseInt(val[3], 16);
+                final String modifi = effect + ";" + spell + ";" + modif;
                 SocketManager.SEND_SB_SPELL_BOOST(this.player, modifi);
                 this.player.addItemClasseSpell(spell, effect, modif);
             }
             this.player.addItemClasse(objTemplate.getId());
         }
     	else if (position == Constant.ITEM_POS_NO_EQUIPED) {
-            String[] stats = objTemplate.getStrTemplate().split(",");
-            for (String stat : stats) {
-                String[] val = stat.split("#");
-                String modifi = Integer.parseInt(val[0], 16) + ";" + Integer.parseInt(val[1], 16) + ";0";
+            for (final String stat : object.getSortStats()) {
+                final String[] val = stat.split("#");
+                final String modifi = Integer.parseInt(val[0], 16) + ";" + Integer.parseInt(val[1], 16) + ";0";
                 SocketManager.SEND_SB_SPELL_BOOST(this.player, modifi);
                 this.player.removeItemClasseSpell(Integer.parseInt(val[1], 16));
             }

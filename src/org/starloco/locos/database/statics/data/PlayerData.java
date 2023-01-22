@@ -42,26 +42,7 @@ public class PlayerData extends AbstractDAO<Player> {
         Result result = null;
         try {
             result = getData("SELECT * FROM players");
-            ResultSet RS = result.resultSet;
-            while (RS.next()) {
-                if (RS.getInt("server") != Main.serverId)
-                    continue;
-
-                HashMap<Integer, Integer> stats = new HashMap<Integer, Integer>();
-                stats.put(Constant.STATS_ADD_VITA, RS.getInt("vitalite"));
-                stats.put(Constant.STATS_ADD_FORC, RS.getInt("force"));
-                stats.put(Constant.STATS_ADD_SAGE, RS.getInt("sagesse"));
-                stats.put(Constant.STATS_ADD_INTE, RS.getInt("intelligence"));
-                stats.put(Constant.STATS_ADD_CHAN, RS.getInt("chance"));
-                stats.put(Constant.STATS_ADD_AGIL, RS.getInt("agilite"));
-                final short prestige = Config.getInstance().prestige ? RS.getShort("prestige") : (short) 0;
-                Player perso = new Player(RS.getInt("id"), RS.getString("name"), RS.getInt("groupe"), RS.getInt("sexe"), RS.getInt("class"), RS.getInt("color1"), RS.getInt("color2"), RS.getInt("color3"), RS.getLong("kamas"), RS.getInt("spellboost"), RS.getInt("capital"), RS.getInt("energy"), RS.getInt("level"), RS.getLong("xp"), RS.getInt("size"), RS.getInt("gfx"), RS.getByte("alignement"), RS.getInt("account"), stats, RS.getByte("seeFriend"), RS.getByte("seeAlign"), RS.getByte("seeSeller"), RS.getString("canaux"), RS.getShort("map"), RS.getInt("cell"), RS.getString("objets"), RS.getString("storeObjets"), RS.getInt("pdvper"), RS.getString("spells"), RS.getString("savepos"), RS.getString("jobs"), RS.getInt("mountxpgive"), RS.getInt("mount"), RS.getInt("honor"), RS.getInt("deshonor"), RS.getInt("alvl"), RS.getString("zaaps"), RS.getByte("title"), RS.getInt("wife"), RS.getString("morphMode"), RS.getString("allTitle"), RS.getString("emotes"), RS.getLong("prison"), false, RS.getString("parcho"), RS.getLong("timeDeblo"), RS.getBoolean("noall"), RS.getString("deadInformation"), RS.getByte("deathCount"), RS.getLong("totalKills"), prestige, RS.getString("artefact"));
-
-                perso.VerifAndChangeItemPlace();
-                World.world.addPlayer(perso);
-                if (perso.isShowSeller())
-                    World.world.addSeller(perso);
-            }
+            this.load(result.resultSet, false);
         } catch (SQLException e) {
             super.sendError("PlayerData load", e);
             Main.stop("unknown");
@@ -69,39 +50,44 @@ public class PlayerData extends AbstractDAO<Player> {
             close(result);
         }
     }
+    
+    private void load(final ResultSet RS, final boolean checkOldPlayer) throws SQLException{
+    	 while (RS.next()) {
+             if (RS.getInt("server") != Main.serverId)
+                 continue;
+
+             HashMap<Integer, Integer> stats = new HashMap<Integer, Integer>();
+             stats.put(Constant.STATS_ADD_VITA, RS.getInt("vitalite"));
+             stats.put(Constant.STATS_ADD_FORC, RS.getInt("force"));
+             stats.put(Constant.STATS_ADD_SAGE, RS.getInt("sagesse"));
+             stats.put(Constant.STATS_ADD_INTE, RS.getInt("intelligence"));
+             stats.put(Constant.STATS_ADD_CHAN, RS.getInt("chance"));
+             stats.put(Constant.STATS_ADD_AGIL, RS.getInt("agilite"));
+             final int id = RS.getInt("id");
+             final short prestige = Config.getInstance().prestige ? RS.getShort("prestige") : (short) 0;
+             Player player = new Player(id, RS.getString("name"), RS.getInt("groupe"), RS.getInt("sexe"), RS.getInt("class"), RS.getInt("color1"), RS.getInt("color2"), RS.getInt("color3"), RS.getLong("kamas"), RS.getInt("spellboost"), RS.getInt("capital"), RS.getInt("energy"), RS.getInt("level"), RS.getLong("xp"), RS.getInt("size"), RS.getInt("gfx"), RS.getByte("alignement"), RS.getInt("account"), stats, RS.getByte("seeFriend"), RS.getByte("seeAlign"), RS.getByte("seeSeller"), RS.getString("canaux"), RS.getShort("map"), RS.getInt("cell"), RS.getString("objets"), RS.getString("storeObjets"), RS.getInt("pdvper"), RS.getString("spells"), RS.getString("savepos"), RS.getString("jobs"), RS.getInt("mountxpgive"), RS.getInt("mount"), RS.getInt("honor"), RS.getInt("deshonor"), RS.getInt("alvl"), RS.getString("zaaps"), RS.getByte("title"), RS.getInt("wife"), RS.getString("morphMode"), RS.getString("allTitle"), RS.getString("emotes"), RS.getLong("prison"), false, RS.getString("parcho"), RS.getLong("timeDeblo"), RS.getBoolean("noall"), RS.getString("deadInformation"), RS.getByte("deathCount"), RS.getLong("totalKills"), prestige, RS.getString("artefact"));
+
+             if(checkOldPlayer) {
+            	 Player oldPlayer = World.world.getPlayer(id);
+            	 if(oldPlayer != null)
+            		 player.setNeededEndFight(oldPlayer.needEndFight(), oldPlayer.hasMobGroup());
+             }
+
+             player.VerifAndChangeItemPlace();
+             player.refreshItemClasse();
+             World.world.addPlayer(player);
+             if (player.isShowSeller())
+                 World.world.addSeller(player);
+
+         }
+    }
 
     public Player load(int obj) {
         Result result = null;
         Player player = null;
         try {
             result = getData("SELECT * FROM players WHERE id = '" + obj + "'");
-            ResultSet RS = result.resultSet;
-            while (RS.next()) {
-                if (RS.getInt("server") != Main.serverId)
-                    continue;
-
-                HashMap<Integer, Integer> stats = new HashMap<Integer, Integer>();
-                stats.put(Constant.STATS_ADD_VITA, RS.getInt("vitalite"));
-                stats.put(Constant.STATS_ADD_FORC, RS.getInt("force"));
-                stats.put(Constant.STATS_ADD_SAGE, RS.getInt("sagesse"));
-                stats.put(Constant.STATS_ADD_INTE, RS.getInt("intelligence"));
-                stats.put(Constant.STATS_ADD_CHAN, RS.getInt("chance"));
-                stats.put(Constant.STATS_ADD_AGIL, RS.getInt("agilite"));
-
-                Player oldPlayer = World.world.getPlayer((int) obj);
-                player = new Player(RS.getInt("id"), RS.getString("name"), RS.getInt("groupe"), RS.getInt("sexe"), RS.getInt("class"), RS.getInt("color1"), RS.getInt("color2"), RS.getInt("color3"), RS.getLong("kamas"), RS.getInt("spellboost"), RS.getInt("capital"), RS.getInt("energy"), RS.getInt("level"), RS.getLong("xp"), RS.getInt("size"), RS.getInt("gfx"), RS.getByte("alignement"), RS.getInt("account"), stats, RS.getByte("seeFriend"), RS.getByte("seeAlign"), RS.getByte("seeSeller"), RS.getString("canaux"), RS.getShort("map"), RS.getInt("cell"), RS.getString("objets"), RS.getString("storeObjets"), RS.getInt("pdvper"), RS.getString("spells"), RS.getString("savepos"), RS.getString("jobs"), RS.getInt("mountxpgive"), RS.getInt("mount"), RS.getInt("honor"), RS.getInt("deshonor"), RS.getInt("alvl"), RS.getString("zaaps"), RS.getByte("title"), RS.getInt("wife"), RS.getString("morphMode"), RS.getString("allTitle"), RS.getString("emotes"), RS.getLong("prison"), false, RS.getString("parcho"), RS.getLong("timeDeblo"), RS.getBoolean("noall"), RS.getString("deadInformation"), RS.getByte("deathCount"), RS.getLong("totalKills"), (short)RS.getInt("prestige"), RS.getString("artefact"));
-
-                if(oldPlayer != null)
-                    player.setNeededEndFight(oldPlayer.needEndFight(), oldPlayer.hasMobGroup());
-
-                player.VerifAndChangeItemPlace();
-                World.world.addPlayer(player);
-                int guild = Database.getDynamics().getGuildMemberData().isPersoInGuild(RS.getInt("id"));
-
-                if (guild >= 0)
-                    player.setGuildMember(World.world.getGuild(guild).getMember(RS.getInt("id")));
-
-            }
+            this.load(result.resultSet, true);
         } catch (SQLException e) {
             super.sendError("PlayerData load id", e);
             Main.stop("unknown");
@@ -109,57 +95,6 @@ public class PlayerData extends AbstractDAO<Player> {
             close(result);
         }
         return player;
-    }
-
-    public void loadByAccountId(int id) {
-        try {
-            Account account = World.world.getAccount(id);
-            if (account != null)
-                if (account.getPlayers() != null)
-                    account.getPlayers().values().stream().filter(p -> p != null).forEach(World.world::verifyClone);
-        } catch (Exception e) {
-            super.sendError("PlayerData loadByAccountId clone", e);
-        }
-
-        Result result = null;
-        try {
-            result = getData("SELECT * FROM players WHERE account = '" + id + "'");
-            ResultSet RS = result.resultSet;
-            while (RS.next()) {
-                if (RS.getInt("server") != Main.serverId)
-                    continue;
-
-                Player p = World.world.getPlayer(RS.getInt("id"));
-                if (p != null) {
-                    if (p.getFight() != null) {
-                        continue;
-                    }
-                }
-
-                HashMap<Integer, Integer> stats = new HashMap<Integer, Integer>();
-
-                stats.put(Constant.STATS_ADD_VITA, RS.getInt("vitalite"));
-                stats.put(Constant.STATS_ADD_FORC, RS.getInt("force"));
-                stats.put(Constant.STATS_ADD_SAGE, RS.getInt("sagesse"));
-                stats.put(Constant.STATS_ADD_INTE, RS.getInt("intelligence"));
-                stats.put(Constant.STATS_ADD_CHAN, RS.getInt("chance"));
-                stats.put(Constant.STATS_ADD_AGIL, RS.getInt("agilite"));
-                Player player = new Player(RS.getInt("id"), RS.getString("name"), RS.getInt("groupe"), RS.getInt("sexe"), RS.getInt("class"), RS.getInt("color1"), RS.getInt("color2"), RS.getInt("color3"), RS.getLong("kamas"), RS.getInt("spellboost"), RS.getInt("capital"), RS.getInt("energy"), RS.getInt("level"), RS.getLong("xp"), RS.getInt("size"), RS.getInt("gfx"), RS.getByte("alignement"), RS.getInt("account"), stats, RS.getByte("seeFriend"), RS.getByte("seeAlign"), RS.getByte("seeSeller"), RS.getString("canaux"), RS.getShort("map"), RS.getInt("cell"), RS.getString("objets"), RS.getString("storeObjets"), RS.getInt("pdvper"), RS.getString("spells"), RS.getString("savepos"), RS.getString("jobs"), RS.getInt("mountxpgive"), RS.getInt("mount"), RS.getInt("honor"), RS.getInt("deshonor"), RS.getInt("alvl"), RS.getString("zaaps"), RS.getByte("title"), RS.getInt("wife"), RS.getString("morphMode"), RS.getString("allTitle"), RS.getString("emotes"), RS.getLong("prison"), false, RS.getString("parcho"), RS.getLong("timeDeblo"), RS.getBoolean("noall"), RS.getString("deadInformation"), RS.getByte("deathCount"), RS.getLong("totalKills"), (short)RS.getInt("prestige"), RS.getString("artefact"));
-
-                if(p != null)
-                        player.setNeededEndFight(p.needEndFight(), p.hasMobGroup());
-                player.VerifAndChangeItemPlace();
-                World.world.addPlayer(player);
-                int guild = Database.getDynamics().getGuildMemberData().isPersoInGuild(RS.getInt("id"));
-                if (guild >= 0)
-                    player.setGuildMember(World.world.getGuild(guild).getMember(RS.getInt("id")));
-            }
-        } catch (SQLException e) {
-            super.sendError("PlayerData loadByAccountId", e);
-            Main.stop("unknown");
-        } finally {
-            close(result);
-        }
     }
 
     public String loadTitles(int guid) {

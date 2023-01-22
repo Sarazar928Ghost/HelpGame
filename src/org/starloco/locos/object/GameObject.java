@@ -1334,5 +1334,9 @@ public class GameObject {
     	this.mimibioteApparence = idTemplate;
     }
     
+    public ArrayList<String> getSortStats(){
+    	return this.SortStats;
+    }
+    
     
 }
