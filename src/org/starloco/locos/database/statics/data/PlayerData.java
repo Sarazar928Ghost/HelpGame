@@ -1,7 +1,6 @@
 package org.starloco.locos.database.statics.data;
 
 import com.zaxxer.hikari.HikariDataSource;
-import org.starloco.locos.client.Account;
 import org.starloco.locos.client.Player;
 import org.starloco.locos.command.administration.Group;
 import org.starloco.locos.database.Database;

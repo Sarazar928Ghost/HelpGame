@@ -147,7 +147,6 @@ public class GameObject {
 
                     String[] stats = split.split("#");
                     int id = Integer.parseInt(stats[0], 16);
-
                     
                     if(id == Constant.STATS_MIMIBIOTE) {
                     	final String[] datas = split.split("#");
@@ -190,6 +189,12 @@ public class GameObject {
                         txtStats.put(id, stats[3]);
                         continue;
                     }
+                    
+                    if (id >= 281 && id <= 294) {
+                    	SortStats.add(split);
+                    	continue; 
+                    }
+                    
                     //Si stats avec Texte (Signature, apartenance, etc)//FIXME
                     if (id != Constant.STATS_RESIST && (!stats[3].equals("") && (!stats[3].equals("0") || id == Constant.STATS_PETS_DATE || id == Constant.STATS_PETS_PDV || id == Constant.STATS_PETS_POIDS || id == Constant.STATS_PETS_EPO || id == Constant.STATS_PETS_REPAS))) {//Si le stats n'est pas vide et (n'est pas �gale � 0 ou est de type familier)
                         if (!(this.getTemplate().getType() == Constant.ITEM_TYPE_CERTIFICAT_CHANIL && id == Constant.STATS_PETS_DATE)) {
@@ -206,10 +211,6 @@ public class GameObject {
                         continue;
                     }
 
-                    if (id >= 281 && id <= 294) {
-                        SortStats.add(split);
-                        continue;
-                    }
                     boolean follow1 = true;
                     switch (id) {
                         case 110:
