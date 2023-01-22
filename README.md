@@ -28,6 +28,7 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Cameleon DD ( Objet action action 36 ) ( Item Template Potion : 2 )
 - Piège débugé a 100% ( Normalement 🤗 )
 - Demande désormais au Login l'ID pour le futur player crée.
+- Item classe fonctionnel.
 
 ## DEBUG :
 
