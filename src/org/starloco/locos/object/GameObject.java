@@ -74,6 +74,17 @@ public class GameObject {
         this.obvijevanPos = 0;
         this.obvijevanLook = 0;
         this.puit = puit;
+        this.getStatsClass();
+    }
+    
+    private void getStatsClass() {
+    	for(final String s : this.getTemplate().getStrTemplate().split(",")) {
+    		String[] stats = s.split("#");
+            final int statID = Integer.parseInt(stats[0], 16);
+    		if (statID < 281 || statID > 294)
+            	continue;
+    		this.SortStats.add(s);
+    	}
     }
 
     public static GameObject getCloneObjet(GameObject obj, int qua) {
@@ -381,9 +392,7 @@ public class GameObject {
                 if (!isFirst) {
                     stats.append(",");
                 }
-                String[] sort = spell.split("#");
-                int spellid = Integer.parseInt(sort[1], 16);
-                stats.append(sort[0]).append("#").append(sort[1]).append("#0#").append(sort[3]).append("#").append(World.world.getSort(spellid));
+                stats.append(spell);
                 isFirst = false;
             }
         }
@@ -679,6 +688,12 @@ public class GameObject {
                 stats.append("#0#0#").append(jet);
             }
             isFirst = false;
+        }
+        for(final String sort : this.getSortStats()) {
+        	if (!isFirst)
+                stats.append(",");
+        	stats.append(sort);
+        	isFirst = false;
         }
         return stats.toString();
     }

@@ -415,6 +415,10 @@ public class ObjectTemplate {
         for (String s : splitted) {
             String[] stats = s.split("#");
             int statID = Integer.parseInt(stats[0], 16);
+            
+            if (statID >= 281 && statID <= 294) // Stat item class
+            	continue;
+            
             boolean follow = true;
 
             for (int a : Constant.ARMES_EFFECT_IDS)

@@ -464,7 +464,7 @@ public class Player {
     public Player(int id, String name, int groupe, int sexe, int classe,
                   int color1, int color2, int color3, int level, int _size,
                   int _gfxid, Map<Integer, Integer> stats, String stuff,
-                  int pdvPer, byte seeAlign, int mount, int alvl, byte alignement) {
+                  int pdvPer, byte seeAlign, int mount, int alvl, byte alignement, Map<Integer, GameObject> equipedObjects) {
         this.id = id;
         this.name = name;
         this.groupe = Group.getGroupeById(groupe);
@@ -507,6 +507,7 @@ public class Player {
         this._showWings = this.get_align() != 0 && seeAlign == 1;
         if (mount != -1)
             this._mount = World.world.getMountById(mount);
+        this.equipedObjects = equipedObjects;
     }
 
     public static Player CREATE_PERSONNAGE(String name, int sexe, int classe,
@@ -600,7 +601,7 @@ public class Player {
             mountID = P.getMount().getId();
         }
 
-        Player Clone = new Player(id, P.getName(), (P.getGroupe() != null) ? P.getGroupe().getId() : -1, P.getSexe(), P.getClasse(), P.getColor1(), P.getColor2(), P.getColor3(), P.getLevel(), 100, P.getGfxId(), stats, P.parseObjetsToDB(), 100, showWings, mountID, alvl, P.get_align());
+        Player Clone = new Player(id, P.getName(), (P.getGroupe() != null) ? P.getGroupe().getId() : -1, P.getSexe(), P.getClasse(), P.getColor1(), P.getColor2(), P.getColor3(), P.getLevel(), 100, P.getGfxId(), stats, P.parseObjetsToDB(), 100, showWings, mountID, alvl, P.get_align(), P.equipedObjects);
 
         Clone.set_isClone(true);
         if (P._onMount) {
@@ -1821,6 +1822,7 @@ public class Player {
                 TimerWaiter.addNext(() -> PigDragon.sendPacketMap(this), 3, TimeUnit.SECONDS, TimerWaiter.DataType.CLIENT);
         }
         if (this.getEnergy() == 0) this.setGhost();
+        this.refreshItemClasse();
     }
 
     public void checkVote() {

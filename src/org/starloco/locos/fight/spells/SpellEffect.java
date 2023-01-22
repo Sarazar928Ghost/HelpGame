@@ -2402,7 +2402,7 @@ public class SpellEffect {
 					target = caster;
 				}
 
-				int dmg = Formulas.getRandomJet(args.split(";")[5]);
+				int dmg = Formulas.getRandomJet(this.jet);
 
 				//Si le sort est boost� par un buff sp�cifique
 				if (caster.hasBuff(293) || caster.haveState(300)) {
@@ -2487,7 +2487,7 @@ public class SpellEffect {
 					}
 				}
 
-				int dmg = Formulas.getRandomJet(args.split(";")[5]);
+				int dmg = Formulas.getRandomJet(this.jet);
 
 				//Si le sort est boost� par un buff sp�cifique
 				for (SpellEffect SE : caster.getBuffsByEffectID(293)) {
@@ -2558,7 +2558,7 @@ public class SpellEffect {
 					//le lanceur devient donc la cible
 					target = caster;
 				}
-				int dmg = Formulas.getRandomJet(args.split(";")[5]);
+				int dmg = Formulas.getRandomJet(this.jet);
 
 				//Si le sort est boost� par un buff sp�cifique
 				for (SpellEffect SE : caster.getBuffsByEffectID(293)) {
@@ -2633,7 +2633,7 @@ public class SpellEffect {
 					}
 				}
 
-				int dmg = Formulas.getRandomJet(args.split(";")[5]);
+				int dmg = Formulas.getRandomJet(this.jet);
 
 				//Si le sort est boost� par un buff sp�cifique
 				for (SpellEffect SE : caster.getBuffsByEffectID(293)) {
@@ -2703,7 +2703,7 @@ public class SpellEffect {
 					//le lanceur devient donc la cible
 					target = caster;
 				}
-				int dmg = Formulas.getRandomJet(args.split(";")[5]);
+				int dmg = Formulas.getRandomJet(this.jet);
 
 				//Si le sort est boost� par un buff sp�cifique
 				for (SpellEffect SE : caster.getBuffsByEffectID(293)) {
@@ -2776,7 +2776,7 @@ public class SpellEffect {
 					}
 				}
 
-				int dmg = Formulas.getRandomJet(args.split(";")[5]);
+				int dmg = Formulas.getRandomJet(this.jet);
 
 				//Si le sort est boost� par un buff sp�cifique
 				for (SpellEffect SE : caster.getBuffsByEffectID(293)) {
@@ -2848,7 +2848,7 @@ public class SpellEffect {
 					target.addBuff(950, 1, 1, 1, false, spell, args, target, true);
 				}
 
-				int dmg = Formulas.getRandomJet(args.split(";")[5]);
+				int dmg = Formulas.getRandomJet(this.jet);
 
 				//Si le sort est boost� par un buff sp�cifique
 				for (SpellEffect SE : caster.getBuffsByEffectID(293)) {
@@ -3077,7 +3077,7 @@ public class SpellEffect {
 	private void applyEffect_109(Fight fight)//Dommage pour le lanceur (fixes)
 	{
 		if (turns <= 0) {
-			int dmg = Formulas.getRandomJet(args.split(";")[5]);
+			int dmg = Formulas.getRandomJet(this.jet);
 			int finalDommage = Formulas.calculFinalDommage(fight, caster, caster, Constant.ELEMENT_NULL, dmg, false, false, spell);
 
 			finalDommage = applyOnHitBuffs(finalDommage, caster, caster, fight, Constant.ELEMENT_NULL);//S'il y a des buffs sp�ciaux
@@ -3474,7 +3474,7 @@ public class SpellEffect {
 	private void applyEffect_130(Fight fight, ArrayList<Fighter> cibles) {
 		if (turns <= 0) {
 			for (Fighter target : cibles) {
-				int kamas = Formulas.getRandomJet(args.split(";")[5]);
+				int kamas = Formulas.getRandomJet(this.jet);
 				if (caster.getPersonnage() == null) break;
 				if (target.getPersonnage() != null) {
 					target.getPersonnage().addKamas(-kamas);
@@ -4635,7 +4635,7 @@ public class SpellEffect {
 					resF += target.getTotalStats().getEffect(Constant.STATS_ADD_R_PVP_NEU);
 				}
 
-				int dmg = Formulas.getRandomJet(args.split(";")[5]);// % de pdv
+				int dmg = Formulas.getRandomJet(this.jet);// % de pdv
 				dmg = getMaxMinSpell(target, dmg);
 				int val = caster.getPdv() / 100 * dmg;// Valor de da�os
 				val -= resF;

@@ -73,7 +73,6 @@ public class PlayerData extends AbstractDAO<Player> {
              }
 
              player.VerifAndChangeItemPlace();
-             player.refreshItemClasse();
              World.world.addPlayer(player);
              if (player.isShowSeller())
                  World.world.addSeller(player);
