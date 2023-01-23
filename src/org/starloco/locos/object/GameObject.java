@@ -79,6 +79,7 @@ public class GameObject {
     
     private void getStatsClass() {
     	for(final String s : this.getTemplate().getStrTemplate().split(",")) {
+    		if(s.isEmpty()) continue;
     		String[] stats = s.split("#");
             final int statID = Integer.parseInt(stats[0], 16);
     		if (statID < 281 || statID > 294)
