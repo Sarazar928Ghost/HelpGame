@@ -27,7 +27,7 @@ public class PlayerCommandData extends AbstractDAO<Command> {
 
             while (RS.next())
             	World.world.addPlayerCommand(new PlayerCommand(RS.getString("name"), RS.getInt("type"), RS.getString("args"), 
-            			RS.getInt("price"), RS.getBoolean("vip"), RS.getString("condition")));
+            			RS.getInt("price"), RS.getBoolean("vip"), RS.getString("condition"), RS.getString("description")));
             
         } catch (SQLException e) {
             super.sendError("PlayerCommandData load", e);

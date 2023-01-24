@@ -1267,22 +1267,34 @@ public class ExecuteCommandPlayer {
     	sb.append("<font color='#"+Constant.COLOR_CHANCE+"'>");
     	sb.append("<b>==== Commandes Gratuites : ====</b>").append("\n");
     	for(final PlayerCommand pc : World.world.getPlayerCommand())
-    		if(pc.getPrice() == 0 && pc.getType() != 20 && !pc.isVip())
-    			sb.append("."+pc.getName()[0]).append("\n");
+    		if(pc.getPrice() == 0 && pc.getType() != 20 && !pc.isVip()) {
+    			sb.append(".<b>"+pc.getName()[0]+"</b>");
+    			if(!pc.getDescription().isEmpty())
+    				sb.append(" - " + pc.getDescription());
+    			sb.append("\n");
+    		}
     	sb.append("</font>");
     	
     	sb.append("<font color='#"+Constant.COLOR_INTEL+"'>");
     	sb.append("<b>==== Commandes Payantes : ====</b>").append("\n");
     	for(final PlayerCommand pc : World.world.getPlayerCommand())
-    		if(pc.getPrice() != 0 && pc.getType() != 20 && !pc.isVip())
-    			sb.append("."+pc.getName()[0]+" ["+pc.getPrice()+" Points]").append("\n");
+    		if(pc.getPrice() != 0 && pc.getType() != 20 && !pc.isVip()) {
+    			sb.append(".<b>"+pc.getName()[0]+"</b> ["+pc.getPrice()+" Points]");
+    			if(!pc.getDescription().isEmpty())
+    				sb.append(" - " + pc.getDescription());
+    			sb.append("\n");
+    		}
     	sb.append("</font>");
     	
     	sb.append("<font color='#"+Constant.COLOR_PA+"'>");
     	sb.append("<b>==== Commandes V.I.P : ====</b>").append("\n");
     	for(final PlayerCommand pc : World.world.getPlayerCommand())
-    		if(pc.getType() != 20 && pc.isVip())
-    			sb.append("."+pc.getName()[0] + (pc.getPrice() != 0 ? " ["+pc.getPrice()+" Points]" : "")).append("\n");
+    		if(pc.getType() != 20 && pc.isVip()) {
+    			sb.append(".<b>"+pc.getName()[0]+ "</b>" + (pc.getPrice() != 0 ? " ["+pc.getPrice()+" Points]" : ""));
+    			if(!pc.getDescription().isEmpty())
+    				sb.append(" - " + pc.getDescription());
+    			sb.append("\n");
+    		}
     	sb.append("</font>");
     	
     	player.sendMessage(sb.toString());
