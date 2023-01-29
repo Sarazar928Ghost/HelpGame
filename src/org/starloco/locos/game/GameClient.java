@@ -726,8 +726,9 @@ public class GameClient {
         String lastMsg = "";
 
         if (this.player.isMuted()) {
-            if (this.player.getAccount() != null)
-                this.player.send("Im117;" + this.getAccount().getMutePseudo() + "~" + this.getAccount().getMuteTime());
+            if (this.player.getAccount() != null) {
+            	this.player.send("Im117;" + this.getAccount().getMutePseudo() + "~" + ((this.getAccount().getMuteTime() - System.currentTimeMillis()) / 60000));
+            }
             return;
         }
         if (this.player.getCurMap() != null) {

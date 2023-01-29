@@ -173,12 +173,13 @@ public class Account {
         Database.getStatics().getAccountData().updatePoints(id, points);
     }
 
-    public void mute(int time, String pseudo) {
+    public void mute(long time, String pseudo) {
         if (time <= 0) return;
         muteTime = time;
         mutePseudo = pseudo;
         Database.getStatics().getAccountData().update(this);
-        if (this.currentPlayer != null) this.currentPlayer.send("Im117;" + pseudo + "~" + time);
+        final long timeMuted = (time - System.currentTimeMillis()) / 60000;
+        if (this.currentPlayer != null) this.currentPlayer.send("Im117;" + pseudo + "~" + timeMuted);
     }
 
     public void unMute() {
@@ -191,7 +192,7 @@ public class Account {
     public boolean isMuted() {
         if (muteTime == 0)
             return false;
-        if (muteTime >= System.currentTimeMillis() / 60000)
+        if (muteTime > System.currentTimeMillis())
             return true;
         muteTime = 0;
         mutePseudo = "";

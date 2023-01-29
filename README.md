@@ -42,6 +42,7 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Porter/Jeter panda débugé
 - Les items de class gardent leur effets lors d'un reboot
 - System de ban fonctionnel
+- System de mute fonctionnel
 
 ## AUTRES :
 

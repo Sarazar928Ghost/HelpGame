@@ -554,7 +554,7 @@ public class CommandAdmin extends AdminUser {
                 return;
             }
 
-            player.getAccount().mute(time, this.getPlayer().getName());
+            player.getAccount().mute(System.currentTimeMillis() + time * 60000, this.getPlayer().getName());
             this.sendSuccessMessage("You've mute the player " + player.getName() + " for " + time + "minute(s) effective for all players of this account !");
 
             if (!player.isOnline())
