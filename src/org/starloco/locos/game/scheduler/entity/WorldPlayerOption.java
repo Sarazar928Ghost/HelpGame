@@ -1,12 +1,8 @@
 package org.starloco.locos.game.scheduler.entity;
 
 import org.starloco.locos.database.Database;
-import org.starloco.locos.game.GameClient;
-import org.starloco.locos.game.GameServer;
 import org.starloco.locos.game.scheduler.Updatable;
 import org.starloco.locos.game.world.World;
-import org.starloco.locos.kernel.Config;
-import org.starloco.locos.kernel.Main;
 
 public class WorldPlayerOption extends Updatable {
 

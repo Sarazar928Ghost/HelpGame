@@ -463,7 +463,7 @@ public class Player {
     //Clone double
     public Player(int id, String name, int groupe, int sexe, int classe,
                   int color1, int color2, int color3, int level, int _size,
-                  int _gfxid, Map<Integer, Integer> stats, String stuff,
+                  int _gfxid, Map<Integer, Integer> stats,
                   int pdvPer, byte seeAlign, int mount, int alvl, byte alignement, Map<Integer, GameObject> equipedObjects) {
         this.id = id;
         this.name = name;
@@ -481,17 +481,6 @@ public class Player {
         this.changeName = false;
         this.restriction = null;
         this.set_isClone(true);
-        
-        for (String item : stuff.split("\\|")) {
-            if (item.equals(""))
-                continue;
-            String[] infos = item.split(":");
-            int guid = Integer.parseInt(infos[0]);
-            GameObject obj = World.world.getGameObject(guid);
-            if (obj == null)
-                continue;
-            objects.put(obj.getGuid(), obj);
-        }
         final Prestige p = World.world.getPrestigeById(prestige);
         if(p != null) 
     	{
@@ -601,7 +590,7 @@ public class Player {
             mountID = P.getMount().getId();
         }
 
-        Player Clone = new Player(id, P.getName(), (P.getGroupe() != null) ? P.getGroupe().getId() : -1, P.getSexe(), P.getClasse(), P.getColor1(), P.getColor2(), P.getColor3(), P.getLevel(), 100, P.getGfxId(), stats, P.parseObjetsToDB(), 100, showWings, mountID, alvl, P.get_align(), P.equipedObjects);
+        Player Clone = new Player(id, P.getName(), (P.getGroupe() != null) ? P.getGroupe().getId() : -1, P.getSexe(), P.getClasse(), P.getColor1(), P.getColor2(), P.getColor3(), P.getLevel(), 100, P.getGfxId(), stats, 100, showWings, mountID, alvl, P.get_align(), P.equipedObjects);
 
         Clone.set_isClone(true);
         if (P._onMount) {

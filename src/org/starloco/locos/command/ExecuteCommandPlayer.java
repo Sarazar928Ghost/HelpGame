@@ -11,7 +11,6 @@ import org.starloco.locos.client.other.Stats;
 import org.starloco.locos.common.ConditionParser;
 import org.starloco.locos.common.PathFinding;
 import org.starloco.locos.common.SocketManager;
-import org.starloco.locos.database.Database;
 import org.starloco.locos.game.action.ExchangeAction;
 import org.starloco.locos.game.world.World;
 import org.starloco.locos.kernel.Config;
@@ -660,52 +659,45 @@ public class ExecuteCommandPlayer {
             return false;
 
         }
-        boolean ok = false;
-                ok = true;
-
-        if (ok) {
-            Database.getStatics().getPlayerData().update(player);
-            if (player.getDeshonor() >= 1) {
-                SocketManager.GAME_SEND_Im_PACKET(player, "183");
-                return false;
-            }
-            final int cost = player.getBankCost();
-            if (cost > 0) {
-                final long playerKamas = player.getKamas();
-                final long kamasRemaining = playerKamas - cost;
-                final long bankKamas = player.getAccount().getBankKamas();
-                final long totalKamas = bankKamas + playerKamas;
-                if (kamasRemaining < 0)//Si le joueur n'a pas assez de kamas SUR LUI pour ouvrir la banque
-                {
-                    if (bankKamas >= cost) {
-                        player.setBankKamas(bankKamas - cost); //On modifie les kamas de la banque
-                    } else if (totalKamas >= cost) {
-                        player.setKamas(0); //On puise l'entièreté des kamas du joueurs. Ankalike ?
-                        player.setBankKamas(totalKamas - cost); //On modifie les kamas de la banque
-                        SocketManager.GAME_SEND_STATS_PACKET(player);
-                        SocketManager.GAME_SEND_Im_PACKET(player, "020;"
-                                + playerKamas);
-                    } else {
-                        SocketManager.GAME_SEND_MESSAGE_SERVER(player, "10|"
-                                + cost);
-                        return false;
-                    }
-                } else
-                //Si le joueur a les kamas sur lui on lui retire directement
-                {
-                    player.setKamas(kamasRemaining);
+        if (player.getDeshonor() >= 1) {
+            SocketManager.GAME_SEND_Im_PACKET(player, "183");
+            return false;
+        }
+        final int cost = player.getBankCost();
+        if (cost > 0) {
+            final long playerKamas = player.getKamas();
+            final long kamasRemaining = playerKamas - cost;
+            final long bankKamas = player.getAccount().getBankKamas();
+            final long totalKamas = bankKamas + playerKamas;
+            if (kamasRemaining < 0)//Si le joueur n'a pas assez de kamas SUR LUI pour ouvrir la banque
+            {
+                if (bankKamas >= cost) {
+                    player.setBankKamas(bankKamas - cost); //On modifie les kamas de la banque
+                } else if (totalKamas >= cost) {
+                    player.setKamas(0); //On puise l'entièreté des kamas du joueurs. Ankalike ?
+                    player.setBankKamas(totalKamas - cost); //On modifie les kamas de la banque
                     SocketManager.GAME_SEND_STATS_PACKET(player);
                     SocketManager.GAME_SEND_Im_PACKET(player, "020;"
+                            + playerKamas);
+                } else {
+                    SocketManager.GAME_SEND_MESSAGE_SERVER(player, "10|"
                             + cost);
+                    return false;
                 }
+            } else
+            //Si le joueur a les kamas sur lui on lui retire directement
+            {
+                player.setKamas(kamasRemaining);
+                SocketManager.GAME_SEND_STATS_PACKET(player);
+                SocketManager.GAME_SEND_Im_PACKET(player, "020;"
+                        + cost);
             }
-            SocketManager.GAME_SEND_ECK_PACKET(player.getGameClient(), 5, "");
-            SocketManager.GAME_SEND_EL_BANK_PACKET(player);
-            player.setAway(true);
-            player.setExchangeAction(new ExchangeAction<>(ExchangeAction.IN_BANK, 0));
-            return true;
         }
-        return false;
+        SocketManager.GAME_SEND_ECK_PACKET(player.getGameClient(), 5, "");
+        SocketManager.GAME_SEND_EL_BANK_PACKET(player);
+        player.setAway(true);
+        player.setExchangeAction(new ExchangeAction<>(ExchangeAction.IN_BANK, 0));
+        return true;
     }
     
     
@@ -903,10 +895,10 @@ public class ExecuteCommandPlayer {
     		player.sendErrorMessage("Commande inutilisable en combat.");
     		return false;
     	}
+    	player.sendMessage("Tu as récupéré <b>"+(player.getMaxPdv() - player.getCurPdv())+"</b> points de vie et <b>"+(10000 - player.getEnergy())+"</b> points d'énergie.");
 		player.setPdv(player.getMaxPdv());
 		player.setEnergy(10000);
 		SocketManager.GAME_SEND_STATS_PACKET(player);
-		player.sendMessage("Vous avez récupéré tout vos points de vies.");
 		return true;
     }
     

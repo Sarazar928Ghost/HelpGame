@@ -798,15 +798,15 @@ public class CommandAdmin extends AdminUser {
                 this.sendErrorMessage("The player was not found, check the name please.");
                 return;
             }
-            if (player.getAccount() == null)
-                Database.getStatics().getAccountData().load(player.getAccID());
             if (player.getAccount() == null) {
                 this.sendErrorMessage("The account of the player was not found, contact a supervisor.");
                 return;
             }
+            
+            final long timeToBan = days == 0 ? 0 : System.currentTimeMillis() + 86400000 * days; // 0 means no limit
 
             player.getAccount().setBanned(true);
-            Database.getStatics().getAccountData().updateBannedTime(player.getAccount(), System.currentTimeMillis() + 86400000 * days);
+            Database.getStatics().getAccountData().updateBannedTime(player.getAccount(), timeToBan);
 
             if (player.getFight() == null) {
                 if (player.getGameClient() != null)
