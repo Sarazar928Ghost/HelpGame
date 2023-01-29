@@ -41,6 +41,7 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - IA moins bugé
 - Porter/Jeter panda débugé
 - Les items de class gardent leur effets lors d'un reboot
+- System de ban fonctionnel
 
 ## AUTRES :
 
