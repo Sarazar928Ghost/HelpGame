@@ -30,6 +30,7 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Demande désormais au Login l'ID pour le futur player crée.
 - Item classe fonctionnel.
 - Les commandes joueurs possèdent une description customamisable via la BDD.
+- Boucle infini dans le bat du GameCompiled.rar afin de pouvoir reboot le serveur via la commande exit dans la console
 
 ## DEBUG :
 
@@ -43,6 +44,7 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Les items de class gardent leur effets lors d'un reboot
 - System de ban fonctionnel
 - System de mute fonctionnel
+- Les pets se générent dorénavant correctement ( Bug dû aux modification )
 
 ## AUTRES :
 

@@ -348,6 +348,7 @@ public class ObjectTemplate {
         } else if (this.getId() == 10207) {
             item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(false, null), new ArrayList<SpellEffect>(), new HashMap<Integer, Integer>(), Dopeul.generateStatsTrousseau(), 0);
         } else if (getType() == Constant.ITEM_TYPE_FAMILIER) {
+        	id = Database.getDynamics().getWorldEntityData().getNextObjectId();
             item = new GameObject(id, getId(), 1, Constant.ITEM_POS_NO_EQUIPED, (useMax ? generateNewStatsFromTemplate(World.world.getPets(this.getId()).getJet(), false) : new Stats(false, null)), new ArrayList<>(), new HashMap<>(), World.world.getPets(getId()).generateNewtxtStatsForPets(), 0);
             //Ajouter du Pets_data SQL et World
             long time = System.currentTimeMillis();
