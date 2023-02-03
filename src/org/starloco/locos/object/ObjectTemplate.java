@@ -41,7 +41,7 @@ public class ObjectTemplate {
                           int level, int pod, int price, int panoId, String conditions,
                           String armesInfos, int sold, int avgPrice, int points, int newPrice) {
         this.id = id;
-        this.strTemplate = strTemplate;
+        this.strTemplate = this.sortStrTemplate(strTemplate);
         this.name = name;
         this.type = type;
         this.level = level;
@@ -75,7 +75,7 @@ public class ObjectTemplate {
     }
 
     public void setInfos(String strTemplate, String name, int type, int level, int pod, int price, int panoId, String conditions, String armesInfos, int sold, int avgPrice, int points, int newPrice) {
-        this.strTemplate = strTemplate;
+        this.strTemplate = this.sortStrTemplate(strTemplate);
         this.name = name;
         this.type = type;
         this.level = level;
@@ -107,6 +107,44 @@ public class ObjectTemplate {
         }
     }
 
+    private String sortStrTemplate(final String strTemplate) {
+    	
+    	if(strTemplate.isEmpty()) return strTemplate;
+    	
+    	final StringBuilder theReturn = new StringBuilder();
+    	
+    	final Map<Integer, String> mapStats = new HashMap<Integer, String>();
+    	
+    	for(final String stat : strTemplate.split(",")) {
+    		final String id = stat.split("#")[0];
+    		final String value = stat.length() > id.length() + 1 ? stat.substring(id.length() + 1) : "";
+    		mapStats.put(Integer.parseInt(id, 16), value);
+    	}
+    	
+    	final List<Integer> sortStats = new ArrayList<>(mapStats.keySet());
+    	Collections.sort(sortStats);
+    	
+    	boolean first = true;
+    	for(final int statID : sortStats) {
+    		
+    		if(!first) 
+    			theReturn.append(",");
+    			
+    		theReturn.append(Integer.toHexString(statID));
+    		
+    		first = false;
+    		
+    		if(mapStats.get(statID).isEmpty()) continue;
+    		
+    		theReturn.append("#")
+    				 .append(mapStats.get(statID));
+    		
+    	}
+    	
+    	
+    	return theReturn.toString();
+    }
+    
     public int getId() {
         return id;
     }

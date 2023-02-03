@@ -530,22 +530,6 @@ public class GameObject {
         for (Entry<Integer, Integer> entry : Stats.getMap().entrySet()) {
 
             int statID = entry.getKey();
-            if ((getTemplate().getPanoId() >= 81 && getTemplate().getPanoId() <= 92)
-                    || (getTemplate().getPanoId() >= 201 && getTemplate().getPanoId() <= 212)) {
-                String[] modificable = template.getStrTemplate().split(",");
-                int cantMod = modificable.length;
-                for (int j = 0; j < cantMod; j++) {
-                    String[] mod = modificable[j].split("#");
-                    if (Integer.parseInt(mod[0], 16) == statID) {
-                        String jet = "0d0+" + Integer.parseInt(mod[1], 16);
-                        if (!isFirst)
-                            stats.append(",");
-                        stats.append(mod[0]).append("#").append(mod[1]).append("#0#").append(mod[3]).append("#").append(jet);
-                        isFirst = false;
-                    }
-                }
-                continue;
-            }
 
             if (!isFirst)
                 stats.append(",");

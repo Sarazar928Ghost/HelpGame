@@ -31,6 +31,7 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Item classe fonctionnel.
 - Les commandes joueurs possèdent une description customamisable via la BDD.
 - Boucle infini dans le bat du GameCompiled.rar afin de pouvoir reboot le serveur via la commande exit dans la console
+- L'ordre des stats des items est le même pour tout les items. ( Pour les nouveaux items généré )
 
 ## DEBUG :
 
