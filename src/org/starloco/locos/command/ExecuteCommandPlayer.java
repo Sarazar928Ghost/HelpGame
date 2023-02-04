@@ -775,7 +775,15 @@ public class ExecuteCommandPlayer {
 		    return false;
 		}
 		// Ajout de l'exo
-		obj.addOneStats(Integer.parseInt(statsToAdd, 16), 1);
+		
+		
+		String statsStr = obj.parseFMStatsString(statsToAdd, obj, 1, false)
+                + ","
+                + statsToAdd
+                + "#1#0#0#0d0+1";
+		obj.clearStats();
+		obj.refreshStatsObjet(statsStr);
+		
 		SocketManager.GAME_SEND_UPDATE_ITEM(player, obj);
 		SocketManager.GAME_SEND_STATS_PACKET(player);
 		

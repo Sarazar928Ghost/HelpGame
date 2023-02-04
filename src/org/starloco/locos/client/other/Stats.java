@@ -5,14 +5,15 @@ import org.starloco.locos.kernel.Constant;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 public class Stats {
 
-    private Map<Integer, Integer> effects = new LinkedHashMap<Integer, Integer>();
+    private Map<Integer, Integer> effects;
 
     public Stats(boolean addBases, Player perso) {
-        this.effects = new LinkedHashMap<Integer, Integer>();
+        this.effects = new HashMap<Integer, Integer>();
         if (!addBases)
             return;
         this.effects.put(Constant.STATS_ADD_PA, perso.getLevel() < 100 ? 6 : 7);
@@ -36,6 +37,7 @@ public class Stats {
     }
 
     public Stats(boolean a) {
+    	this.effects = new HashMap<Integer, Integer>();
         this.effects.put(Constant.STATS_ADD_VITA, 0);
         this.effects.put(Constant.STATS_ADD_SAGE, 0);
         this.effects.put(Constant.STATS_ADD_INTE, 0);
@@ -53,7 +55,7 @@ public class Stats {
     }
 
     public static Stats cumulStat(Stats s1, Stats s2) {
-    	Map<Integer, Integer> effets = new LinkedHashMap<Integer, Integer>();
+    	Map<Integer, Integer> effets = new HashMap<Integer, Integer>();
         for (int a = 0; a <= Constant.MAX_EFFECTS_ID; a++) {
             if (s1.effects.get(a) == null && s2.effects.get(a) == null)
                 continue;
@@ -70,7 +72,7 @@ public class Stats {
     }
 
     public static Stats cumulStatFight(Stats s1, Stats s2) {
-        Map<Integer, Integer> effets = new LinkedHashMap<Integer, Integer>();
+        Map<Integer, Integer> effets = new HashMap<Integer, Integer>();
         for (int a = 0; a <= Constant.MAX_EFFECTS_ID; a++) {
             if ((s1.effects.get(a) == null || s1.effects.get(a) == 0)
                     && (s2.effects.get(a) == null || s2.effects.get(a) == 0))

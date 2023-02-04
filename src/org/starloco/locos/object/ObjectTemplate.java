@@ -41,7 +41,7 @@ public class ObjectTemplate {
                           int level, int pod, int price, int panoId, String conditions,
                           String armesInfos, int sold, int avgPrice, int points, int newPrice) {
         this.id = id;
-        this.strTemplate = this.sortStrTemplate(strTemplate);
+        this.strTemplate = Formulas.sortStatsByOrder(strTemplate);
         this.name = name;
         this.type = type;
         this.level = level;
@@ -75,7 +75,7 @@ public class ObjectTemplate {
     }
 
     public void setInfos(String strTemplate, String name, int type, int level, int pod, int price, int panoId, String conditions, String armesInfos, int sold, int avgPrice, int points, int newPrice) {
-        this.strTemplate = this.sortStrTemplate(strTemplate);
+        this.strTemplate = Formulas.sortStatsByOrder(strTemplate);
         this.name = name;
         this.type = type;
         this.level = level;
@@ -105,44 +105,6 @@ public class ObjectTemplate {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private String sortStrTemplate(final String strTemplate) {
-    	
-    	if(strTemplate.isEmpty()) return strTemplate;
-    	
-    	final StringBuilder theReturn = new StringBuilder();
-    	
-    	final Map<Integer, String> mapStats = new HashMap<Integer, String>();
-    	
-    	for(final String stat : strTemplate.split(",")) {
-    		final String id = stat.split("#")[0];
-    		final String value = stat.length() > id.length() + 1 ? stat.substring(id.length() + 1) : "";
-    		mapStats.put(Integer.parseInt(id, 16), value);
-    	}
-    	
-    	final List<Integer> sortStats = new ArrayList<>(mapStats.keySet());
-    	Collections.sort(sortStats);
-    	
-    	boolean first = true;
-    	for(final int statID : sortStats) {
-    		
-    		if(!first) 
-    			theReturn.append(",");
-    			
-    		theReturn.append(Integer.toHexString(statID));
-    		
-    		first = false;
-    		
-    		if(mapStats.get(statID).isEmpty()) continue;
-    		
-    		theReturn.append("#")
-    				 .append(mapStats.get(statID));
-    		
-    	}
-    	
-    	
-    	return theReturn.toString();
     }
     
     public int getId() {
@@ -382,12 +344,12 @@ public class ObjectTemplate {
         if (getType() == Constant.ITEM_TYPE_QUETES && (Constant.isCertificatDopeuls(getId()) || getId() == 6653)) {
             Map<Integer, String> txtStat = new HashMap<Integer, String>();
             txtStat.put(Constant.STATS_DATE, System.currentTimeMillis() + "");
-            item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(false, null), new ArrayList<SpellEffect>(), new HashMap<Integer, Integer>(), txtStat, 0);
+            item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(), new ArrayList<SpellEffect>(), new HashMap<Integer, Integer>(), txtStat, 0);
         } else if (this.getId() == 10207) {
-            item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(false, null), new ArrayList<SpellEffect>(), new HashMap<Integer, Integer>(), Dopeul.generateStatsTrousseau(), 0);
+            item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(), new ArrayList<SpellEffect>(), new HashMap<Integer, Integer>(), Dopeul.generateStatsTrousseau(), 0);
         } else if (getType() == Constant.ITEM_TYPE_FAMILIER) {
         	id = Database.getDynamics().getWorldEntityData().getNextObjectId();
-            item = new GameObject(id, getId(), 1, Constant.ITEM_POS_NO_EQUIPED, (useMax ? generateNewStatsFromTemplate(World.world.getPets(this.getId()).getJet(), false) : new Stats(false, null)), new ArrayList<>(), new HashMap<>(), World.world.getPets(getId()).generateNewtxtStatsForPets(), 0);
+            item = new GameObject(id, getId(), 1, Constant.ITEM_POS_NO_EQUIPED, (useMax ? generateNewStatsFromTemplate(World.world.getPets(this.getId()).getJet(), false) : new Stats()), new ArrayList<>(), new HashMap<>(), World.world.getPets(getId()).generateNewtxtStatsForPets(), 0);
             //Ajouter du Pets_data SQL et World
             long time = System.currentTimeMillis();
             World.world.addPetsEntry(new PetEntry(id, getId(), time, 0, 10, 0, false));
@@ -396,7 +358,7 @@ public class ObjectTemplate {
             item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, generateNewStatsFromTemplate(getStrTemplate(), useMax), getEffectTemplate(getStrTemplate()), new HashMap<>(), new HashMap<>(), 0);
         } else {
             if (getType() == Constant.ITEM_TYPE_OBJET_ELEVAGE) {
-                item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(false, null), new ArrayList<>(), new HashMap<>(), getStringResistance(getStrTemplate()), 0);
+                item = new GameObject(id, getId(), qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(), new ArrayList<>(), new HashMap<>(), getStringResistance(getStrTemplate()), 0);
             } else if (Constant.isIncarnationWeapon(getId())) {
                 Map<Integer, Integer> Stats = new HashMap<>();
                 Stats.put(Constant.ERR_STATS_XP, 0);
@@ -445,7 +407,7 @@ public class ObjectTemplate {
 
     public Stats generateNewStatsFromTemplate(String statsTemplate,
                                               boolean useMax) {
-        Stats itemStats = new Stats(false, null);
+        Stats itemStats = new Stats();
         //Si stats Vides
         if (statsTemplate.equals("") || statsTemplate == null)
             return itemStats;

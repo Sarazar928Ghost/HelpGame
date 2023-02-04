@@ -19,6 +19,7 @@ import org.starloco.locos.object.entity.Fragment;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -48,7 +49,7 @@ public class GameObject {
         this.puit = puit;
 
         Stats = new Stats();
-        this.parseStringToStats(strStats, false);
+        this.parseStringToStats(strStats, false, false);
         
         if(getTxtStat().get(Constant.STATS_MIMIBIOTE) != null)
         	this.setMimibioteApparence(Integer.parseInt(getTxtStat().get(Constant.STATS_MIMIBIOTE).split(";")[1], 16));
@@ -89,7 +90,7 @@ public class GameObject {
     }
 
     public static GameObject getCloneObjet(GameObject obj, int qua) {
-        Map<Integer, Integer> maps = new HashMap<>();
+        Map<Integer, Integer> maps = new LinkedHashMap<>();
         maps.putAll(obj.getStats().getMap());
         Stats newStats = new Stats(maps);
 
@@ -136,8 +137,12 @@ public class GameObject {
             this.modification = 1;
     }
 
-    public void parseStringToStats(String strStats, boolean save) {
+    public void parseStringToStats(final String strStats, final boolean save, final boolean isForFm) {
         if(this.template != null & this.template.getId() == 7010) return;
+        
+        final StringBuilder statsToOrder = new StringBuilder(); // for fm
+        boolean isFirst = true; // for fm
+        
         String dj1 = "";
         if (!strStats.equalsIgnoreCase("")) {
             for (String split : strStats.split(",")) {
@@ -251,12 +256,32 @@ public class GameObject {
                     if (!follow2)
                         continue;//Si c'était un effet Actif d'arme ou une signature
 
-                    Stats.addOneStat(id, Integer.parseInt(stats[1], 16));
+                    if(!isForFm)
+                    	Stats.addOneStat(id, Integer.parseInt(stats[1], 16));
+                    else {
+                    	if(!isFirst)
+                    		statsToOrder.append(",");
+                    	isFirst = false;
+                    	statsToOrder.append(split);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
+        
+        final String stringOrder = statsToOrder.toString();
+        
+        if(isForFm && !stringOrder.isEmpty())
+        {
+        	for(final String stat : Formulas.sortStatsByOrder(stringOrder).split(",")) {
+        		final String[] split = stat.split("#");
+        		final int id = Integer.parseInt(split[0], 16);
+        		final int value = Integer.parseInt(split[1], 16);
+        		Stats.addOneStat(id, value);
+        	}
+        }
+        
         if(save)
             this.setModification();
     }
@@ -763,7 +788,7 @@ public class GameObject {
 
     public Stats generateNewStatsFromTemplate(String statsTemplate,
                                               boolean useMax) {
-        Stats itemStats = new Stats(false, null);
+        Stats itemStats = new Stats();
         //Si stats Vides
         if (statsTemplate.equals("") || statsTemplate == null)
             return itemStats;
@@ -842,7 +867,7 @@ public class GameObject {
 
     public void clearStats() {
         //On vide l'item de tous ces effets
-        Stats = new Stats();
+        Stats.getMap().clear();
         Effects.clear();
         txtStats.clear();
         SortStats.clear();
@@ -851,7 +876,7 @@ public class GameObject {
     }
 
     public void refreshStatsObjet(String newsStats) {
-        parseStringToStats(newsStats, true);
+        parseStringToStats(newsStats, true, true);
         this.setModification();
     }
 
@@ -908,6 +933,16 @@ public class GameObject {
                                      boolean negatif) {
         String stats = "";
         boolean isFirst = true;
+        
+        for(final String sort : obj.getSortStats()) {
+        	if (!isFirst)
+                stats += ",";
+        	
+        	stats += sort;
+        	
+        	isFirst = false;
+        }
+        
         for (SpellEffect SE : obj.Effects) {
             if (!isFirst)
                 stats += ",";
@@ -920,6 +955,16 @@ public class GameObject {
                 e.printStackTrace();
                 continue;
             }
+            isFirst = false;
+        }
+        
+
+
+        for (Entry<Integer, String> entry : obj.txtStats.entrySet()) {
+            if (!isFirst)
+                stats += ",";
+            stats += Integer.toHexString(entry.getKey()) + "#0#0#0#"
+                    + entry.getValue();
             isFirst = false;
         }
 
@@ -944,14 +989,6 @@ public class GameObject {
                 stats += Integer.toHexString(entry.getKey()) + "#"
                         + Integer.toHexString(entry.getValue()) + "#0#0#" + jet;
             }
-            isFirst = false;
-        }
-
-        for (Entry<Integer, String> entry : obj.txtStats.entrySet()) {
-            if (!isFirst)
-                stats += ",";
-            stats += Integer.toHexString(entry.getKey()) + "#0#0#0#"
-                    + entry.getValue();
             isFirst = false;
         }
 
@@ -1030,6 +1067,15 @@ public class GameObject {
         String stats = "";
         boolean first = false;
         double perte = 0.0;
+        
+
+        for (final String sort : obj.getSortStats()) {
+            if (first)
+                stats += ",";
+            stats += sort;
+            first = true;
+        }
+        
         for (SpellEffect EH : obj.Effects) {
             if (first)
                 stats += ",";
@@ -1041,6 +1087,15 @@ public class GameObject {
                 e.printStackTrace();
                 continue;
             }
+            first = true;
+        }
+        
+
+        for (Entry<Integer, String> entry : obj.txtStats.entrySet()) {
+            if (first)
+                stats += ",";
+            stats += Integer.toHexString((entry.getKey())) + "#0#0#0#"
+                    + entry.getValue();
             first = true;
         }
         java.util.Map<Integer, Integer> statsObj = new java.util.HashMap<Integer, Integer>(obj.Stats.getMap());
@@ -1154,13 +1209,6 @@ public class GameObject {
                 stats += ",";
             stats += Integer.toHexString(statID) + "#"
                     + Integer.toHexString(newstats) + "#0#0#" + jet;
-            first = true;
-        }
-        for (Entry<Integer, String> entry : obj.txtStats.entrySet()) {
-            if (first)
-                stats += ",";
-            stats += Integer.toHexString((entry.getKey())) + "#0#0#0#"
-                    + entry.getValue();
             first = true;
         }
         return stats;

@@ -15,12 +15,35 @@ import org.starloco.locos.other.Guild;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Formulas {
 
     public final static Random random = new Random();
+    
+    
+    private final static short[] order = new short[] {
+    		
+    		Constant.STATS_ADD_PA,
+    		Constant.STATS_ADD_PM,
+    		Constant.STATS_ADD_PO,
+    		Constant.STATS_ADD_VITA,
+    		Constant.STATS_ADD_AGIL,
+    		Constant.STATS_ADD_CHAN,
+    		Constant.STATS_ADD_FORC,
+    		Constant.STATS_ADD_INTE,
+    		Constant.STATS_ADD_SAGE,
+    		Constant.STATS_ADD_CC,
+    		Constant.STATS_ADD_DOMA,
+    		Constant.STATS_ADD_PERDOM,
+    		Constant.STATS_MULTIPLY_DOMMAGE,
+    		Constant.STATS_ADD_INIT,
+    		
+    		
+    };
 
     public static int countCell(int i) {
         if (i > 64)
@@ -1331,6 +1354,67 @@ public class Formulas {
       if(CFRate<2)
         CFRate=2;
       return Formulas.getRandomValue(1,CFRate)==CFRate;
+    }
+    
+    /**
+     * Permet de trier les stats d'un item template et d'un item cree. Il faut lui donner uniquement les stats normaux et non les autres.
+     * Les stats qui ne sont pas specifie dans le tableaux order seront mis a la fin par ordre croissant selon leur stat ID
+     * 
+     * @author Sarazar928Ghost Kevin#6537
+     * @param Stats de l'objet
+     * @return Stats sort by order
+     */
+    public static String sortStatsByOrder(final String strStats) {
+    		
+		if(strStats.isEmpty()) return strStats;
+		
+		final Map<Byte, String> orderStats = new TreeMap<>();
+		final Map<Integer, String> unknowStats = new TreeMap<>();
+		
+		for(final String stat : strStats.split(",")) {
+			final int id = Integer.parseInt(stat.split("#")[0], 16);
+			
+			boolean ok = false;
+			
+			for(byte i = 0; i < order.length; ++i) {
+				if(order[i] != id) continue;
+				orderStats.put(i, stat);
+				ok = true;
+				break;
+			}
+			
+			if(ok) continue;
+			
+			unknowStats.put(id, stat);
+			
+		}
+		
+		
+		final StringBuilder theReturn = new StringBuilder();
+		boolean isFirst = true;
+		
+		for(final byte number : orderStats.keySet())
+		{
+			
+			if(!isFirst)
+				theReturn.append(",");
+			isFirst = false;
+			
+			theReturn.append(orderStats.get(number));
+			
+		}
+		
+		for(final String stat : unknowStats.values()) {
+			
+			if(!isFirst)
+				theReturn.append(",");
+			isFirst = false;
+			
+			theReturn.append(stat);
+		}
+    	
+    	return theReturn.toString();
+    	
     }
     
 }

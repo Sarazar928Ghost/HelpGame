@@ -490,6 +490,26 @@ public class World {
                 + new SimpleDateFormat("ss", Locale.FRANCE).format((System.currentTimeMillis() - time)) + " s"
         		+ new SimpleDateFormat("SS", Locale.FRANCE).format((System.currentTimeMillis() - time)) + " m.");
         logger.setLevel(Level.ALL);
+        
+        // Permet de générer le fichier itemstats pour les langs
+        /*try(PrintWriter p = new PrintWriter(new FileWriter("itemstats.txt"))) {
+        	
+        	p.print("FILE_BEGIN = true;\r\n"
+        			+ "System.security.allowDomain(_parent._url);\r\n"
+        			+ "VERSION = 1059;\r\n"
+        			+ "ISTA = new Array();\r\n");
+        	
+        	
+        	
+            for(ObjectTemplate temp : this.getObjectsTemplates().values()) 
+                p.print("ISTA["+temp.getId()+"] = \""+ temp.getStrTemplate() + "\";\n");
+            
+            p.print("FILE_END = true;");
+            
+            p.flush();
+          } catch (IOException e) {
+              System.out.println(e.getMessage());
+          }*/
     }
 
     public void addExtraMonster(int idMob, String superArea,
@@ -1082,7 +1102,7 @@ public class World {
             try {
                 Map<Integer, String> txtStat = new HashMap<>();
                 txtStat.put(Constant.STATS_DATE, strStats.substring(3) + "");
-                return new GameObject(Guid, template, qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(false, null), new ArrayList<>(), new HashMap<>(), txtStat, puit);
+                return new GameObject(Guid, template, qua, Constant.ITEM_POS_NO_EQUIPED, new Stats(), new ArrayList<>(), new HashMap<>(), txtStat, puit);
             } catch (Exception e) {
                 e.printStackTrace();
                 return new GameObject(Guid, template, qua, pos, strStats, 0);

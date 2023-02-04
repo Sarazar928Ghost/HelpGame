@@ -32,6 +32,9 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Les commandes joueurs possèdent une description customamisable via la BDD.
 - Boucle infini dans le bat du GameCompiled.rar afin de pouvoir reboot le serveur via la commande exit dans la console
 - L'ordre des stats des items est le même pour tout les items. ( Pour les nouveaux items généré )
+- Les stats conservent le même ordre lors d'un FM
+- Les items utilisent dorénavant une LinkedHashMap pour les stats normaux , mais les joueurs gardent toujours les HashMap
+- Fichier itemstats pour le fichier lang afin que l'ordre des stats des items templates soit le même côté serveur et client.
 
 ## DEBUG :
 
@@ -46,6 +49,7 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - System de ban fonctionnel
 - System de mute fonctionnel
 - Les pets se générent dorénavant correctement ( Bug dû aux modification )
+- Lors d'un FM d'un item de classe , les stats de class sont conservé.
 
 ## AUTRES :
 
