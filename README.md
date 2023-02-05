@@ -48,6 +48,9 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Les pets se générent dorénavant correctement ( Bug dû aux modification )
 - Lors d'un FM d'un item de classe , les stats de class sont conservé.
 - Les stats conservent le même ordre lors d'un FM
+- Clonages d'items débugés ( Dorénavant les clones possèdent leur propres listes pour les stats )
+- Les items mimibioté peuvent être FM en conservant leur stats mimi.
+- Ne peut plus craft un item mimi avec plus de 1 en quantité , cela créera donc un nouveau item.
 
 ## AUTRES :
 
@@ -60,6 +63,8 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Les items utilisent dorénavant une LinkedHashMap pour les stats normaux , mais les joueurs gardent toujours les HashMap
 - Fichier itemstats pour le fichier lang afin que l'ordre des stats des items templates soit le même côté serveur et client.
 - Les stats template sont dans le même ordre que les stats des objets crée.
+- Tout les objets déjà crée possèdent leur stats en ordre.
+- SQL mis au gout du jour ( en lien avec le discord )
 
 
 ## TELECHARGEMENT :

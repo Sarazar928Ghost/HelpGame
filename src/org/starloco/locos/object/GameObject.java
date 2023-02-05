@@ -94,7 +94,7 @@ public class GameObject {
         maps.putAll(obj.getStats().getMap());
         Stats newStats = new Stats(maps);
 
-        GameObject ob = new GameObject(Database.getDynamics().getWorldEntityData().getNextObjectId(), obj.getTemplate().getId(), qua, Constant.ITEM_POS_NO_EQUIPED, newStats, obj.getEffects(), obj.getSoulStat(), obj.getTxtStat(), obj.getPuit());
+        GameObject ob = new GameObject(Database.getDynamics().getWorldEntityData().getNextObjectId(), obj.getTemplate().getId(), qua, Constant.ITEM_POS_NO_EQUIPED, newStats, new ArrayList<SpellEffect>(obj.getEffects()), new HashMap<Integer, Integer>(obj.getSoulStat()), new HashMap<Integer, String>(obj.getTxtStat()), obj.getPuit());
         ob.modification = 0;
         if(obj.isMimibiote())
         	ob.setMimibioteApparence(obj.getOATemplateApparence());
@@ -961,8 +961,19 @@ public class GameObject {
         for (Entry<Integer, String> entry : obj.txtStats.entrySet()) {
             if (!isFirst)
                 stats += ",";
-            stats += Integer.toHexString(entry.getKey()) + "#0#0#0#"
-                    + entry.getValue();
+            if(entry.getKey() == Constant.STATS_MIMIBIOTE) {
+            	
+            	final String[] datas = entry.getValue().split(";");
+            	stats += Integer.toHexString(Constant.STATS_MIMIBIOTE);
+            	stats += "#0#";
+            	stats += datas[0] + "#" + datas[1];
+            	
+            }else {
+            	
+            	stats += Integer.toHexString(entry.getKey()) + "#0#0#0#"
+            			+ entry.getValue();
+            	
+            }
             isFirst = false;
         }
 
@@ -1092,8 +1103,18 @@ public class GameObject {
         for (Entry<Integer, String> entry : obj.txtStats.entrySet()) {
             if (first)
                 stats += ",";
-            stats += Integer.toHexString((entry.getKey())) + "#0#0#0#"
-                    + entry.getValue();
+            	if(entry.getKey() == Constant.STATS_MIMIBIOTE) {
+            	
+	            	final String[] datas = entry.getValue().split(";");
+	            	stats += Integer.toHexString(Constant.STATS_MIMIBIOTE);
+	            	stats += "#0#";
+	            	stats += datas[0] + "#" + datas[1];
+            	
+            	}else {
+            	
+	            	stats += Integer.toHexString((entry.getKey())) + "#0#0#0#"
+	            			+ entry.getValue();
+            	}
             first = true;
         }
         java.util.Map<Integer, Integer> statsObj = new java.util.HashMap<Integer, Integer>(obj.Stats.getMap());

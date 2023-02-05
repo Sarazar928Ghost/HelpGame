@@ -293,8 +293,8 @@ public class GameClient {
     	final GameObject mimibiote = this.player.getItemTemplate(Constant.ID_TEMPLATE_MIMIBIOTE);
     	if(mimibiote == null) return;
     	
-    	final GameObject itemToKeep = World.world.getGameObject(idItemToKeep);
-    	final GameObject itemToDelete = World.world.getGameObject(idItemToDelete);
+    	GameObject itemToKeep = World.world.getGameObject(idItemToKeep);
+    	GameObject itemToDelete = World.world.getGameObject(idItemToDelete);
     	
     	if(itemToKeep == null || itemToDelete == null) return;
     	if(!this.player.hasItemGuid(idItemToKeep) || !this.player.hasItemGuid(idItemToDelete)) return;
@@ -304,6 +304,14 @@ public class GameClient {
     	if(itemToKeep.getTemplate().getType() != itemToDelete.getTemplate().getType()) return;
     	if(!Constant.isTypeForMimibiote(itemToKeep.getTemplate().getType())) return;
     	
+    	boolean update = true;
+    	
+    	if(itemToKeep.getQuantity() > 1) {
+    		itemToKeep.setQuantity(itemToKeep.getQuantity() - 1);
+    		SocketManager.GAME_SEND_OBJECT_QUANTITY_PACKET(player, itemToKeep);
+    		itemToKeep = GameObject.getCloneObjet(itemToKeep, 1);
+    		update = false;
+    	}
     	
     	// OK
     	final String guid = Integer.toHexString(itemToDelete.getGuid());
@@ -312,7 +320,12 @@ public class GameClient {
     	itemToKeep.setMimibioteApparence(itemToDelete.getTemplate().getId());
     	this.player.removeItem(idItemToDelete, 1, true, false);
     	this.player.removeItem(mimibiote.getGuid(), 1, true, true);
-    	SocketManager.GAME_SEND_UPDATE_ITEM(player, itemToKeep);
+    	if(update)
+    		SocketManager.GAME_SEND_UPDATE_ITEM(player, itemToKeep);
+    	else {
+    		this.player.addObjet(itemToKeep, false);
+    		World.world.addGameObject(itemToKeep, true);
+    	}
 		SocketManager.GAME_SEND_Im_PACKET(this.player, "022;" + 1 + "~" + itemToDelete.getTemplate().getId());
 		SocketManager.GAME_SEND_Im_PACKET(this.player, "022;" + 1 + "~" + mimibiote.getTemplate().getId());
     	
