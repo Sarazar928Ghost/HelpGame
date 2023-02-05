@@ -5968,14 +5968,14 @@ public class GameClient {
         return true;
     }
 
-    private synchronized void onMovementItemClass(final GameObject object, final int position)
+    private void onMovementItemClass(final GameObject object, final int position)
     {
     	
     	final ObjectTemplate objTemplate = object.getTemplate();
-    	if(!Constant.isPanoIdClass(objTemplate.getPanoId())) return;
+    	if(object.getSortStats().isEmpty()) return;
     	
     	
-    	if (position == 2 || position == 3 || position == 4 || position == 5 || position == 6 || position == 7 || position == 0) {
+    	if (position != Constant.ITEM_POS_NO_EQUIPED) {
             for (final String stat : object.getSortStats()) {
                 final String[] val = stat.split("#");
                 final int effect = Integer.parseInt(val[0], 16);
@@ -5987,7 +5987,7 @@ public class GameClient {
             }
             this.player.addItemClasse(objTemplate.getId());
         }
-    	else if (position == Constant.ITEM_POS_NO_EQUIPED) {
+    	else{
             for (final String stat : object.getSortStats()) {
                 final String[] val = stat.split("#");
                 final String modifi = Integer.parseInt(val[0], 16) + ";" + Integer.parseInt(val[1], 16) + ";0";

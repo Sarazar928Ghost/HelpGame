@@ -41,7 +41,7 @@ public class ObjectTemplate {
                           int level, int pod, int price, int panoId, String conditions,
                           String armesInfos, int sold, int avgPrice, int points, int newPrice) {
         this.id = id;
-        this.strTemplate = Formulas.sortStatsByOrder(strTemplate);
+        this.strTemplate = this.initStrTemplate(strTemplate);
         this.name = name;
         this.type = type;
         this.level = level;
@@ -75,7 +75,7 @@ public class ObjectTemplate {
     }
 
     public void setInfos(String strTemplate, String name, int type, int level, int pod, int price, int panoId, String conditions, String armesInfos, int sold, int avgPrice, int points, int newPrice) {
-        this.strTemplate = Formulas.sortStatsByOrder(strTemplate);
+        this.strTemplate = this.initStrTemplate(strTemplate);
         this.name = name;
         this.type = type;
         this.level = level;
@@ -106,6 +106,91 @@ public class ObjectTemplate {
             e.printStackTrace();
         }
     }
+    
+    
+    /**
+     * 
+     * Permet de trier l'ordre des stats des items templates. En premier c'est les stats de class , ensuite les effects ( donc les degats d armes ) 
+     * , et par la suite les stats normaux qui seront trier par ordre defini. A la fin se situeront les stats de textes si il y en a.
+     * 
+     * @author Sarazar928Ghost Kevin#6537
+     * @param strTemplate
+     * @return sort strTemplate
+     */
+    private String initStrTemplate(final String strTemplate) {
+    	
+    	if(strTemplate.isEmpty()) return strTemplate;
+    	
+    	final StringBuilder sortsBuilder = new StringBuilder();
+    	final StringBuilder effectsBuilder = new StringBuilder();
+    	final StringBuilder statsBuilder = new StringBuilder();
+    	
+    	boolean firstSorts = true;
+    	boolean firstEffects = true;
+    	boolean firstStats = true;
+    	
+    	for(final String split : strTemplate.split(",")) {
+    		final String[] datas = split.split("#");
+    		final int id = Integer.parseInt(datas[0], 16);
+    		if (id >= 281 && id <= 294) { // Stats class item
+    			if(!firstSorts)
+    				sortsBuilder.append(",");
+    			firstSorts = false;
+    			sortsBuilder.append(split);
+    			continue;
+    		} 
+    		boolean follow1 = true;
+            switch (id) {
+                case 110:
+                case 139:
+                case 605:
+                case 614:
+                	if(!firstEffects)
+        				effectsBuilder.append(",");
+                	firstEffects = false;
+                	effectsBuilder.append(split);
+                    follow1 = false;
+            }
+            if (!follow1) continue;
+            
+
+            boolean follow2 = true;
+            for (int a : Constant.ARMES_EFFECT_IDS) {
+                if (a == id) {
+                	if(!firstEffects)
+        				effectsBuilder.append(",");
+                	firstEffects = false;
+                	effectsBuilder.append(split);
+                    follow2 = false;
+                    break;
+                }
+            }
+            if (!follow2) continue; //Si c'était un effet Actif d'arme ou une signature
+            
+            if(!firstStats)
+            	statsBuilder.append(",");
+            firstStats = false;
+            statsBuilder.append(split);
+    	}
+    	
+    	final String orderStats = Formulas.sortStatsByOrder(statsBuilder.toString());
+    	final String sorts = sortsBuilder.toString();
+    	final String effects = effectsBuilder.toString();
+    	
+    	
+    	final StringBuilder theReturn = new StringBuilder();
+    	
+    	theReturn.append(sorts);
+    	if(!effects.isEmpty() && !sorts.isEmpty())
+    		theReturn.append(",");
+    	theReturn.append(effects);
+    	if(!effects.isEmpty() && !orderStats.isEmpty())
+    		theReturn.append(",");
+    	theReturn.append(orderStats);
+    	
+    	return theReturn.toString();
+    }
+    
     
     public int getId() {
         return id;

@@ -28,13 +28,10 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Cameleon DD ( Objet action action 36 ) ( Item Template Potion : 2 )
 - Piège débugé a 100% ( Normalement 🤗 )
 - Demande désormais au Login l'ID pour le futur player crée.
-- Item classe fonctionnel.
+- Item classe fonctionne a 100% , vous pouvez mettre des stats items classe sur tout les items du jeu sans exception.
 - Les commandes joueurs possèdent une description customamisable via la BDD.
 - Boucle infini dans le bat du GameCompiled.rar afin de pouvoir reboot le serveur via la commande exit dans la console
 - L'ordre des stats des items est le même pour tout les items. ( Pour les nouveaux items généré )
-- Les stats conservent le même ordre lors d'un FM
-- Les items utilisent dorénavant une LinkedHashMap pour les stats normaux , mais les joueurs gardent toujours les HashMap
-- Fichier itemstats pour le fichier lang afin que l'ordre des stats des items templates soit le même côté serveur et client.
 
 ## DEBUG :
 
@@ -50,6 +47,7 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - System de mute fonctionnel
 - Les pets se générent dorénavant correctement ( Bug dû aux modification )
 - Lors d'un FM d'un item de classe , les stats de class sont conservé.
+- Les stats conservent le même ordre lors d'un FM
 
 ## AUTRES :
 
@@ -59,6 +57,9 @@ Merci de pas le vendre , vous avez reçu gratuitement , donnez gratuitement 🤗
 - Refactoring des actions des objets + optimisation
 - Refactoring addObjet et createNewItem
 - Optimisation getDirBetweenTwoCase
+- Les items utilisent dorénavant une LinkedHashMap pour les stats normaux , mais les joueurs gardent toujours les HashMap
+- Fichier itemstats pour le fichier lang afin que l'ordre des stats des items templates soit le même côté serveur et client.
+- Les stats template sont dans le même ordre que les stats des objets crée.
 
 
 ## TELECHARGEMENT :

@@ -5219,20 +5219,21 @@ public class Player {
                 continue;
             final GameObject obj = getObjetByPos(j);
             final int template = obj.getTemplate().getId();
-            final int pano = obj.getTemplate().getPanoId();
-            if ((pano >= 81 && pano <= 92) || (pano >= 201 && pano <= 212)) {
-                for (final String stat : obj.getSortStats()) {
-                    final String[] val = stat.split("#");
-                    final int effect = Integer.parseInt(val[0], 16);
-                    final int spell = Integer.parseInt(val[1], 16);
-                    final int modif = Integer.parseInt(val[3], 16);
-                    final String modifi = effect + ";" + spell + ";" + modif;
-                    SocketManager.SEND_SB_SPELL_BOOST(this, modifi);
-                    addItemClasseSpell(spell, effect, modif);
-                }
-                if (!_itemClasse.contains(template))
-                    _itemClasse.add(template);
+            
+            if(obj.getSortStats().isEmpty()) continue;
+            
+            for (final String stat : obj.getSortStats()) {
+                final String[] val = stat.split("#");
+                final int effect = Integer.parseInt(val[0], 16);
+                final int spell = Integer.parseInt(val[1], 16);
+                final int modif = Integer.parseInt(val[3], 16);
+                final String modifi = effect + ";" + spell + ";" + modif;
+                SocketManager.SEND_SB_SPELL_BOOST(this, modifi);
+                addItemClasseSpell(spell, effect, modif);
             }
+            if (!_itemClasse.contains(template))
+                _itemClasse.add(template);
+            
         }
     }
 

@@ -412,16 +412,14 @@ public class GameObject {
         StringBuilder stats = new StringBuilder();
         boolean isFirst = true;
 
-        if ((getTemplate().getPanoId() >= 81 && getTemplate().getPanoId() <= 92)
-                || (getTemplate().getPanoId() >= 201 && getTemplate().getPanoId() <= 212)) {
-            for (String spell : SortStats) {
-                if (!isFirst) {
-                    stats.append(",");
-                }
-                stats.append(spell);
-                isFirst = false;
+        for (String spell : SortStats) {
+            if (!isFirst) {
+                stats.append(",");
             }
+            stats.append(spell);
+            isFirst = false;
         }
+        
 
         for (SpellEffect SE : Effects) {
             if (!isFirst)
